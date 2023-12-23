@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2 class="mt-4">{{ project.name }}</h2>
+
+  <ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item">
+      <a href="{% url 'funds:fund_details' project.fund_id %}">{{ project.fund.name }}</a>
+    </li>
+    <li class="breadcrumb-item active">Details</li>
+  </ol>
+  <div class="card mb-4">
+    <div class="card-body">
+      <li>{{ project.date_created }}</li>
+      <li>{{ project.notes }}</li>
+      <li>{{ project.leader.username }}</li>
+      <li>{{ project.approved_budget }}</li>
+    </div>
+  </div>
+  <br />
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Tasks
+    </div>
+    <div class="card-body">
+      <div class="col-12 col-md-3 col-xl-3">
+        <form class="bd-search d-flex align-items-center">
+          <input type="search" class="form-control" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off" />
+        </form>
+      </div>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Task name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in tasks_page %}
+            <tr>
+              <td>
+                <a href="#">{{ task.name }}</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=tasks_page %}
+    </div>
+  </div>
+{% endblock %}
