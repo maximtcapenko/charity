@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mt-4">Add new ward</h2>
+  <div class="col-12 col-md-3 col-xl-4">
+    <form action="" method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <input type="submit" class="btn btn-primary" value="Submit" />
+    </form>
+  </div>
+{% endblock %}

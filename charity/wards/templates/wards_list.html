@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h1 class="mt-4">Tables</h1>
+<h1 class="mt-4">Tables</h1>
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
       <a href="index.html">Dashboard</a>
@@ -16,32 +16,35 @@
     </div>
   </div>
   <div>
-    <a href="{% url 'projects:project_create' %}" class="btn btn-link" >Add project</a>
+    <a href="{% url 'wards:ward_create' %}" class="btn btn-link" >Add ward</a>
   </div>
   <div class="card mb-4">
     <div class="card-header">
       <i class="fas fa-table me-1"></i>
-      Projects
+      Wards
     </div>
     <div class="card-body">
       <table class="table table-bordered">
         <thead>
           <tr>
-            <th>Project name</th>
+            <th>Ward name</th>
             <th>Created</th>
+            <th>Projects</th>
           </tr>
         </thead>
         <tbody>
-          {% for project in projects %}
+          {% for ward in wards_page %}
             <tr>
               <td>
-                <a href="#">{{ project.name }}</a>
+                <a href="#">{{ ward.name }}</a>
               </td>
-              <td>{{ project.date_created }}</td>
+              <td>{{ ward.date_created }}</td>
+              <td>{{ ward.active_project_count }}</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
+      {% include 'paginator.html' with obj_page=wards_page %}
     </div>
   </div>
 {% endblock %}

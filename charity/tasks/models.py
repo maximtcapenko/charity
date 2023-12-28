@@ -55,7 +55,7 @@ class Task(Base):
 
     @property
     def is_expired(self):
-        return self.end_date is not None and self.end_date < datetime.date.today
+        return self.end_date is not None and self.end_date < datetime.date.today()
 
 
 class Comment(Base):

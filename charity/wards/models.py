@@ -16,6 +16,8 @@ class Ward(Base):
     attachments = models.ManyToManyField(
         Attachment, related_name='ward_attachments')
 
+    def __str__(self):
+        return self.name
 
 def fund_total_wards_count(self):
     return Ward.objects.filter(fund__id=self.id).aggregate(total=models.Count('id'))['total']

@@ -16,7 +16,9 @@
       <li>{{ project.approved_budget }}</li>
     </div>
   </div>
-  <br />
+  <div>
+    <a href="{% url 'tasks:task_create'%}?project_id={{ project.id }}" class="btn btn-link" >Add task</a>
+  </div>
   <div class="card mb-4">
     <div class="card-header">
       <i class="fas fa-table me-1"></i>
@@ -32,6 +34,13 @@
         <thead>
           <tr>
             <th>Task name</th>
+            <th>Period</th>
+            <th>Assignee</th>
+            <th>Is high priority</th>
+            <th>Is started</th>
+            <th>Is expired</th>
+            <th>Estimated expenses</th>
+            <th>Approved</th>
           </tr>
         </thead>
         <tbody>
@@ -40,6 +49,17 @@
               <td>
                 <a href="#">{{ task.name }}</a>
               </td>
+              <td>{{ task.start_date }}-{{ task.end_date }}</td>
+              <td>{{ task.assignee.username }}</td>
+              <td>{{ task.is_high_priority }}</td>
+              <td>{{ task.is_started }}</td>
+              <td>{{ task.is_expired }}</td>
+              <td>{{ task.estimated_expense_amount }}</td>
+               {% if task.expense.approvement.is_rejected == False %}
+               <td> True </td>
+               {% else %}
+               <td> False </td>
+               {% endif %}
             </tr>
           {% endfor %}
         </tbody>
