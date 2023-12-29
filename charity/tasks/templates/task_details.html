@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2 class="mt-4">{{ task.name }}</h2>
+
+  <ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item">
+      <a href="{% url 'funds:get_current_details' %}">{{ task.project.fund.name }}</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a href="{% url 'projects:get_details' task.project.id %}">{{ task.project.name }}</a>
+    </li>
+    <li class="breadcrumb-item active">Details</li>
+  </ol>
+  <div class="card mb-4">
+    <div class="card-body">
+      <div>
+        <i class="far fa-calendar-alt"></i>
+        Period: {{ task.start_date }} - {{ task.end_date }}
+      </div>
+      <div>
+        <i class="fas fa-user"></i>
+        assignee: {{ task.assignee.username }}
+      </div>
+      <div>
+        <i class="fas fa-sack-dollar"></i>
+        Expenses: {{ task.estimated_expense_amount }}
+      </div>
+      <div>
+        <i class="fa-regular fa-folder"></i>
+        Ward: <a  href="{% url 'wards:ward_details' task.ward_id %}"> {{ task.ward.name }} </a>
+      </div>
+      <div>
+        <i class="fa-regular fa-clipboard"></i>
+        Notes: {{ task.notes }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

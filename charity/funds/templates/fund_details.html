@@ -4,7 +4,7 @@
 
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
-      <a href="{% url 'funds:funds_list' %}">Funds list</a>
+      <a href="{% url 'funds:get_list' %}">Funds list</a>
     </li>
     <li class="breadcrumb-item active">Details</li>
   </ol>
@@ -12,20 +12,20 @@
     <div class="card-body">
        <div>
         <i class="far fa-calendar-alt"></i>
-        {{ fund.date_created }}
+         Created: {{ fund.date_created }}
       </div>
       <div>
         <i class="fas fa-sack-dollar"></i>
-          {{ fund.available_budget_amount }}
+         Budget: {{ fund.available_budget_amount }}
       </div>
       <div>
         <i class="fas fa-user-friends"></i>
-        {{ fund.total_volunteers_count }}
+         Volunteers: {{ fund.total_volunteers_count }}
       </div>
     </div>
   </div>
   <div>
-    <a href="{% url 'projects:project_create' %}" class="btn btn-link" >Add project</a>
+    <a href="{% url 'projects:create' %}" class="btn btn-link" >Add project</a>
   </div>
   <div class="card mb-4">
     <div class="card-header">
@@ -52,7 +52,7 @@
           {% for project in active_projects_page %}
             <tr>
               <td>
-                <a href="{% url 'projects:project_details' project.id %}">{{ project.name }}</a>
+                <a href="{% url 'projects:get_details' project.id %}">{{ project.name }}</a>
               </td>
               <td>{{ project.date_created }}</td>
               <td>

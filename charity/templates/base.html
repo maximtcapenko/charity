@@ -47,15 +47,20 @@
           <div class="sb-sidenav-menu">
             <div class="nav">
               <div class="sb-sidenav-menu-heading">General</div>
-              <a class="nav-link" href="{% url 'funds:current_fund_details' %}">
+              <a class="nav-link" href="{% url 'funds:get_current_details' %}">
                 <div class="sb-nav-link-icon">
                   <i class="fas fa-tachometer-alt"></i>
                 </div>Dashboard
               </a>
-              <a class="nav-link" href="{% url 'wards:wards_list' %}">
+              <a class="nav-link" href="{% url 'wards:get_list' %}">
                 <div class="sb-nav-link-icon">
                   <i class="fas fa-tachometer-alt"></i>
                 </div>Wards
+              </a>
+              <a class="nav-link" href="{% url 'processes:get_list' %}">
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-tachometer-alt"></i>
+                </div>Processes
               </a>
             </div>
             <div class="nav">

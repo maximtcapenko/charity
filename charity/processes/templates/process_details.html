@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2 class="mt-4">{{ process.name }}</h2>
+  <ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item active">
+      <a href="{% url 'funds:get_current_details' %}"> {{ user.volunteer_profile.fund.name }} </a>
+    </li>
+    <li class="breadcrumb-item active">Details</li>
+  </ol>
+  <div class="card mb-4">
+    <div class="card-body">
+    
+    </div>
+  </div>
+  <div>
+    <a href="{% url 'processes:create_state' process.id %}" class="btn btn-link" >Add state</a>
+  </div>
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      States
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>State name</th>
+            <th>Created</th>
+            <th>Is depricated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for state in states_page %}
+            <tr>
+              <td>
+                <a href="#">{{ state.name }}</a>
+              </td>
+              <td>{{ state.date_created }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=wards_page %}
+    </div>
+  </div>
+{% endblock %}

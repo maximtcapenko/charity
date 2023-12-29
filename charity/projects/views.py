@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
+from django.http import HttpResponseNotAllowed
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
@@ -19,18 +20,21 @@ def create(request):
             project = form.save()
             return redirect(reverse('funds:fund_details', args=[str(project.fund_id)]))
         else:
-            return render(request, 'project_create.html', {
+            return render(request, 'generic_createform.html', {
+                'return_url': reverse('funds:get_current_details'),
+                'title': 'Add project',
                 'form': form
             })
     elif request.method == 'GET':
-        return render(request, 'project_create.html', {
+        return render(request, 'generic_createform.html', {
+            'return_url': reverse('funds:get_current_details'),
+            'title': 'Add project',
             'form': CreateProjectForm(initial={
                 'fund': request.user.volunteer_profile.fund
             })
         })
     else:
-        return render(request, "405.html", status=405)
-
+        return HttpResponseNotAllowed([request.method])
 
 @login_required
 @user_passes_test(user_should_be_volunteer)

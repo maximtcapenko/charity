@@ -6,6 +6,6 @@ app_name = "tasks"
 
 urlpatterns = [
     path('', views.get_list, name='tasks_list'),
-    path('<uuid:id>/', views.get_details, name='get_details'),
+    path('<uuid:id>/', views.get_details, name='task_details'),
     path('create/', views.create, name='task_create')
 ]

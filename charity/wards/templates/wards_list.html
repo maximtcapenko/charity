@@ -1,22 +1,31 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1 class="mt-4">Tables</h1>
+<h2 class="mt-4">Wards</h2>
   <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item">
-      <a href="index.html">Dashboard</a>
+    <li class="breadcrumb-item active">
+      <a href="{% url 'funds:get_current_details' %}"> {{ user.volunteer_profile.fund.name }} </a>
     </li>
-    <li class="breadcrumb-item active">Tables</li>
+    <li class="breadcrumb-item active">Wards list</li>
   </ol>
   <div class="card mb-4">
     <div class="card-body">
-      DataTables is a third party plugin that is used to generate the demo table below. For more information about DataTables, please visit the
-      <a target="_blank" href="https://datatables.net/">official DataTables documentation</a>
-      .
+      <div>
+        <i class="fa-regular fa-folder"></i>
+        Total wards: {{ total_count }}
+      </div>
+      <div>
+        <i class="fa-solid fa-check"></i>
+         Active wards: {{ total_active_count }}
+      </div>
+      <div>
+        <i class="fa-solid fa-spinner"></i>
+        Wards in work: {{ total_count_in_projects }}
+      </div>
     </div>
   </div>
   <div>
-    <a href="{% url 'wards:ward_create' %}" class="btn btn-link" >Add ward</a>
+    <a href="{% url 'wards:create' %}" class="btn btn-link" >Add ward</a>
   </div>
   <div class="card mb-4">
     <div class="card-header">
@@ -29,7 +38,8 @@
           <tr>
             <th>Ward name</th>
             <th>Created</th>
-            <th>Projects</th>
+            <th>Is active</th>
+            <th>Used in projects</th>
           </tr>
         </thead>
         <tbody>
@@ -39,6 +49,15 @@
                 <a href="#">{{ ward.name }}</a>
               </td>
               <td>{{ ward.date_created }}</td>
+              {% if ward.is_inactive %}
+              <td> 
+                <input type="checkbox" disabled="disabled">
+              </td>
+              {% else %}
+              <td>
+                <input type="checkbox" disabled="disabled" checked="checked">
+              </td>
+              {% endif %}
               <td>{{ ward.active_project_count }}</td>
             </tr>
           {% endfor %}

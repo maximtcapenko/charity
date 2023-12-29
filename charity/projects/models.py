@@ -4,6 +4,7 @@ from commons.models import Base
 from budgets.models import Budget
 from funds.models import Fund
 from files.models import Attachment
+from processes.models import Process
 from wards.models import Ward
 
 
@@ -16,6 +17,7 @@ class Project(Base):
     cover = models.ForeignKey(Attachment, null=True,
                               blank=True, on_delete=models.SET_NULL)
     wards = models.ManyToManyField(Ward, related_name='projects')
+    processes = models.ManyToManyField(Process, related_name='projects')
     leader = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name='leaded_projects')
     budget = models.ForeignKey(Budget, null=True, on_delete=models.PROTECT)
@@ -32,7 +34,9 @@ def fund_active_projects_count(self):
 
 
 def fund_active_projects(self):
-    return self.projects.filter(fund__id=self.id, is_closed=False).select_related('leader').all()
+    return Project.objects.filter(fund__id=self.id, is_closed=False)\
+               .select_related('leader') \
+               .all()
 
 
 def ward_active_projects(self):

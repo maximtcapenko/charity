@@ -3,6 +3,7 @@ from django.db.models import Max, Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
 from commons.mixins import FormControlMixin
+from processes.models import Process
 from wards.models import Ward
 from .models import Task
 
@@ -18,13 +19,18 @@ class CreateTaskForm(forms.ModelForm, FormControlMixin):
         if (self.initial):
             project = self.initial['project']
             self.fields['assignee'].queryset = User.objects \
-                .filter(volunteer_profile__fund_id=project.fund_id)
+                .filter(volunteer_profile__fund_id=project.fund_id) \
+                .only('id', 'username')
 
-            task_query = Task.objects.filter(
-                ward=OuterRef("pk"), project__id=project.id)
-
-            self.fields['ward'].queryset = Ward.objects.filter(
-                Q(projects__in=[project]) & ~Exists(task_query))
+            self.fields['ward'].queryset = Ward.active_objects. \
+                filter(Q(projects__in=[project]) 
+                       & ~Exists(Task.objects.filter(ward=OuterRef("pk"),
+                       project__id=project.id))) \
+                .only('id', 'name')
+            
+            self.fields['process'].queryset = Process.objects \
+                .filter(projects__in=[project]) \
+                .only('id', 'name')
 
     def save(self, commit):
         last_order_position = Task.objects.filter(project__id=self.instance.project_id) \

@@ -9,6 +9,7 @@ class Process(Base):
     notes = models.TextField(blank=True, null=True)
     fund = models.ForeignKey(
         Fund, on_delete=models.PROTECT, related_name='processes')
+    is_inactive = models.BooleanField()
 
     def __str__(self):
         return self.name
@@ -20,7 +21,10 @@ class ProcessState(Base):
     notes = models.TextField(blank=True, null=True)
     process = models.ForeignKey(
         Process, on_delete=models.PROTECT, related_name='states')
-    is_depricated = models.BooleanField(default=False)
+    is_first = models.BooleanField(default=False)
+    is_inactive = models.BooleanField(default=False)
+    next_state = models.ForeignKey('self', null=True, on_delete=models.PROTECT)
+
 
     def __str__(self):
         return self.name

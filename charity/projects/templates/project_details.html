@@ -4,16 +4,27 @@
 
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
-      <a href="{% url 'funds:fund_details' project.fund_id %}">{{ project.fund.name }}</a>
+      <a href="{% url 'funds:get_details' project.fund_id %}">{{ project.fund.name }}</a>
     </li>
     <li class="breadcrumb-item active">Details</li>
   </ol>
   <div class="card mb-4">
     <div class="card-body">
-      <li>{{ project.date_created }}</li>
-      <li>{{ project.notes }}</li>
-      <li>{{ project.leader.username }}</li>
-      <li>{{ project.approved_budget }}</li>
+      <div>
+        <i class="far fa-calendar-alt"> </i>
+        Created: {{ project.date_created }}
+      </div>
+      <div>
+        <i class="fa-regular fa-clipboard"></i>
+        Notes: {{ project.notes }}
+      </div>
+      <div>
+      <i class="fas fa-user"> </i>
+        Leader: {{ project.leader.username }}
+      </div>
+      <div>
+        <i class="fas fa-sack-dollar"></i>
+        Budget: {{ project.approved_budget }}</div>
     </div>
   </div>
   <div>
@@ -47,7 +58,7 @@
           {% for task in tasks_page %}
             <tr>
               <td>
-                <a href="#">{{ task.name }}</a>
+                <a href="{% url 'tasks:task_details' task.id%}">{{ task.name }}</a>
               </td>
               <td>{{ task.start_date }}-{{ task.end_date }}</td>
               <td>{{ task.assignee.username }}</td>

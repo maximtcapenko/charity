@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
+from django.http import HttpResponseNotAllowed
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from commons import DEFAULT_PAGE_SIZE
@@ -17,9 +18,11 @@ def create(request):
 
         if form.is_valid():
             task = form.save(commit=True)
-            return redirect(reverse('projects:project_details', args=[str(task.project_id)]))
+            return redirect(reverse('projects:get_details', args=[task.project_id]))
         else:
-            return render(request, 'task_create.html', {
+            return render(request, 'generic_createform.html', {
+                'title': 'Add task',
+                'return_url': reverse('projects:get_details', args=[request.GET.get('project_id')]),
                 'form': form
             })
     elif request.method == 'GET':
@@ -27,13 +30,15 @@ def create(request):
             fund_id=request.user.volunteer_profile.fund_id
         ), pk=request.GET.get('project_id'))
 
-        return render(request, 'task_create.html', {
+        return render(request, 'generic_createform.html', {
+            'title': 'Add task',
+            'return_url': reverse('projects:get_details', args=[request.GET.get('project_id')]),
             'form': CreateTaskForm(initial={
                 'project': project
             })
         })
     else:
-        return render(request, "405.html", status=405)
+        return HttpResponseNotAllowed([request.method])
 
 
 @login_required

@@ -7,7 +7,7 @@ from files.models import Attachment
 from funds.models import Approvement
 from budgets.models import Budget
 from wards.models import Ward
-from processes.models import ProcessState
+from processes.models import Process, ProcessState
 from projects.models import Project
 
 
@@ -41,7 +41,10 @@ class Task(Base):
     end_date = models.DateField(null=True)
     is_started = models.BooleanField(default=False)
     is_done = models.BooleanField(default=False)
-    estimated_expense_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    estimated_expense_amount = models.DecimalField(
+        max_digits=10, decimal_places=2)
+    process = models.ForeignKey(
+        Process, on_delete=models.PROTECT)
     project = models.ForeignKey(
         Project, on_delete=models.PROTECT, related_name='tasks')
     assignee = models.ForeignKey(
