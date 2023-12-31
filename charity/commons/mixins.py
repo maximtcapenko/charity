@@ -10,7 +10,15 @@ class FormControlMixin:
                     'class': 'form-check-input'
                 })
             elif (isinstance(self.fields[field].widget, forms.DateInput)):
-                 self.fields[field].widget = forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+                self.fields[field].widget = forms.DateInput(
+                    attrs={'type': 'date', 'class': 'form-control'})
+            elif (isinstance(self.fields[field], forms.ModelChoiceField)):
+                self.fields[field].empty_label = '%s %s' % (
+                    'Select', self.fields[field].label)
+                self.fields[field].widget.attrs.update({
+                    'class': 'form-control'
+                })
+
             else:
                 self.fields[field].widget.attrs.update({
                     'class': 'form-control'

@@ -1,0 +1,38 @@
+<div>
+    <a href="{% url 'projects:add_ward_to_project' project.id %}" class="btn btn-link" >Add ward</a>
+</div>
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Wards
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Ward name</th>
+            <th>Is active</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ward in wards_page %}
+            <tr>
+              <td>
+                <a href="#">{{ ward.name }}</a>
+              </td>
+              {% if ward.is_inactive %}
+              <td> 
+                <input type="checkbox" disabled="disabled">
+              </td>
+              {% else %}
+              <td>
+                <input type="checkbox" disabled="disabled" checked="checked">
+              </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=wards_page %}
+    </div>
+  </div>

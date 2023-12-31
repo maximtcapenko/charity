@@ -1,21 +1,5 @@
-{% extends 'base.html' %}
-
-{% block content %}
-<h2 class="mt-4">Processes</h2>
-  <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item active">
-      <a href="{% url 'funds:get_current_details' %}"> {{ user.volunteer_profile.fund.name }} </a>
-    </li>
-    <li class="breadcrumb-item active">Processes list</li>
-
-  </ol>
-  <div class="card mb-4">
-    <div class="card-body">
-
-    </div>
-  </div>
-  <div>
-    <a href="{% url 'processes:create' %}" class="btn btn-link" >Add process</a>
+<div>
+    <a href="{% url 'projects:add_process_to_project' project.id %}" class="btn btn-link" >Add process</a>
   </div>
   <div class="card mb-4">
     <div class="card-header">
@@ -27,10 +11,7 @@
         <thead>
           <tr>
             <th>Process name</th>
-            <th>Created</th>
-            <th>Is Active</th>
-            <th>States</th>
-            <th>Used in projects</th>
+            <th>Is active</th>
           </tr>
         </thead>
         <tbody>
@@ -39,7 +20,6 @@
               <td>
                 <a href="{% url 'processes:get_details' process.id %}">{{ process.name }}</a>
               </td>
-              <td>{{ process.date_created }}</td>
               {% if process.is_inactive %}
               <td> 
                 <input type="checkbox" disabled="disabled">
@@ -49,13 +29,10 @@
                 <input type="checkbox" disabled="disabled" checked="checked">
               </td>
               {% endif %}
-              <td>{{ process.states_count }}</td>
-              <td>{{ process.active_project_count }}</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
-      {% include 'paginator.html' with obj_page=wards_page %}
+      {% include 'paginator.html' with obj_page=processes_page %}
     </div>
   </div>
-{% endblock %}

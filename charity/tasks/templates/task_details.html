@@ -19,20 +19,60 @@
       </div>
       <div>
         <i class="fas fa-user"></i>
-        assignee: {{ task.assignee.username }}
+        Assignee: {{ task.assignee.username }}
       </div>
       <div>
         <i class="fas fa-sack-dollar"></i>
         Expenses: {{ task.estimated_expense_amount }}
       </div>
+      {%if task.should_be_approved and not task.expense.approve_id %}
+      <div>
+        <i class="fa-solid fa-hourglass-end"></i>
+        Status: Waiting for approvement
+      </div>
+      {% endif %}
       <div>
         <i class="fa-regular fa-folder"></i>
-        Ward: <a  href="{% url 'wards:ward_details' task.ward_id %}"> {{ task.ward.name }} </a>
+        Ward: <a  href="{% url 'wards:get_details' task.ward_id %}"> {{ task.ward.name }} </a>
       </div>
       <div>
         <i class="fa-regular fa-clipboard"></i>
         Notes: {{ task.notes }}
       </div>
+      <div>
+        <i class="fa-solid fa-pen-to-square"></i>
+        <a href="{% url 'tasks:update' task.id %}">Edit</a>
+      </div>
     </div>
   </div>
+  <ul class="nav nav-pills mb-3">
+    <li class="nav-item" role="presentation">
+      {% if selected_tab == 'state_history' %}
+        <a href="?tab=state_history" class="nav-link active">State history</a>
+      {% else %}
+        <a href="?tab=state_history" class="nav-link">State history</a>
+      {% endif%}
+    </li>
+    <li class="nav-item" role="presentation">
+      {% if selected_tab == 'comments' %}
+        <a href="?tab=comments" class="nav-link active">Comments</a>
+      {% else %}
+        <a href="?tab=comments" class="nav-link">Comments</a>
+      {% endif%}
+    </li>
+    <li class="nav-item" role="presentation">
+      {% if selected_tab == 'files' %}
+        <a href="?tab=files" class="nav-link active">Files</a>
+      {% else %}
+        <a href="?tab=files" class="nav-link">Files</a>
+      {% endif %}
+    </li>
+  </ul>
+  <div>
+    {% if selected_tab == 'state_history' %}
+      {% include 'task_state_history.html' with state_history_page=page %}
+    {% elif selected_tab == 'comments' %}
+    {% elif selected_tab == 'files' %}
+    {% endif %}
+    </div>
 {% endblock %}

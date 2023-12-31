@@ -57,6 +57,28 @@ class Task(Base):
     attachments = models.ManyToManyField(Attachment)
 
     @property
+    def next_task_state(self):
+        if self.state:
+            return self.state.state.next_state
+        else:
+            return self.process.states.filter(is_first=True, is_inactive=False).first()
+
+        
+    @property
+    def is_approved(self):
+        if self.should_be_approved:
+            if self.expense and self.expense.approvement:
+                return self.expense.approvement.is_rejected
+            else:
+                return False
+        else:
+            return True
+
+    @property
+    def should_be_approved(self):
+        return self.estimated_expense_amount > 0
+
+    @property
     def is_expired(self):
         return self.end_date is not None and self.end_date < datetime.date.today()
 

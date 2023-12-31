@@ -1,0 +1,44 @@
+<div>
+  {% if task.is_approved %}
+    <a href="#" class="btn btn-link">Acrivate {{ task.next_task_state.name }}</a>
+  {% else %}
+   <a href="#" class="btn btn-link disabled">Acrivate {{ task.next_task_state.name }}</a>
+  {% endif %}
+</div>
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      State History
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>State name</th>
+            <th>Completion date</th>
+            <th>Approved</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for state in state_history_page %}
+            <tr>
+              <td>
+                <a href="#">{{ state.state }}</a>
+              </td>
+              <td>{{ state.completion_date }}</td>
+              {% if state.approvement_id %}
+              <td> 
+                <input type="checkbox" disabled="disabled">
+              </td>
+              {% else %}
+              <td>
+                <input type="checkbox" disabled="disabled" checked="checked">
+              </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=wards_page %}
+    </div>
+  </div>

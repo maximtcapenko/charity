@@ -1,12 +1,15 @@
+from typing import Any
 from django import forms
+from django.db.models import Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
 from commons.mixins import FormControlMixin
 from .models import Project
+from processes.models import Process, ProcessState
+from wards.models import Ward
 
 
 class CreateProjectForm(forms.ModelForm, FormControlMixin):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         FormControlMixin.__init__(self)
@@ -18,5 +21,45 @@ class CreateProjectForm(forms.ModelForm, FormControlMixin):
 
     class Meta:
         model = Project
-        exclude = ['date_created', 'id', 'wards',
-                   'is_closed', 'cover', 'budget']
+        exclude = ['date_created', 'id', 'wards', 'closed_date',
+                   'is_closed', 'cover', 'budget', 'processes']
+
+
+class UpdateProjectForm(CreateProjectForm):
+    
+    def clean_leader(self):
+        leader = self.cleaned_data.get('leader')
+        if leader is None and self.instance.leader:
+            raise forms.ValidationError(
+                'Leader is already assigned and can not be empty')
+        return leader
+
+
+class AddWardToProjectForm(forms.Form, FormControlMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        FormControlMixin.__init__(self)
+
+        if self.initial:
+            self.fields['ward'].queryset = Ward.active_objects.filter(
+                Q(fund__id=self.initial['project'].fund_id) &
+                Q(projects__isnull=True) | Q(projects__is_closed=True)
+            )
+
+    ward = forms.ModelChoiceField(Ward.objects, required=True, label='Ward')
+
+
+class AddProcessToProjectForm(forms.Form, FormControlMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        FormControlMixin.__init__(self)
+
+        if self.initial:
+            self.fields['process'].queryset = Process.objects.filter(
+                Q(Exists(ProcessState.objects.filter(process=OuterRef('pk')))) &
+                Q(is_inactive=False, fund__id=self.initial['project'].fund_id) &
+                ~Q(projects__in=[self.initial['project']])
+            )
+
+    process = forms.ModelChoiceField(
+        Process.objects, required=True, label='Process')
