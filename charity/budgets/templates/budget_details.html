@@ -10,51 +10,56 @@
   </ol>
   <div class="card mb-4">
     <div class="card-body">
+      <div>
+        <i class="far fa-calendar-alt"></i>
+        Period: {{ budget.start_period_date }} - {{ budget.end_period_date }}
+      </div>
+      <div>
+        <i class="fas fa-user"></i>
+        Manager: {{ budget.manager.username }}
+      </div>
+      <div>
+        <i class="fas fa-sack-dollar"></i>
+        Income: {{ budget.avaliable_income_amount }}
+      </div>
+      {% if not budget.approve_id %}
         <div>
-            <i class="far fa-calendar-alt"></i>
-            Period: {{ budget.start_period_date }} - {{ budget.end_period_date }}
+          <i class="fa-solid fa-hourglass-end"></i>
+          Status: Waiting for approvement
         </div>
-        <div>
-            <i class="fas fa-user"></i>
-            Manager: {{ budget.manager.username }}
-        </div>
-        <div>
-            <i class="fas fa-sack-dollar"></i>
-            Income: {{ budget.avaliable_income_amount }}
-        </div>
-        {% if not budget.approve_id %}
-        <div>
-            <i class="fa-solid fa-hourglass-end"></i>
-            Status: Waiting for approvement
-        </div>
-        {% endif %}
-        <div>
-            <i class="fa-regular fa-clipboard"></i>
-            Notes: {{ budget.notes }}
-        </div>
-        <div>
-            <i class="fa-solid fa-pen-to-square"></i>
-            <a href="#">Edit</a>
-        </div>
-     </div>
+      {% endif %}
+      <div>
+        <i class="fa-regular fa-clipboard"></i>
+        Notes: {{ budget.notes }}
+      </div>
+      <div>
+        <i class="fa-solid fa-pen-to-square"></i>
+        <a href="#">Edit</a>
+      </div>
+    </div>
   </div>
-  
+
   <ul class="nav nav-pills mb-3">
     <li class="nav-item" role="presentation">
       {% if selected_tab == 'incomes' %}
         <a href="?tab=incomes" class="nav-link active">Incomes</a>
       {% else %}
         <a href="?tab=incomes" class="nav-link">Incomes</a>
-      {% endif%}
+      {% endif %}
     </li>
     <li class="nav-item" role="presentation">
       {% if selected_tab == 'expenses' %}
         <a href="?tab=expenses" class="nav-link active">Expenses</a>
       {% else %}
         <a href="?tab=expenses" class="nav-link">Expenses</a>
-      {% endif%}
+      {% endif %}
     </li>
   </ul>
   <div>
-  </div>
+    {% if selected_tab == 'incomes' %}
+      {% include 'incomes_list.html' %}
+    {% elif selected_tab == 'expenses' %}
+    
+    {% endif %}
+    </div>
 {% endblock %}

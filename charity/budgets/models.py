@@ -51,7 +51,8 @@ class Income(Base):
         User, on_delete=models.PROTECT)
     approvement = models.ForeignKey(
         Approvement, on_delete=models.SET_NULL, null=True)
-    
+    approvements = models.ManyToManyField(Approvement, related_name='income_logs')
+
     @property
     def is_approved(self):
         return self.approvement.is_rejected == False

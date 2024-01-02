@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div>
+    <a href="#" class="btn btn-link" >Add approvement</a>
+</div>
+<div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Approvements
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Created</th>
+            <th>Author</th>
+            <th>Is rejected</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for approvement in page %}
+            <tr>
+              <td>{{ approvement.date_created }}</td>
+              <td>{{ approvement.author.username }}</td>
+              <td>{{ approvement.is_rejected }}</td>
+              <td>{{ approvement.notes }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,120 +1,77 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.http import HttpResponseNotAllowed
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
-from commons.functions import user_should_be_volunteer
+from commons.functions import render_generic_form, user_should_be_volunteer
 from .forms import CreateProjectForm, AddWardToProjectForm, \
     AddProcessToProjectForm, UpdateProjectForm
 from .models import Project
 
 
+def _get_project_or_404(request, project_id):
+    return get_object_or_404(
+        Project.objects.filter(fund__id=request.user.volunteer_profile.fund_id), pk=project_id)
+
+
 @login_required
 @user_passes_test(user_should_be_volunteer)
 def add_ward_to_project(request, id):
-    project = get_object_or_404(Project, pk=id)
+    project = _get_project_or_404(request=request, project_id=id)
     return_url = reverse('projects:get_details', args=[
-                          project.id]) + '?tab=wards'
-    form_title = 'Include ward to project'
-    form_template = 'generic_createform.html'
+        project.id]) + '?tab=wards'
 
-    if request.method == 'POST':
-        form = AddWardToProjectForm(request.POST)
-        if form.is_valid():
-            ward = form.cleaned_data['ward']
-            project.wards.add(ward)
-            project.save()
-
-            return redirect(return_url)
-        else:
-            return render(request, form_template, {
-                'return_url': return_url,
-                'title': form_title,
-                'form': form
-            })
-    elif request.method == 'GET':
-        return render(request, form_template, {
+    return render_generic_form(
+        request=request, form_class=AddWardToProjectForm, context={
             'return_url': return_url,
-            'title': form_title,
-            'form': AddWardToProjectForm(initial={
+            'title': 'Include ward to project',
+            'get_form_initial': {
                 'project': project
-            })
+            },
+            'post_form_initial': {
+                'project': project
+            }
         })
-    else:
-        return HttpResponseNotAllowed([request.method])
 
 
 @login_required
 @user_passes_test(user_should_be_volunteer)
 def add_process_to_project(request, id):
-    project = get_object_or_404(Project, pk=id)
+    project = _get_project_or_404(request=request, project_id=id)
     return_url = reverse('projects:get_details', args=[
         project.id]) + '?tab=processes'
-    form_title = 'Include process to project'
-    form_template = 'generic_createform.html'
 
-    if request.method == 'POST':
-        form = AddProcessToProjectForm(request.POST)
-        if form.is_valid():
-            process = form.cleaned_data['process']
-            project.processes.add(process)
-            project.save()
-
-            return redirect(return_url)
-        else:
-            return render(request, form_template, {
-                'return_url': return_url,
-                'title': form_title,
-                'form': form
-            })
-    elif request.method == 'GET':
-        return render(request, form_template, {
+    return render_generic_form(
+        request=request, form_class=AddProcessToProjectForm, context={
             'return_url': return_url,
-            'title': form_title,
-            'form': AddProcessToProjectForm(initial={
+            'title': 'Include process to project',
+            'get_form_initial': {
                 'project': project
-            })
+            },
+            'post_form_initial': {
+                'project': project
+            }
         })
-    else:
-        return HttpResponseNotAllowed([request.method])
 
 
 @login_required
 @user_passes_test(user_should_be_volunteer)
 def update(request, id):
-    project = get_object_or_404(Project, pk=id)
-    return_url = reverse('projects:get_details',
-                         args=[project.id])
-    form_title = 'Update project'
-    form_template = 'generic_createform.html'
-
-    if request.method == 'POST':
-        form = UpdateProjectForm(request.POST, instance=project,
-                                 initial={
-                                     'fund': request.user.volunteer_profile.fund
-                                 })
-        if form.is_valid():
-            form.save()
-            return redirect(return_url)
-        else:
-            return render(request, form_template,
-                          {'return_url': return_url,
-                           'title': form_title,
-                           'form': form
-                           })
-    elif request.method == 'GET':
-        form = UpdateProjectForm(initial={
-            'fund': request.user.volunteer_profile.fund
-        }, instance=project)
-        return render(request, form_template,
-                      {'return_url': return_url,
-                       'title': form_title,
-                       'form': form
-                       })
-    else:
-        return HttpResponseNotAllowed([request.method])
+    project = _get_project_or_404(request=request, project_id=id)
+    return render_generic_form(
+        request=request, form_class=UpdateProjectForm, context={
+            'return_url': reverse('projects:get_details', args=[project.id]),
+            'title': 'Update project',
+            'get_form_initial': {
+                'fund': request.user.volunteer_profile.fund
+            },
+            'post_form_initial': {
+                'fund': request.user.volunteer_profile.fund
+            },
+            'instance': project
+        })
 
 
 @login_required
@@ -127,28 +84,14 @@ def close(request, id):
 @login_required
 @user_passes_test(user_should_be_volunteer)
 def create(request):
-    if request.method == 'POST':
-        form = CreateProjectForm(request.POST)
-
-        if form.is_valid():
-            project = form.save()
-            return redirect(reverse('funds:fund_details', args=[str(project.fund_id)]))
-        else:
-            return render(request, 'generic_createform.html', {
-                'return_url': reverse('funds:get_current_details'),
-                'title': 'Add project',
-                'form': form
-            })
-    elif request.method == 'GET':
-        return render(request, 'generic_createform.html', {
+    return render_generic_form(
+        request=request, form_class=CreateProjectForm, context={
             'return_url': reverse('funds:get_current_details'),
             'title': 'Add project',
-            'form': CreateProjectForm(initial={
+            'get_form_initial': {
                 'fund': request.user.volunteer_profile.fund
-            })
+            }
         })
-    else:
-        return HttpResponseNotAllowed([request.method])
 
 
 @login_required
@@ -165,34 +108,38 @@ def get_list(request):
 @login_required
 @user_passes_test(user_should_be_volunteer)
 def get_details(request, id):
-    project = get_object_or_404(Project.objects.filter(
-        fund_id=request.user.volunteer_profile.fund_id), pk=id)
-
-    tab = request.GET.get('tab', 'tasks')
-
-    paginator = None
-    if tab == 'processes':
-        paginator = Paginator(
+    default_tab = 'tasks'
+    tabs = {
+        'processes': lambda project: Paginator(
             project.processes.order_by('-date_created'),
-            per_page=DEFAULT_PAGE_SIZE
-        )
-    elif tab == 'wards':
-        paginator = Paginator(
+            DEFAULT_PAGE_SIZE
+        ),
+        'wards': lambda project: Paginator(
             project.wards.order_by('-date_created'),
-            per_page=DEFAULT_PAGE_SIZE
-        )
-    elif tab == 'processes':
-        paginator = Paginator(
+            DEFAULT_PAGE_SIZE
+        ),
+        'processes': lambda project: Paginator(
             project.processes.order_by('-date_created'),
-            per_page=DEFAULT_PAGE_SIZE
-        )
-    else:
-        paginator = Paginator(
+            DEFAULT_PAGE_SIZE
+        ),
+        'tasks': lambda projrect: Paginator(
             project.tasks.
             select_related(
                 'assignee', 'expense',
                 'expense__approvement')
-            .order_by('order_position'), per_page=DEFAULT_PAGE_SIZE)
+            .order_by('order_position'),
+            DEFAULT_PAGE_SIZE)
+    }
+
+    tab = request.GET.get('tab', default_tab)
+
+    if not tab in tabs:
+        tab = default_tab
+
+    project = get_object_or_404(Project.objects.filter(
+        fund_id=request.user.volunteer_profile.fund_id), pk=id)
+
+    paginator = tabs.get(tab)(project)
 
     return render(request, 'project_details.html', {
         'project': project,

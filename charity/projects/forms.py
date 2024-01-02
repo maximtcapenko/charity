@@ -1,4 +1,3 @@
-from typing import Any
 from django import forms
 from django.db.models import Q, Exists, OuterRef
 from django.contrib.auth.models import User
@@ -49,6 +48,14 @@ class AddWardToProjectForm(forms.Form, FormControlMixin):
 
     ward = forms.ModelChoiceField(Ward.objects, required=True, label='Ward')
 
+    def save(self):
+        project = self.initial['project']
+        ward = self.cleaned_data['ward']
+        project.wards.add(ward)
+        project.save()
+
+        return project
+
 
 class AddProcessToProjectForm(forms.Form, FormControlMixin):
     def __init__(self, *args, **kwargs):
@@ -64,3 +71,11 @@ class AddProcessToProjectForm(forms.Form, FormControlMixin):
 
     process = forms.ModelChoiceField(
         Process.objects, required=True, label='Process')
+    
+    def save(self):
+        project = self.initial['project']
+        process = self.cleaned_data['process']
+        project.processes.add(process)
+        project.save()
+
+        return project

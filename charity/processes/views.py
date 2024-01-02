@@ -1,12 +1,11 @@
-from django.http import HttpResponseNotAllowed
 from django.db import models
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
-from commons.functions import user_should_be_volunteer
+from commons.functions import user_should_be_volunteer, render_generic_form
 
 from .forms import CreateProcessForm, CreateProcessStateForm
 from .models import Process
@@ -15,55 +14,29 @@ from .models import Process
 @login_required
 @user_passes_test(user_should_be_volunteer)
 def create(request):
-    if request.method == 'POST':
-        form = CreateProcessForm(request.POST)
-
-        if form.is_valid():
-            form.save()
-            return redirect(reverse('processes:get_list'))
-        else:
-            return render(request, 'generic_createform.html', {
-                'title': 'Add process',
-                'return_url': reverse('processes:get_list'),
-                'form': form
-            })
-    elif request.method == 'GET':
-        return render(request, 'generic_createform.html', {
+    return render_generic_form(
+        request=request, form_class=CreateProcessForm,
+        context={
             'title': 'Add process',
             'return_url': reverse('processes:get_list'),
-            'form': CreateProcessForm(initial={
+            'get_form_initial': {
                 'fund': request.user.volunteer_profile.fund
-            })
+            }
         })
-    else:
-        return HttpResponseNotAllowed([request.method])
 
 
 @login_required
 @user_passes_test(user_should_be_volunteer)
 def create_state(request, id):
-    if request.method == 'POST':
-        form = CreateProcessStateForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect(reverse('processes:get_details', args=[id]))
-        else:
-            return render(request, 'generic_createform.html', {
-                'title': 'Add process state',
-                'return_url': reverse('processes:get_details', args=[id]),
-                'form': form
-            })
-    elif request.method == 'GET':
-        form = CreateProcessStateForm(initial={
-            'process': get_object_or_404(Process, pk=id)
-        })
-        return render(request, 'generic_createform.html', {
+    return render_generic_form(
+        request=request, form_class=CreateProcessStateForm, context={
             'title': 'Add process state',
             'return_url': reverse('processes:get_details', args=[id]),
-            'form': form
+            'get_form_initial':  {
+                'process': get_object_or_404(Process.objects.filter(
+                    fund__id=request.user.volunteer_profile.fund_id), pk=id)
+            }
         })
-    else:
-        return HttpResponseNotAllowed([request.method])
 
 
 @login_required

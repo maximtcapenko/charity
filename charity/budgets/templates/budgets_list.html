@@ -35,7 +35,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for budget in budget_page %}
+          {% for budget in page %}
             <tr>
               <td>
                 <a href="{% url 'budgets:get_details' budget.id %}">{{ budget.name }}</a>
@@ -51,7 +51,7 @@
           {% endfor %}
         </tbody>
       </table>
-      {% include 'paginator.html' with obj_page=budget_page %}
+      {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
 {% endblock %}

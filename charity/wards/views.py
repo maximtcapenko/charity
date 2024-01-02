@@ -1,12 +1,11 @@
 from django.db import models
-from django.http import HttpResponseNotAllowed
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
-from commons.functions import user_should_be_volunteer
+from commons.functions import user_should_be_volunteer, render_generic_form
 from .forms import CreateWardForm
 from .models import Ward
 from projects.models import Project
@@ -15,28 +14,14 @@ from projects.models import Project
 @login_required
 @user_passes_test(user_should_be_volunteer)
 def create(request):
-    if request.method == 'POST':
-        form = CreateWardForm(request.POST)
-
-        if form.is_valid():
-            ward = form.save()
-            return redirect(reverse('wards:get_list'))
-        else:
-            return render(request, 'generic_createform.html', {
-                'title': 'Add ward',
-                'return_url': reverse('wards:get_list'),
-                'form': form
-            })
-    elif request.method == 'GET':
-        return render(request, 'generic_createform.html', {
+    return render_generic_form(
+        request=request, form_class=CreateWardForm, context={
             'title': 'Add ward',
             'return_url': reverse('wards:get_list'),
-            'form': CreateWardForm(initial={
+            'get_form_initial': {
                 'fund': request.user.volunteer_profile.fund
-            })
+            }
         })
-    else:
-        return HttpResponseNotAllowed([request.method])
 
 
 @login_required
