@@ -1,0 +1,43 @@
+<div>
+    <a href="{% url 'projects:create' %}" class="btn btn-link" >Add project</a>
+  </div>
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Active projects
+    </div>
+    <div class="card-body">
+      <div class="col-12 col-md-3 col-xl-3">
+        <form class="bd-search d-flex align-items-center">
+          <input type="search" class="form-control" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off" />
+        </form>
+      </div>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Project name</th>
+            <th>Created</th>
+            <th>Leader</th>
+            <th>Active tasks</th>
+            <th>Budget</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for project in page %}
+            <tr>
+              <td>
+                <a href="{% url 'projects:get_details' project.id %}">{{ project.name }}</a>
+              </td>
+              <td>{{ project.date_created }}</td>
+              <td>
+                <a href="#">{{ project.leader.username }}</a>
+              </td>
+              <td>{{ project.active_tasks_count }}</td>
+              <td>{{ project.approved_budget }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+       {% include 'paginator.html' with obj_page=page %}
+    </div>
+  </div>

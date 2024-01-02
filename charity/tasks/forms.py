@@ -1,11 +1,13 @@
+import datetime
+
 from django import forms
 from django.db.models import Max, Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
 from commons.mixins import FormControlMixin
-from processes.models import Process
+from processes.models import Process, ProcessState
 from wards.models import Ward
-from .models import Task
+from .models import Comment, Task, TaskState
 
 
 class CreateTaskForm(forms.ModelForm, FormControlMixin):
@@ -66,3 +68,46 @@ class UpdateTaskForm(CreateTaskForm):
     def save(self):
         self.instance.save()
         return self.instance
+
+
+class CreateCommentForm(forms.ModelForm, FormControlMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        FormControlMixin.__init__(self)
+
+        user = self.initial['author']
+
+        # self.fields['tagged_interlocutors'].queryset = User.objects \
+        #        .filter(Q(volunteer_profile__fund_id=user.volunteer_profile.fund_id) &
+        #                ~Q(id=user.id)) \
+        #        .only('id', 'username')
+        self.fields['author'].widget = forms.HiddenInput()
+
+    def save(self):
+        self.instance.task = self.initial['task']
+
+        return super().save()
+
+    class Meta:
+        model = Comment
+        exclude = ['id', 'task', 'reply', 'tagged_interlocutors']
+
+
+class ActivateTaskStateForm(forms.ModelForm, FormControlMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        FormControlMixin.__init__(self)
+
+        task = self.initial['task']
+        if task.state:
+            next_state = task.state.state.next_state
+            queryset = ProcessState.objects.filter(id=next_state.id)
+        else:
+            queryset = ProcessState.objects.filter(
+                Q(process__id=task.process_id) & ~Q(id=task.sta)
+            )
+        self.fields['state'].queryset = queryset
+
+    class Meta:
+        model = TaskState
+        exclude = ['id', 'date_created']

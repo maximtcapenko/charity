@@ -10,61 +10,68 @@
   </ol>
   <div class="card mb-4">
     <div class="card-body">
-       <div>
+      <div>
         <i class="far fa-calendar-alt"></i>
-         Created: {{ fund.date_created }}
+        Created: {{ fund.date_created }}
       </div>
       <div>
         <i class="fas fa-sack-dollar"></i>
-         Budget: {{ fund.available_budget_amount }}
+        Budget: {{ fund.available_budget_amount }}
       </div>
       <div>
         <i class="fas fa-user-friends"></i>
-         Volunteers: {{ fund.total_volunteers_count }}
+        Volunteers: {{ fund.total_volunteers_count }}
       </div>
     </div>
   </div>
+  <ul class="nav nav-pills mb-3">
+    <li class="nav-item" role="presentation">
+      {% if selected_tab == 'budgets' %}
+        <a href="?tab=budgets" class="nav-link active">Budgets</a>
+      {% else %}
+        <a href="?tab=budgets" class="nav-link">Budgets</a>
+      {% endif %}
+    </li>
+    <li class="nav-item" role="presentation">
+      {% if selected_tab == 'contributions' %}
+        <a href="?tab=contributions" class="nav-link active">Contributions</a>
+      {% else %}
+        <a href="?tab=contributions" class="nav-link">Contributions</a>
+      {% endif %}
+    </li>
+    <li class="nav-item" role="presentation">
+      {% if selected_tab == 'processes' %}
+        <a href="?tab=processes" class="nav-link active">Processes</a>
+      {% else %}
+        <a href="?tab=processes" class="nav-link">Processes</a>
+      {% endif %}
+    </li>
+    <li class="nav-item" role="presentation">
+      {% if selected_tab == 'projects' %}
+        <a href="?tab=projects" class="nav-link active">Projects</a>
+      {% else %}
+        <a href="?tab=projects" class="nav-link">Projects</a>
+      {% endif %}
+    </li>
+    <li class="nav-item" role="presentation">
+      {% if selected_tab == 'volunteers' %}
+        <a href="?tab=volunteers" class="nav-link active">Volunteers</a>
+      {% else %}
+        <a href="?tab=volunteers" class="nav-link">Volunteers</a>
+      {% endif %}
+    </li>
+  </ul>
   <div>
-    <a href="{% url 'projects:create' %}" class="btn btn-link" >Add project</a>
-  </div>
-  <div class="card mb-4">
-    <div class="card-header">
-      <i class="fas fa-table me-1"></i>
-      Active projects
-    </div>
-    <div class="card-body">
-      <div class="col-12 col-md-3 col-xl-3">
-        <form class="bd-search d-flex align-items-center">
-          <input type="search" class="form-control" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off" />
-        </form>
-      </div>
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th>Project name</th>
-            <th>Created</th>
-            <th>Leader</th>
-            <th>Active tasks</th>
-            <th>Budget</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for project in active_projects_page %}
-            <tr>
-              <td>
-                <a href="{% url 'projects:get_details' project.id %}">{{ project.name }}</a>
-              </td>
-              <td>{{ project.date_created }}</td>
-              <td>
-                <a href="#">{{ project.leader.username }}</a>
-              </td>
-              <td>{{ project.active_tasks_count }}</td>
-              <td>{{ project.approved_budget }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-       {% include 'paginator.html' with obj_page=active_projects_page %}
-    </div>
+    {% if selected_tab == 'projects' %}
+      {% include 'fund_projects_list.html' %}
+    {% elif selected_tab == 'budgets' %}
+      {% include 'fund_budgets_list.html' %}
+    {% elif selected_tab == 'processes' %}
+      {% include 'fund_processes_list.html' %}
+    {% elif selected_tab == 'volunteers' %}
+      {% include 'fund_volunteers_list.html' %}
+    {% elif selected_tab == 'contributions' %}
+      {% include 'fund_contributions_list.html' %}
+    {% endif %}
   </div>
 {% endblock %}

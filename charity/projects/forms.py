@@ -17,7 +17,8 @@ class CreateProjectForm(forms.ModelForm, FormControlMixin):
         self.fields['fund'].widget = forms.HiddenInput()
         if (self.initial):
             self.fields['leader'].queryset = User.objects \
-                .filter(volunteer_profile__fund_id=self.initial['fund'].id)
+                .filter(volunteer_profile__fund_id=self.initial['fund'].id) \
+                .only('id', 'username')
 
     class Meta:
         model = Project
@@ -26,7 +27,7 @@ class CreateProjectForm(forms.ModelForm, FormControlMixin):
 
 
 class UpdateProjectForm(CreateProjectForm):
-    
+
     def clean_leader(self):
         leader = self.cleaned_data.get('leader')
         if leader is None and self.instance.leader:
@@ -44,7 +45,7 @@ class AddWardToProjectForm(forms.Form, FormControlMixin):
             self.fields['ward'].queryset = Ward.active_objects.filter(
                 Q(fund__id=self.initial['project'].fund_id) &
                 Q(projects__isnull=True) | Q(projects__is_closed=True)
-            )
+            ).only('id', 'name')
 
     ward = forms.ModelChoiceField(Ward.objects, required=True, label='Ward')
 
@@ -59,7 +60,7 @@ class AddProcessToProjectForm(forms.Form, FormControlMixin):
                 Q(Exists(ProcessState.objects.filter(process=OuterRef('pk')))) &
                 Q(is_inactive=False, fund__id=self.initial['project'].fund_id) &
                 ~Q(projects__in=[self.initial['project']])
-            )
+            ).only('id', 'name')
 
     process = forms.ModelChoiceField(
         Process.objects, required=True, label='Process')

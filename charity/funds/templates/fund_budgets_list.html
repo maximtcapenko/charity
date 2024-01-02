@@ -1,26 +1,17 @@
-{% extends 'base.html' %}
-
-{% block content %}
-  <h1 class="mt-4">Tables</h1>
-  <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item">
-      <a href="index.html">Dashboard</a>
-    </li>
-    <li class="breadcrumb-item active">Tables</li>
-  </ol>
-  <div class="card mb-4">
-    <div class="card-body">
-      DataTables is a third party plugin that is used to generate the demo table below. For more information about DataTables, please visit the
-      <a target="_blank" href="https://datatables.net/">official DataTables documentation</a>
-      .
-    </div>
+<div>
+    <a href="{% url 'budgets:create' %}" class="btn btn-link">Add budget</a>
   </div>
-  <div class="card mb-4">
+    <div class="card mb-4">
     <div class="card-header">
       <i class="fas fa-table me-1"></i>
       Budgets
     </div>
     <div class="card-body">
+        <div class="col-12 col-md-3 col-xl-3">
+            <form class="bd-search d-flex align-items-center">
+              <input type="search" class="form-control" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off" />
+            </form>
+          </div>
       <table class="table table-bordered">
         <thead>
           <tr>
@@ -35,7 +26,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for budget in budget_page %}
+          {% for budget in page %}
             <tr>
               <td>
                 <a href="{% url 'budgets:get_details' budget.id %}">{{ budget.name }}</a>
@@ -51,7 +42,6 @@
           {% endfor %}
         </tbody>
       </table>
-      {% include 'paginator.html' with obj_page=budget_page %}
+      {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
-{% endblock %}

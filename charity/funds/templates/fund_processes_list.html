@@ -1,0 +1,49 @@
+<div>
+    <a href="{% url 'processes:create' %}" class="btn btn-link" >Add process</a>
+  </div>
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Processes
+    </div>
+    <div class="card-body">
+        <div class="col-12 col-md-3 col-xl-3">
+            <form class="bd-search d-flex align-items-center">
+              <input type="search" class="form-control" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off" />
+            </form>
+          </div>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Process name</th>
+            <th>Created</th>
+            <th>Is Active</th>
+            <th>States</th>
+            <th>Used in projects</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for process in page %}
+            <tr>
+              <td>
+                <a href="{% url 'processes:get_details' process.id %}">{{ process.name }}</a>
+              </td>
+              <td>{{ process.date_created }}</td>
+              {% if process.is_inactive %}
+              <td> 
+                <input type="checkbox" disabled="disabled">
+              </td>
+              {% else %}
+              <td>
+                <input type="checkbox" disabled="disabled" checked="checked">
+              </td>
+              {% endif %}
+              <td>{{ process.states_count }}</td>
+              <td>{{ process.active_project_count }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
+  </div>

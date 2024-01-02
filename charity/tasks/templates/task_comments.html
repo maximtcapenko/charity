@@ -1,0 +1,34 @@
+<div>
+   <a href="{% url 'tasks:add_comment' task.id %}" class="btn btn-link">Add new comment</a>
+</div>
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Comments
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Author</th>
+            <th>Date</th>
+            <th>Message</th>
+            <th>Replies</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for comment in comments_page %}
+            <tr>
+              <td>
+                <a href="{% url 'tasks:get_comment_details' comment.id %}">{{ comment.author__username }}</a>
+              </td>
+              <td>{{ comment.date_created }}</td>
+              <td>{{ comment.notes }}</td>
+              <td>{{ comment.replies_count }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=comments_page %}
+    </div>
+  </div>

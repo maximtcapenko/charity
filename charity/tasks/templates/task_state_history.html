@@ -1,8 +1,8 @@
 <div>
   {% if task.is_approved %}
-    <a href="#" class="btn btn-link">Acrivate {{ task.next_task_state.name }}</a>
+    <a href="#" class="btn btn-link">Activate {{ task.next_task_state.name }}</a>
   {% else %}
-   <a href="#" class="btn btn-link disabled">Acrivate {{ task.next_task_state.name }}</a>
+   <a href="#" class="btn btn-link disabled">Activate {{ task.next_task_state.name }}</a>
   {% endif %}
 </div>
   <div class="card mb-4">

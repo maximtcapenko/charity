@@ -72,6 +72,7 @@
     {% if selected_tab == 'state_history' %}
       {% include 'task_state_history.html' with state_history_page=page %}
     {% elif selected_tab == 'comments' %}
+      {% include 'task_comments.html' with comments_page=page %}
     {% elif selected_tab == 'files' %}
     {% endif %}
     </div>
