@@ -112,6 +112,13 @@ def get_list(request):
 def get_details(request, id):
     default_tab = 'tasks'
     tabs = {
+        'tasks': lambda projrect: Paginator(
+            project.tasks.
+            select_related(
+                'assignee', 'expense',
+                'expense__approvement')
+            .order_by('order_position'),
+            DEFAULT_PAGE_SIZE),
         'processes': lambda project: Paginator(
             project.processes.order_by('-date_created'),
             DEFAULT_PAGE_SIZE
@@ -119,18 +126,7 @@ def get_details(request, id):
         'wards': lambda project: Paginator(
             project.wards.order_by('-date_created'),
             DEFAULT_PAGE_SIZE
-        ),
-        'processes': lambda project: Paginator(
-            project.processes.order_by('-date_created'),
-            DEFAULT_PAGE_SIZE
-        ),
-        'tasks': lambda projrect: Paginator(
-            project.tasks.
-            select_related(
-                'assignee', 'expense',
-                'expense__approvement')
-            .order_by('order_position'),
-            DEFAULT_PAGE_SIZE)
+        )
     }
 
     tab = request.GET.get('tab', default_tab)
@@ -144,6 +140,7 @@ def get_details(request, id):
     paginator = tabs.get(tab)(project)
 
     return render(request, 'project_details.html', {
+        'tabs': tabs.keys(),
         'project': project,
         'selected_tab': tab,
         'page': paginator.get_page(request.GET.get('page'))

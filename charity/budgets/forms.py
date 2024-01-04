@@ -30,11 +30,10 @@ class CreateBudgetForm(forms.ModelForm, FormControlMixin):
         model = Budget
         exclude = ['id', 'date_creted',
                    'author', 'is_closed',
-                   'approvement']
+                   'approvement', 'approvements']
 
 
 class CreateIncomeForm(forms.ModelForm, FormControlMixin):
-
     class ContributionModelChoiceField(forms.ModelChoiceField):
         def clean(self, value):
             if value:
@@ -59,7 +58,7 @@ class CreateIncomeForm(forms.ModelForm, FormControlMixin):
         self.fields['contribution'] = CreateIncomeForm.ContributionModelChoiceField(
             queryset=Contribution.objects.filter(
                 fund__id=budget.fund_id).annotate(
-                reserved_amount=models.Sum('incomes__amount'))
+                reserved_amount=models.Sum('incomes__amount', default=0))
             .values(
                 'id', 'contribution_date',
                     'amount', 'reserved_amount'), label='Contribution')
@@ -82,7 +81,7 @@ class CreateIncomeForm(forms.ModelForm, FormControlMixin):
         contribution = self.cleaned_data['contribution']
         amount = self.cleaned_data['amount']
         reserved_amount = contribution.incomes.aggregate(
-            total=models.Sum('amount'))['total']
+            total=models.Sum('amount', default=0))['total']
 
         if (contribution.amount - reserved_amount) < amount:
             raise forms.ValidationError('No avaliable contribution amount')

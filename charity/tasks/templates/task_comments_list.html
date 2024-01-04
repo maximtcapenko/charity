@@ -17,7 +17,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for comment in comments_page %}
+          {% for comment in page %}
             <tr>
               <td>
                 <a href="{% url 'tasks:get_comment_details' comment.id %}">{{ comment.author__username }}</a>

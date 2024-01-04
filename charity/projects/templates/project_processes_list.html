@@ -15,7 +15,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for process in processes_page %}
+          {% for process in page %}
             <tr>
               <td>
                 <a href="{% url 'processes:get_details' process.id %}">{{ process.name }}</a>

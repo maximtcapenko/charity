@@ -66,23 +66,34 @@ def fund_active_budgets_count(self):
         .aggregate(total=models.Count('id'))['total']
 
 
-def fund_available_budget_amount(self):
-    return Income.objects.filter(budget__is_closed=False, budget__fund__id=self.id,
-                                 budget__approvement__is_rejected=False) \
-        .aggregate(budget=models.Sum('amount'))['budget']
+def fund_active_budget_amount(self):
+    return Income.objects.filter(
+        approvement__is_rejected=False, budget__is_closed=False,
+        budget__fund__id=self.id, budget__approvement__is_rejected=False) \
+        .aggregate(budget=models.Sum('amount', default=0))['budget']
+
+
+def budget_total_approved_amount(self):
+    return self.incomes.filter(approvement__is_rejected=False) \
+        .aggregate(approved_income=models.Sum('amount', default=0))['approved_income']
+
+
+def budget_total_approved_expenses_amount(self):
+    return self.expenses.filter(approvement__is_rejected=False) \
+        .aggregate(approved_expense=models.Sum('amount', default=0))['approved_expense']
 
 
 def budget_avaliable_amount(self):
-    approved_income = self.incomes.filter(budget__id=self.id, approvement__is_rejected=False) \
+    approved_income = self.incomes.filter(approvement__is_rejected=False) \
         .aggregate(approved_income=models.Sum('amount', default=0))['approved_income']
-    approved_expense = self.expenses.filter(budget__id=self.id, approvement__is_rejected=False) \
+    approved_expense = self.expenses.filter(approvement__is_rejected=False) \
         .aggregate(approved_expense=models.Sum('amount', default=0))['approved_expense']
-    
+
     return approved_income - approved_expense
 
 
-Fund.add_to_class('available_budget_amount', property(
-    fget=fund_available_budget_amount
+Fund.add_to_class('active_budget_amount', property(
+    fget=fund_active_budget_amount
 ))
 
 
@@ -91,4 +102,12 @@ Fund.add_to_class('active_budgets_count', property(
 
 Budget.add_to_class('avaliable_income_amount', property(
     fget=budget_avaliable_amount
+))
+
+Budget.add_to_class('total_approved_amount', property(
+    fget=budget_total_approved_amount
+))
+
+Budget.add_to_class('total_approved_expenses_amount', property(
+    fget=budget_total_approved_expenses_amount
 ))

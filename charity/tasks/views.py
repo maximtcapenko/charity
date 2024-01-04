@@ -87,8 +87,9 @@ def get_details(request, id):
 
         return Paginator(states, per_page=DEFAULT_PAGE_SIZE)
 
-    default_tab = 'state_history'
+    default_tab = 'states'
     tabs = {
+        'states': get_states_paginator,
         'comments': lambda task: Paginator(task.comments.filter(
             reply_id__isnull=True)
             .annotate(replies_count=models.Count('replies'))
@@ -96,8 +97,7 @@ def get_details(request, id):
             .values('id', 'author__username', 'date_created', 'notes', 'replies_count'),
             per_page=DEFAULT_PAGE_SIZE),
         'files': lambda task: Paginator(task.attachments.order_by(
-            '-date_created'), per_page=DEFAULT_PAGE_SIZE),
-        'state_history': get_states_paginator
+            '-date_created'), per_page=DEFAULT_PAGE_SIZE)
     }
 
     tab = request.GET.get('tab', default_tab)
@@ -109,6 +109,7 @@ def get_details(request, id):
     paginator = tabs.get(tab)(task)
 
     return render(request, 'task_details.html', {
+        'tabs': tabs.keys(),
         'selected_tab': tab,
         'task': task,
         'page': paginator.get_page(request.GET.get('page'))

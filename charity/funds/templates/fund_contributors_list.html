@@ -1,0 +1,37 @@
+<div>
+    <a href="{% url 'funds:add_contributor' %}" class="btn btn-link">Add contributor</a>
+  </div>
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Contributors
+    </div>
+    <div class="card-body">
+        <div class="col-12 col-md-3 col-xl-3">
+            <form class="bd-search d-flex align-items-center">
+              <input type="search" class="form-control" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off" />
+            </form>
+          </div>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Notes</th>
+            <th>Date created</th>
+            <th>Is company</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for contributor in page %}
+            <tr>
+              <td>
+                <a href="#">{{ contributor.notes }}</a>
+              </td>
+              <td>{{ contributor.date_created }}</td>
+              <td>{{ contributor.is_company }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
+  </div>

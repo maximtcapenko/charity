@@ -111,12 +111,12 @@ def project_active_tasks_count(self):
 
 def project_approved_budget(self):
     return Task.objects.filter(project__id=self.id, expense__approvement__is_rejected=False) \
-        .aggregate(budget=models.Sum('expense__amount'))['budget']
+        .aggregate(budget=models.Sum('expense__amount', default=0))['budget']
 
 
 def budget_approved_expenses(self):
     return Expense.objects.filter(budget__id=self.id, approvement__is_rejected=False)\
-        .aggregate(budget=models.Sum('amount'))['budget']
+        .aggregate(budget=models.Sum('amount', default=0))['budget']
 
 
 Project.add_to_class('active_tasks_count', property(

@@ -20,7 +20,15 @@
       </div>
       <div>
         <i class="fas fa-sack-dollar"></i>
-        Avaliable Income: {{ budget.avaliable_income_amount }}
+        Total income amount: {{ total_approved_amount }}
+      </div>
+      <div>
+        <i class="fas fa-sack-dollar"></i>
+        Total expense amount: {{ total_approved_expenses_amount }}
+      </div>
+      <div>
+        <i class="fas fa-sack-dollar"></i>
+        Avaliable amount: {{ total_avaliable_amount }}
       </div>
       <div>
         {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
@@ -35,40 +43,22 @@
       </div>
     </div>
   </div>
-
   <ul class="nav nav-pills mb-3">
+    {% for tab in tabs %}
     <li class="nav-item" role="presentation">
-      {% if selected_tab == 'incomes' %}
-        <a href="?tab=incomes" class="nav-link active">Incomes</a>
+      {% if selected_tab == tab %}
+        <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}</a>
       {% else %}
-        <a href="?tab=incomes" class="nav-link">Incomes</a>
+        <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
       {% endif %}
     </li>
-    <li class="nav-item" role="presentation">
-      {% if selected_tab == 'expenses' %}
-        <a href="?tab=expenses" class="nav-link active">Expenses</a>
-      {% else %}
-        <a href="?tab=expenses" class="nav-link">Expenses</a>
-      {% endif %}
-    </li>
-    <li class="nav-item" role="presentation">
-      {% if selected_tab == 'approvements' %}
-        <a href="?tab=approvements" class="nav-link active">Approvements</a>
-      {% else %}
-        <a href="?tab=approvements" class="nav-link">Approvements</a>
-      {% endif %}
-    </li>
+    {% endfor %}
   </ul>
   <div>
-    {% if selected_tab == 'incomes' %}
-      {% include 'budget_incomes_list.html' %}
-    {% elif selected_tab == 'expenses' %}
-    {% include 'budget_expenses_list.html' %}
-    {% elif selected_tab == 'approvements'%}
-      <div>
-        <a href="{% url 'budgets:approve_budget' budget.id %}" class="btn btn-link" >Add approvement</a>
-      </div>
-      {% include "approvements_list.html" %}
+    {% for tab in tabs %}
+    {% if selected_tab == tab %}
+      {% include 'budget_'|add:tab|add:'_list.html' %}
     {% endif %}
-    </div>
+    {% endfor %}
+  </div>
 {% endblock %}

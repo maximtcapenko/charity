@@ -35,37 +35,22 @@
        </div>
      </div>
   </div>
-  
   <ul class="nav nav-pills mb-3">
+    {% for tab in tabs %}
     <li class="nav-item" role="presentation">
-      {% if selected_tab == 'tasks' %}
-        <a href="?tab=tasks" class="nav-link active">Tasks</a>
+      {% if selected_tab == tab %}
+        <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}</a>
       {% else %}
-        <a href="?tab=tasks" class="nav-link">Tasks</a>
-      {% endif%}
-    </li>
-    <li class="nav-item" role="presentation">
-      {% if selected_tab == 'wards' %}
-        <a href="?tab=wards" class="nav-link active">Wards</a>
-      {% else %}
-        <a href="?tab=wards" class="nav-link">Wards</a>
-      {% endif%}
-    </li>
-    <li class="nav-item" role="presentation">
-      {% if selected_tab == 'processes' %}
-        <a href="?tab=processes" class="nav-link active">Processes</a>
-      {% else %}
-        <a href="?tab=processes" class="nav-link">Processes</a>
+        <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
       {% endif %}
     </li>
+    {% endfor %}
   </ul>
   <div>
-  {% if selected_tab == 'tasks' %}
-    {% include 'project_tasks_list.html' with tasks_page=page %}
-  {% elif selected_tab == 'wards' %}
-    {% include 'project_wards_list.html' with wards_page=page %}
-  {% elif selected_tab == 'processes' %}
-    {% include 'project_processes_list.html' with processes_page=page %}
-  {% endif %}
+    {% for tab in tabs %}
+    {% if selected_tab == tab %}
+      {% include 'project_'|add:tab|add:'_list.html' %}
+    {% endif %}
+    {% endfor %}
   </div>
 {% endblock %}

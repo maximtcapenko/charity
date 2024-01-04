@@ -178,11 +178,17 @@ def get_details(request, id):
         tab = default_tab
 
     budget = _get_budget_or_404(request, id)
+    total_approved_amount = budget.total_approved_amount
+    total_approved_expenses_amount = budget.total_approved_expenses_amount
 
     paginator = tabs.get(tab)(budget)
 
     return render(request, 'budget_details.html', {
+        'tabs': tabs.keys(),
         'budget': budget,
+        'total_approved_amount': total_approved_amount,
+        'total_approved_expenses_amount': total_approved_expenses_amount,
+        'total_avaliable_amount': total_approved_amount-total_approved_expenses_amount,
         'selected_tab': tab,
         'page': paginator.get_page(request.GET.get('page'))
     })

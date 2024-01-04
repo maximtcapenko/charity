@@ -43,34 +43,21 @@
     </div>
   </div>
   <ul class="nav nav-pills mb-3">
+    {% for tab in tabs %}
     <li class="nav-item" role="presentation">
-      {% if selected_tab == 'state_history' %}
-        <a href="?tab=state_history" class="nav-link active">State history</a>
+      {% if selected_tab == tab %}
+        <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}</a>
       {% else %}
-        <a href="?tab=state_history" class="nav-link">State history</a>
-      {% endif%}
-    </li>
-    <li class="nav-item" role="presentation">
-      {% if selected_tab == 'comments' %}
-        <a href="?tab=comments" class="nav-link active">Comments</a>
-      {% else %}
-        <a href="?tab=comments" class="nav-link">Comments</a>
-      {% endif%}
-    </li>
-    <li class="nav-item" role="presentation">
-      {% if selected_tab == 'files' %}
-        <a href="?tab=files" class="nav-link active">Files</a>
-      {% else %}
-        <a href="?tab=files" class="nav-link">Files</a>
+        <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
       {% endif %}
     </li>
+    {% endfor %}
   </ul>
   <div>
-    {% if selected_tab == 'state_history' %}
-      {% include 'task_state_history.html' with state_history_page=page %}
-    {% elif selected_tab == 'comments' %}
-      {% include 'task_comments.html' with comments_page=page %}
-    {% elif selected_tab == 'files' %}
+    {% for tab in tabs %}
+    {% if selected_tab == tab %}
+      {% include 'task_'|add:tab|add:'_list.html' %}
     {% endif %}
-    </div>
+    {% endfor %}
+  </div>
 {% endblock %}

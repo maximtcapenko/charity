@@ -1,0 +1,39 @@
+<div>
+    <a href="{% url 'funds:add_volunteer' %}" class="btn btn-link" >Add volunteer</a>
+  </div>
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Volunteers
+    </div>
+    <div class="card-body">
+      <div class="col-12 col-md-3 col-xl-3">
+        <form class="bd-search d-flex align-items-center">
+          <input type="search" class="form-control" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off" />
+        </form>
+      </div>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>User name</th>
+            <th>Email</th>
+            <th>Title</th>
+            <th>Phone</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for volunteer in page %}
+            <tr>
+              <td>
+                <a href="#">{{ volunteer.user.username }}</a>
+              </td>
+              <td>{{ volunteer.user.email }}</td>
+              <td>{{ volunteer.title }}</td>
+              <td>{{ volunteer.mobile_phone }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+       {% include 'paginator.html' with obj_page=page %}
+    </div>
+  </div>
