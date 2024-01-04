@@ -1,0 +1,42 @@
+<div>
+  {% if not budget.approvement or budget.approvement.is_rejected %}
+    <a href="{% url 'budgets:expenses_planing' budget.id %}" class="btn btn-link" >Add expense</a>
+  {% else %}
+    <a href="{% url 'budgets:expenses_planing' budget.id %}" class="btn btn-link disabled" >Add expense</a>
+  {% endif %}
+</div>
+<div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Incomes
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Amount</th>
+            <th>Created</th>
+            <th>Author</th>
+            <th>Projet</th>
+            <th>Approvement</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for expense in page %}
+            <tr>
+              <td>
+                <a href="{% url 'budgets:get_expense_details' expense.id %}">{{ expense.amount }}</a>
+              </td>
+              <td>{{ expense.date_created }}</td>
+              <td>{{ expense.author.username }}</td>
+              <td><a href="{% url 'projects:get_details' expense.project.id %}">{{ expense.project.name }}</a></td>
+              <td>
+              {% include 'partials/td_approvement_part.html' with approvement=expense.approvement %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
+  </div>

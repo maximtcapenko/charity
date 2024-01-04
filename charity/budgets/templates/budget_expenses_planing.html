@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2 class="mt-4">Add expense to {{ budget.name }}</h2>
+  <ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item">
+      <a href="{% url 'budgets:get_details' budget.id %}?tab=expenses">{{ budget.name }}</a>
+    </li>
+    <li class="breadcrumb-item active">Planing</li>
+  </ol>
+  <div class="card mb-4">
+    <div class="card-body">
+      <div>
+        <i class="fas fa-sack-dollar"></i>
+        Available Income: {{ avaliable_income_amount }}
+      </div>
+      <div>
+        {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
+      </div>
+    </div>
+  </div>
+  <div class="col-4">
+  <form class="form-inline" action="" method="get">
+    <label for="id_project">Project:</label>
+    <select class="form-control" name="project_id" required="true" id="id_project" onchange="javascript:this.form.submit()">
+      <option value="">Select Project</option>
+      {% for project in projects %}
+       {% if selected_project == project.id|stringformat:"s" %}
+          <option selected="true" value="{{ project.id }}">{{ project.name }} ({{ project.requested_budget }})</option>
+        {% else %}
+          <option value="{{ project.id }}">{{ project.name }} ({{ project.requested_budget }})</option>
+       {% endif %}
+      {% endfor %}
+    </select>
+  </form>
+  </div>
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Tasks
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Task name</th>
+            <th>Is high priority</th>
+            <th>Estimated expenses</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in tasks %}
+            <tr>
+              <td>
+                <a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a>
+              </td>
+              <td>{{ task.is_high_priority }}</td>
+              <td>{{ task.estimated_expense_amount }}</td>
+              <td>
+                <a href="{% url 'budgets:add_expenses' budget.id %}?task_id={{ task.id }}&project_id={{ selected_project}}" >Add expense</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

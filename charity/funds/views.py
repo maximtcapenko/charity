@@ -1,6 +1,7 @@
 from commons import DEFAULT_PAGE_SIZE
 from commons.functions import user_should_be_volunteer, user_should_be_superuser
 from .models import Fund
+from projects.models import Project
 from django.db import models
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -22,14 +23,18 @@ def get_details(request, id):
     default_tab = 'budgets'
     tabs = {
         'contributions': lambda fund: Paginator(
-            fund.contributions.select_related('author', 'contributor').order_by('-date_created'), DEFAULT_PAGE_SIZE),
+            fund.contributions.select_related(
+                'author', 'contributor').order_by('-date_created'),
+            DEFAULT_PAGE_SIZE),
         'projects': lambda fund: Paginator(
-            fund.active_projects.order_by('-date_created'), DEFAULT_PAGE_SIZE),
+            fund.active_projects.order_by('-date_created'),
+            DEFAULT_PAGE_SIZE),
         'budgets': lambda fund: Paginator(
-            fund.budgets.order_by('-start_period_date'), DEFAULT_PAGE_SIZE),
+            fund.budgets.order_by('-date_created'),
+            DEFAULT_PAGE_SIZE),
         'processes': lambda fund: Paginator(
-            fund.processes.annotate(active_project_count=models.Count('projects'),
-                                    states_count=models.Count('states'))
+            fund.processes.annotate(active_project_count=models.Count('projects', distinct=True),
+                                    states_count=models.Count('states', distinct=True))
             .order_by('-date_created')
             .values('id', 'name', 'date_created', 'is_inactive',
                     'states_count', 'active_project_count'), DEFAULT_PAGE_SIZE),

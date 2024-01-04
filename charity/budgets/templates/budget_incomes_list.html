@@ -1,5 +1,9 @@
 <div>
+  {% if not budget.approvement or budget.approvement.is_rejected %}
     <a href="{% url 'budgets:add_income' budget.id %}" class="btn btn-link" >Add income</a>
+  {% else %}
+    <a href="{% url 'budgets:add_income' budget.id %}" class="btn btn-link disabled">Add income</a>
+  {% endif %}
 </div>
 <div class="card mb-4">
     <div class="card-header">
@@ -10,9 +14,8 @@
       <table class="table table-bordered">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Created</th>
             <th>Amount</th>
+            <th>Created</th>
             <th>Author</th>
             <th>Approvement</th>
           </tr>
@@ -21,12 +24,13 @@
           {% for income in page %}
             <tr>
               <td>
-                <a href="{% url 'budgets:get_income_details' income.id %}">{{ income.id }}</a>
+                <a href="{% url 'budgets:get_income_details' income.id %}">{{ income.amount }}</a>
               </td>
               <td>{{ income.date_created }}</td>
-              <td>{{ income.amount }}</td>
               <td>{{ income.author.username }}</td>
-              <td> </td>
+              <td>
+              {% include 'partials/td_approvement_part.html' with approvement=income.approvement %}
+              </td>
             </tr>
           {% endfor %}
         </tbody>

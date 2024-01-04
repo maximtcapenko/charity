@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mt-4">Income {{ income.date_created }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'budgets:get_details' income.budget_id %}">{{ income.budget.name }}</a>
+  </li>
+  <li class="breadcrumb-item active">Details</li>
+</ol>
+<div class="card mb-4">
+  <div class="card-body">
+    <div>
+      <i class="far fa-calendar-alt"></i>
+      Date created: {{ income.date_created }}
+    </div>
+    <div>
+      <i class="fas fa-user"></i>
+      Author: {{ income.author.username }}
+    </div>
+    <div>
+      <i class="fas fa-sack-dollar"></i>
+      Amount:<a href="#"> {{ income.amount }} </a>
+    </div>
+    <div>
+      {% include 'partials/li_approvement_part.html' with approvement=income.approvement %}
+    </div>
+  </div>
+</div>
+<div>
+  {% if not income.budget.approvement or income.budget.approvement.is_rejected %}
+    <a href="{% url 'budgets:approve_budget_income' income.id %}" class="btn btn-link" >Add approvement</a>
+  {% else %}
+    <a href="{% url 'budgets:approve_budget_income' income.id %}" class="btn btn-link disabled" >Add approvement</a>
+  {% endif %}
+</div>
+{% include "approvements_list.html" %}
+{% endblock %}

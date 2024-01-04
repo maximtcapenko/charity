@@ -12,13 +12,14 @@ class Budget(Base):
         Fund, on_delete=models.PROTECT, related_name='budgets')
     author = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name='created_budgets')
-    start_period_date = models.DateField(null=False)
-    end_period_date = models.DateField(null=False)
     approvement = models.ForeignKey(
         Approvement, on_delete=models.SET_NULL, null=True)
+    closed_date = models.DateField(null=True, blank=True)
     is_closed = models.BooleanField(default=False)
     manager = models.ForeignKey(
         User, null=True, on_delete=models.PROTECT, related_name='managed_budgets')
+    approvements = models.ManyToManyField(
+        Approvement, related_name='budget_approvements')
 
     def __str__(self):
         return self.name
@@ -45,13 +46,15 @@ class Budget(Base):
 class Income(Base):
     budget = models.ForeignKey(
         Budget, on_delete=models.PROTECT, related_name='incomes')
-    contribution = models.ForeignKey(Contribution, on_delete=models.PROTECT)
+    contribution = models.ForeignKey(Contribution, on_delete=models.PROTECT,
+                                     related_name='incomes')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     author = models.ForeignKey(
         User, on_delete=models.PROTECT)
     approvement = models.ForeignKey(
         Approvement, on_delete=models.SET_NULL, null=True)
-    approvements = models.ManyToManyField(Approvement, related_name='income_logs')
+    approvements = models.ManyToManyField(
+        Approvement, related_name='income_approvements')
 
     @property
     def is_approved(self):
@@ -70,8 +73,12 @@ def fund_available_budget_amount(self):
 
 
 def budget_avaliable_amount(self):
-    return Income.objects.filter(budget__id=self.id, approvement__is_rejected=False) \
-        .aggregate(budget=models.Sum('amount'))['budget']
+    approved_income = self.incomes.filter(budget__id=self.id, approvement__is_rejected=False) \
+        .aggregate(approved_income=models.Sum('amount', default=0))['approved_income']
+    approved_expense = self.expenses.filter(budget__id=self.id, approvement__is_rejected=False) \
+        .aggregate(approved_expense=models.Sum('amount', default=0))['approved_expense']
+    
+    return approved_income - approved_expense
 
 
 Fund.add_to_class('available_budget_amount', property(

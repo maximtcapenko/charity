@@ -1,0 +1,10 @@
+{% if not approvement %}
+  <i class="fa-solid fa-hourglass-end"></i>
+  Status: Pending
+{% elif approvement.is_rejected %}
+  <i class="fa-solid fa-ban"></i>
+  Status: Rejected
+{% else %}
+  <i class="fa-regular fa-circle-check"></i>
+  Status: Approved
+{% endif %}

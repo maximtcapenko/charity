@@ -1,5 +1,6 @@
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import redirect, render
+from .exceptions import NullArgumentError
 
 
 def user_should_be_volunteer(user):
@@ -16,7 +17,7 @@ def render_generic_form(request, form_class, context):
     post_form_initial = context.get('post_form_initial')
     get_form_initial = context.get('get_form_initial')
     instance = context.get('instance')
-    
+
     if instance:
         params['instance'] = instance
 
@@ -47,3 +48,10 @@ def render_generic_form(request, form_class, context):
         })
     else:
         return HttpResponseNotAllowed([request.method])
+
+
+def get_argument_or_error(argument, arguments):
+    argument = arguments.get(argument)
+    if not argument:
+        raise NullArgumentError('Argument %s is none' % argument)
+    return argument

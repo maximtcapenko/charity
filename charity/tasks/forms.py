@@ -5,6 +5,7 @@ from django.db.models import Max, Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
 from commons.mixins import FormControlMixin
+from commons.functions import get_argument_or_error
 from processes.models import Process, ProcessState
 from wards.models import Ward
 from .models import Comment, Task, TaskState
@@ -18,7 +19,7 @@ class CreateTaskForm(forms.ModelForm, FormControlMixin):
         self.fields['project'].widget = forms.HiddenInput()
 
         if (self.initial):
-            project = self.initial['project']
+            project = get_argument_or_error('project', self.initial)
             self.fields['assignee'].queryset = User.objects \
                 .filter(volunteer_profile__fund_id=project.fund_id) \
                 .only('id', 'username')
@@ -75,8 +76,6 @@ class CreateCommentForm(forms.ModelForm, FormControlMixin):
         super().__init__(*args, **kwargs)
         FormControlMixin.__init__(self)
 
-        user = self.initial['author']
-
         # self.fields['tagged_interlocutors'].queryset = User.objects \
         #        .filter(Q(volunteer_profile__fund_id=user.volunteer_profile.fund_id) &
         #                ~Q(id=user.id)) \
@@ -98,13 +97,13 @@ class ActivateTaskStateForm(forms.ModelForm, FormControlMixin):
         super().__init__(*args, **kwargs)
         FormControlMixin.__init__(self)
 
-        task = self.initial['task']
+        task = get_argument_or_error('task', self.initial)
         if task.state:
             next_state = task.state.state.next_state
             queryset = ProcessState.objects.filter(id=next_state.id)
         else:
             queryset = ProcessState.objects.filter(
-                Q(process__id=task.process_id) & ~Q(id=task.sta)
+                Q(process__id=task.process_id) & ~Q(id=task.state_id)
             )
         self.fields['state'].queryset = queryset
 

@@ -21,6 +21,8 @@ class Expense(Base):
         User, on_delete=models.PROTECT)
     approvement = models.ForeignKey(
         Approvement, on_delete=models.SET_NULL, null=True)
+    approvements = models.ManyToManyField(
+        Approvement, related_name='expense_approvements')
 
 
 class TaskState(Base):
@@ -63,12 +65,12 @@ class Task(Base):
         else:
             return self.process.states.filter(is_first=True, is_inactive=False).first()
 
-        
     @property
     def is_approved(self):
         if self.should_be_approved:
-            if self.expense and self.expense.approvement:
-                return self.expense.approvement.is_rejected
+            if self.expense and self.expense.budget.approvement_id \
+                and self.expense.approvement:
+                return not self.expense.approvement.is_rejected
             else:
                 return False
         else:

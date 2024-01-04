@@ -25,12 +25,9 @@
         <i class="fas fa-sack-dollar"></i>
         Expenses: {{ task.estimated_expense_amount }}
       </div>
-      {%if task.should_be_approved and not task.expense.approve_id %}
       <div>
-        <i class="fa-solid fa-hourglass-end"></i>
-        Status: Waiting for approvement
+        {% include 'partials/li_approvement_part.html' with approvement=task.expense.approvement %}
       </div>
-      {% endif %}
       <div>
         <i class="fa-regular fa-folder"></i>
         Ward: <a  href="{% url 'wards:get_details' task.ward_id %}"> {{ task.ward.name }} </a>

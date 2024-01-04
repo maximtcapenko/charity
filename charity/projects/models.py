@@ -20,17 +20,18 @@ class Project(Base):
     processes = models.ManyToManyField(Process, related_name='projects')
     leader = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name='leaded_projects')
-    budget = models.ForeignKey(Budget, null=True, on_delete=models.PROTECT)
     closed_date = models.DateField(null=True, blank=True)
     is_closed = models.BooleanField(default=False)
 
 
 def fund_projects_count(self):
-    return Project.objects.filter(fund__id=self.id).aggregate(total=models.Count('id'))['total']
+    return Project.objects.filter(fund__id=self.id).aggregate(
+        total=models.Count('id'))['total']
 
 
 def fund_active_projects_count(self):
-    return Project.objects.filter(fund__id=self.id, is_closed=False).aggregate(total=models.Count('id'))['total']
+    return Project.objects.filter(fund__id=self.id, is_closed=False).aggregate(
+        total=models.Count('id'))['total']
 
 
 def fund_active_projects(self):

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mt-4">Expense {{ expense.date_created }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'budgets:get_details' expense.budget_id %}?tab=expenses">{{ expense.budget.name }}</a>
+  </li>
+  <li class="breadcrumb-item active">Details</li>
+</ol>
+<div class="card mb-4">
+  <div class="card-body">
+    <div>
+      <i class="fa-regular fa-folder"></i>
+      Project: <a href="{% url 'projects:get_details' expense.project.id %}">{{ expense.project.name }} </a>
+    </div>
+    <div>
+      <i class="far fa-calendar-alt"></i>
+      Date created: {{ expense.date_created }}
+    </div>
+    <div>
+      <i class="fas fa-user"></i>
+      Author: {{ expense.author.username }}
+    </div>
+    <div>
+      <i class="fas fa-sack-dollar"></i>
+      Amount:<a href="#"> {{ expense.amount }} </a>
+    </div>
+    <div>
+      {% include 'partials/li_approvement_part.html' with approvement=expense.approvement %}
+    </div>
+</div>
+<div>
+{% if not expense.budget.approvement or expense.budget.approvement.is_rejected %}
+    <a href="{% url 'budgets:approve_budget_expense' expense.id %}" class="btn btn-link" >Add approvement</a>
+{% else %}
+  <a href="{% url 'budgets:approve_budget_expense' expense.id %}" class="btn btn-link disabled" >Add approvement</a> 
+{% endif %}
+</div>
+{% include "approvements_list.html" %}
+{% endblock %}

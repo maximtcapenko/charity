@@ -15,7 +15,8 @@ class Fund(Base):
 
 
 class VolunteerProfile(Base):
-    fund = models.ForeignKey(Fund, on_delete=models.PROTECT, related_name='volunteers')
+    fund = models.ForeignKey(
+        Fund, on_delete=models.PROTECT, related_name='volunteers')
     user = models.OneToOneField(
         User, related_name='volunteer_profile', on_delete=models.PROTECT)
     cover = models.ForeignKey(Attachment, on_delete=models.SET_NULL, null=True)

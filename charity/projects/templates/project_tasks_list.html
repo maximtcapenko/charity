@@ -37,11 +37,9 @@
               <td>{{ task.is_started }}</td>
               <td>{{ task.is_expired }}</td>
               <td>{{ task.estimated_expense_amount }}</td>
-               {% if task.expense.approvement.is_rejected == False %}
-               <td> True </td>
-               {% else %}
-               <td> False </td>
-               {% endif %}
+              <td>
+                {% include 'partials/td_approvement_part.html' with approvement=task.expense.approvement %}
+              </td>
             </tr>
           {% endfor %}
         </tbody>

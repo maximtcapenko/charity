@@ -18,7 +18,6 @@
             <th>Budget name</th>
             <th>Created</th>
             <th>Author</th>
-            <th>Period</th>
             <th>Manager</th>
             <th>Avaliable</th>
             <th>Spent</th>
@@ -33,11 +32,12 @@
               </td>
               <td>{{ budget.date_created }}</td>
               <td>{{ budget.author.username }}</td>
-              <td>{{ budget.start_period_date }} - {{ budget.end_period_date }}</td>
               <td>{{ budget.manager.username }}</td>
               <td>{{ budget.avaliable_income_amount }}</td>
               <td>0</td>
-              <td>{{ budget.current_state }}</td>
+              <td>
+                {% include 'partials/td_approvement_part.html' with approvement=budget.approvement %}
+              </td>
             </tr>
           {% endfor %}
         </tbody>
