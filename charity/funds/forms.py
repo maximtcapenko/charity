@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 
 from commons.mixins import FormControlMixin
-from commons.functions import get_argument_or_error
+from commons.functions import get_argument_or_error, validate_form_field
 from .models import Fund, Contribution, Contributor, VolunteerProfile
 
 
@@ -24,11 +24,7 @@ class CreateContributionForm(forms.ModelForm, FormControlMixin):
             .filter(fund__id=fund.id)
 
     def clean(self):
-        fund = get_argument_or_error('fund', self.initial)
-        cleaned_fund = self.cleaned_data['fund']
-        if fund.id != cleaned_fund.id:
-            raise forms.ValidationError('Fund is not accessible')
-
+        validate_form_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
     
     def save(self):
@@ -53,11 +49,7 @@ class CreateVolunteerForm(forms.ModelForm, FormControlMixin):
         self.fields['fund'].widget = forms.HiddenInput()
 
     def clean(self):
-        fund = get_argument_or_error('fund', self.initial)
-        cleaned_fund = self.cleaned_data['fund']
-        if fund.id != cleaned_fund.id:
-            raise forms.ValidationError('Fund is not accessible')
-
+        validate_form_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
 
     class Meta:
@@ -73,11 +65,7 @@ class CreateContributorForm(forms.ModelForm, FormControlMixin):
         self.fields['fund'].widget = forms.HiddenInput()
 
     def clean(self):
-        fund = get_argument_or_error('fund', self.initial)
-        cleaned_fund = self.cleaned_data['fund']
-        if fund.id != cleaned_fund.id:
-            raise forms.ValidationError('Fund is not accessible')
-
+        validate_form_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
 
     class Meta:

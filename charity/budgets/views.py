@@ -9,7 +9,7 @@ from commons import DEFAULT_PAGE_SIZE
 from commons.functions import user_should_be_volunteer, render_generic_form
 from .models import Budget, Income
 from .forms import CreateBudgetForm, CreateIncomeForm, \
-    BudgetItemApproveForm, ApproveBudgetForm
+    BudgetItemApproveForm, ApproveBudgetForm, UpdateBudgetForm
 from projects.models import Project
 from tasks.models import Task, Expense
 
@@ -25,7 +25,8 @@ def create(request):
     return render_generic_form(
         request=request, form_class=CreateBudgetForm,
         context={
-            'return_url': reverse('funds:get_current_details'),
+            'return_url': '%s?%s' % (
+                reverse('funds:get_current_details'), 'tab=budgets'),
             'title': 'Add budget',
             'post_form_initial': {
                 'fund': request.user.volunteer_profile.fund,
@@ -34,6 +35,26 @@ def create(request):
             'get_form_initial': {
                 'fund': request.user.volunteer_profile.fund
             }
+        })
+
+
+@login_required
+@user_passes_test(user_should_be_volunteer)
+def edit_details(request, id):
+    budget = _get_budget_or_404(request, id)
+    return render_generic_form(
+        request=request, form_class=UpdateBudgetForm,
+        context={
+            'return_url': reverse('budgets:get_details', args=[id]),
+            'title': 'Edit budget',
+            'post_form_initial': {
+                'fund': request.user.volunteer_profile.fund,
+                'user': request.user,
+            },
+            'get_form_initial': {
+                'fund': request.user.volunteer_profile.fund
+            },
+            'instance': budget
         })
 
 
@@ -143,7 +164,7 @@ def get_expense_details(request, id):
 def get_list(request):
     paginator = Paginator(Budget.objects.filter(
         fund_id=request.user.volunteer_profile.fund_id)
-        .order_by('start_period_date'), DEFAULT_PAGE_SIZE)
+        .order_by('date_created'), DEFAULT_PAGE_SIZE)
     return render(request, 'budgets_list.html', {
         'page': paginator.get_page(request.GET.get('page'))
     })
@@ -200,7 +221,7 @@ def budget_expenses_planing(request, id):
     budget = _get_budget_or_404(request, id)
     if budget.approvement and budget.approvement.is_rejected == False:
         return redirect('%s?%s' % (reverse('budgets:get_details', args=[id]), 'tab=expenses'))
-    
+
     pending_expense_amount = Expense.objects.filter(
         budget_id=budget.id, approvement__isnull=True)\
         .aggregate(pending_expense_amount=models.Sum('amount', default=0))['pending_expense_amount']

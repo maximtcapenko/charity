@@ -3,11 +3,14 @@ from django.core.paginator import Paginator
 from django.db import models
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
+
 from commons import DEFAULT_PAGE_SIZE
 from commons.functions import user_should_be_volunteer, render_generic_form
 from projects.models import Project
-from .forms import CreateTaskForm, UpdateTaskForm, CreateCommentForm
-from .models import Task, Comment
+
+from .forms import CreateTaskForm, UpdateTaskForm, \
+    CreateCommentForm, ActivateTaskStateForm, ApproveTaskStateForm
+from .models import Task, Comment, TaskState
 
 
 def _get_task_or_404(request, task_id):
@@ -36,7 +39,7 @@ def create(request):
 
 @login_required
 @user_passes_test(user_should_be_volunteer)
-def update(request, id):
+def edit_details(request, id):
     task = _get_task_or_404(request, id)
     return render_generic_form(
         request=request, form_class=UpdateTaskForm, context={
@@ -48,6 +51,25 @@ def update(request, id):
             },
             'post_form_initial': {
                 'project': task.project
+            }
+        }
+    )
+
+
+@login_required
+@user_passes_test(user_should_be_volunteer)
+def move_to_next_state(request, id):
+    task = _get_task_or_404(request, id)
+    return render_generic_form(
+        request=request, form_class=ActivateTaskStateForm, context={
+            'return_url': reverse('tasks:get_details', args=[id]),
+            'title': 'Move task to next state',
+            'get_form_initial': {
+                'task': task
+            },
+            'post_form_initial': {
+                'task': task,
+                'user': request.user
             }
         }
     )
@@ -76,20 +98,35 @@ def add_comment(request, id):
 
 @login_required
 @user_passes_test(user_should_be_volunteer)
+def approve_task_state(request, task_id, id):
+    task = _get_task_or_404(request, task_id)
+    state = get_object_or_404(task.states, pk=id)
+
+    return render_generic_form(
+        request=request,
+        form_class=ApproveTaskStateForm,
+        context={
+            'return_url': '%s?%s' % (
+                reverse('tasks:get_details', args=[task_id]), 'tab=states'),
+            'title': 'Approve task',
+            'post_form_initial': {
+                'user': request.user,
+                'state': state,
+                'fund': request.user.volunteer_profile.fund
+            }
+        }
+    )
+
+
+@login_required
+@user_passes_test(user_should_be_volunteer)
 def get_details(request, id):
-    def get_states_paginator(task):
-        state = task.state
-        states = []
-
-        while state is not None:
-            states.append(state)
-            state = state.prev_state
-
-        return Paginator(states, per_page=DEFAULT_PAGE_SIZE)
-
     default_tab = 'states'
     tabs = {
-        'states': get_states_paginator,
+        'states': lambda task: Paginator(task.states
+                                         .select_related('author')
+                                         .order_by('-date_created'),
+                                         per_page=DEFAULT_PAGE_SIZE),
         'comments': lambda task: Paginator(task.comments.filter(
             reply_id__isnull=True)
             .annotate(replies_count=models.Count('replies'))
@@ -121,12 +158,28 @@ def get_details(request, id):
 def get_comment_details(request, id):
     comment = get_object_or_404(Comment, pk=id)
 
-    replies_page = Paginator(
+    paginator = Paginator(
         comment.replies.select_related('author')
         .order_by('date_created'),
         per_page=DEFAULT_PAGE_SIZE)
 
     return render(request, 'task_comment_details.html', {
         'comment': comment,
-        'replies_page': replies_page
+        'page': paginator.get_page(request.GET.get('page'))
+    })
+
+
+@login_required
+@user_passes_test(user_should_be_volunteer)
+def get_state_details(request, task_id, id):
+    task = _get_task_or_404(request, task_id)
+    state = task.states.get(pk=id)
+
+    paginator = Paginator(state.approvements.order_by('-date_created'),
+                          per_page=DEFAULT_PAGE_SIZE)
+
+    return render(request, 'task_state_details.html', {
+        'task': task,
+        'state': state,
+        'page': paginator.get_page(request.GET.get('page'))
     })

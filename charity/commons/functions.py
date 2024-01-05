@@ -1,3 +1,4 @@
+from django import forms
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import redirect, render
 from .exceptions import NullArgumentError
@@ -55,3 +56,10 @@ def get_argument_or_error(argument, arguments):
     if not argument:
         raise NullArgumentError('Argument %s is none' % argument)
     return argument
+
+
+def validate_form_field(field, initial, cleaned_data):
+    fund = get_argument_or_error(field, initial)
+    cleaned_fund = cleaned_data[field]
+    if fund.id != cleaned_fund.id:
+        raise forms.ValidationError('Fund is not accessible')

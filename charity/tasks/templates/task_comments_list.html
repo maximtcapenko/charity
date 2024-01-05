@@ -24,7 +24,7 @@
               </td>
               <td>{{ comment.date_created }}</td>
               <td>{{ comment.notes }}</td>
-              <td>{{ comment.replies_count }}</td>
+              <td><span class="badge bg-primary rounded-circle">{{ comment.replies_count }}</span></td>
             </tr>
           {% endfor %}
         </tbody>

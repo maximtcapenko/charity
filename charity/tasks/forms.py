@@ -1,11 +1,10 @@
-import datetime
-
 from django import forms
 from django.db.models import Max, Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
 from commons.mixins import FormControlMixin
 from commons.functions import get_argument_or_error
+from funds.models import Approvement
 from processes.models import Process, ProcessState
 from wards.models import Ward
 from .models import Comment, Task, TaskState
@@ -43,7 +42,7 @@ class CreateTaskForm(forms.ModelForm, FormControlMixin):
 
     class Meta:
         model = Task
-        exclude = ['date_created', 'id', 'expense', 'state',
+        exclude = ['date_created', 'id', 'expense', 'state', 'states',
                    'attachments', 'order_position', 'is_done', 'is_started']
 
 
@@ -98,15 +97,65 @@ class ActivateTaskStateForm(forms.ModelForm, FormControlMixin):
         FormControlMixin.__init__(self)
 
         task = get_argument_or_error('task', self.initial)
-        if task.state:
-            next_state = task.state.state.next_state
-            queryset = ProcessState.objects.filter(id=next_state.id)
+
+        current_state = task.state
+        if current_state:
+            queryset = Q(process__id=task.process_id) & ~Q(
+                id=current_state.state_id)
         else:
-            queryset = ProcessState.objects.filter(
-                Q(process__id=task.process_id) & ~Q(id=task.state_id)
-            )
-        self.fields['state'].queryset = queryset
+            queryset = Q(process__id=task.process_id)
+
+        self.fields['state'].queryset = ProcessState.objects.filter(
+            queryset).order_by('order_position')
+
+    def save(self):
+        author = get_argument_or_error('user', self.initial)
+        task = get_argument_or_error('task', self.initial)
+        self.instance.author = author
+        self.instance.save()
+
+        task.state = self.instance
+        task.states.add(self.instance)
+        task.save()
+
+        return self.instance
+
+    def clean(self):
+        task = get_argument_or_error('task', self.initial)
+        if task.state and not task.state.approvement_id:
+            raise forms.ValidationError('Current task state is not approved')
+
+        return self.cleaned_data
 
     class Meta:
         model = TaskState
-        exclude = ['id', 'date_created']
+        exclude = [
+            'id', 'date_created',
+            'approvement', 'prev_state',
+            'completion_date', 'author', 'approvements']
+
+
+class ApproveTaskStateForm(forms.Form, FormControlMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        FormControlMixin.__init__(self)
+
+    is_rejected = forms.BooleanField(label='Reject', required=False)
+    notes = forms.CharField(widget=forms.Textarea(),
+                            label='Notes', required=False)
+
+    def save(self):
+        user = get_argument_or_error('user', self.initial)
+        state = get_argument_or_error('state', self.initial)
+        fund = get_argument_or_error('fund', self.initial)
+
+        approvement = Approvement.objects.create(
+            author=user, fund=fund,
+            notes=self.cleaned_data['notes'],
+            is_rejected=self.cleaned_data['is_rejected'])
+
+        state.approvement = approvement
+        state.approvements.add(approvement)
+        state.save()
+
+        return state

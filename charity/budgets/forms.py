@@ -1,10 +1,12 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.db import models
+
+from commons.mixins import FormControlMixin
+from commons.functions import get_argument_or_error, validate_form_field
+
 from funds.models import Approvement
 from .models import Budget, Income, Contribution
-from commons.mixins import FormControlMixin
-from commons.functions import get_argument_or_error
 
 
 class CreateBudgetForm(forms.ModelForm, FormControlMixin):
@@ -20,6 +22,10 @@ class CreateBudgetForm(forms.ModelForm, FormControlMixin):
             .filter(volunteer_profile__fund_id=fund.id) \
             .only('id', 'username')
 
+    def clean(self):
+        validate_form_field('fund', self.initial, self.cleaned_data)
+        return self.cleaned_data
+
     def save(self):
         user = get_argument_or_error('user', self.initial)
         self.instance.author = user
@@ -31,6 +37,27 @@ class CreateBudgetForm(forms.ModelForm, FormControlMixin):
         exclude = ['id', 'date_creted',
                    'author', 'is_closed',
                    'approvement', 'approvements']
+
+
+class UpdateBudgetForm(CreateBudgetForm):
+    def clean(self):
+        if self.instance.is_closed:
+            raise forms.ValidationError(
+                'Budget is closed and can not be edited')
+
+        if self.instance.approvement:
+            raise forms.ValidationError(
+                'Budget is approved and can not be edited')
+
+        validate_form_field('fund', self.initial, self.cleaned_data)
+        return self.cleaned_data
+
+    def clean_manager(self):
+        manager = self.cleaned_data['manager']
+        if manager is None and self.instance.manager:
+            raise forms.ValidationError(
+                'Manager is already assigned and can not be empty')
+        return manager
 
 
 class CreateIncomeForm(forms.ModelForm, FormControlMixin):

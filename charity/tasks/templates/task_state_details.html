@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mt-4">{{ task.name }}</h2>
+
+  <ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item">
+      <a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a>
+    </li>
+    <li class="breadcrumb-item active">Details</li>
+  </ol>
+  <div class="card mb-4">
+    <div class="card-body">
+        <div>
+            <i class="fa-solid fa-gears"></i>
+                Name: {{ state.state.name }}
+            </div>
+            <div>
+                {% include 'partials/li_approvement_part.html' with approvement=state.approvement %}
+            </div>
+            <div>
+                <i class="fa-solid fa-gear"></i>
+                Process: <a href="{% url 'processes:get_details' task.process_id%}">{{ task.process.name }}</a>
+            </div>
+        </div>
+  </div>
+  <div>
+    <a href="{% url 'tasks:approve_task_state' task.id state.id %}" class="btn btn-link">Add approvement</a>
+  </div>
+  {% include 'approvements_list.html' %}
+{% endblock %}

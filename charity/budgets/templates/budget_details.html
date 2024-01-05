@@ -4,7 +4,7 @@
 
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
-      <a href="{% url 'funds:get_details' budget.fund_id %}">{{ budget.fund.name }}</a>
+      <a href="{% url 'funds:get_details' budget.fund_id %}?tab=budgets">{{ budget.fund.name }}</a>
     </li>
     <li class="breadcrumb-item active">Details</li>
   </ol>
@@ -39,8 +39,8 @@
       </div>
       <div>
         <i class="fa-solid fa-pen-to-square"></i>
-        <a href="#">Edit</a>
-      </div>
+          <a href="{% url 'budgets:edit_details' budget.id %}">Edit</a>
+       </div>
     </div>
   </div>
   <ul class="nav nav-pills mb-3">

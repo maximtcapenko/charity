@@ -20,5 +20,6 @@ urlpatterns = [
          views.approve_budget_income, name='approve_budget_income'),
     path('expenses/<uuid:id>/approvements/add/',
          views.approve_budget_expense, name='approve_budget_expense'),
-    path('<uuid:id>/approve_budget/', views.approve_budget, name='approve_budget')
+    path('<uuid:id>/approve/', views.approve_budget, name='approve_budget'),
+    path('<uuid:id>/edit/',views.edit_details, name='edit_details')
 ]

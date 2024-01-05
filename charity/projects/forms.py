@@ -29,7 +29,6 @@ class CreateProjectForm(forms.ModelForm, FormControlMixin):
 
 
 class UpdateProjectForm(CreateProjectForm):
-
     def clean_leader(self):
         leader = self.cleaned_data.get('leader')
         if leader is None and self.instance.leader:

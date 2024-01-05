@@ -60,7 +60,7 @@ def add_process_to_project(request, id):
 
 @login_required
 @user_passes_test(user_should_be_volunteer)
-def update(request, id):
+def edit_details(request, id):
     project = _get_project_or_404(request=request, project_id=id)
     return render_generic_form(
         request=request, form_class=UpdateProjectForm, context={

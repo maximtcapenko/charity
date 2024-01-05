@@ -1,8 +1,8 @@
 <div>
-  {% if task.is_approved %}
-    <a href="#" class="btn btn-link">Activate {{ task.next_task_state.name }}</a>
+  {% if task.state.approvement_id %}
+    <a href="{% url 'tasks:move_to_next_state' task.id %}" class="btn btn-link">Move to next</a>
   {% else %}
-   <a href="#" class="btn btn-link disabled">Activate {{ task.next_task_state.name }}</a>
+   <a href="{% url 'tasks:move_to_next_state' task.id %}" class="btn btn-link disabled">Move to next</a>
   {% endif %}
 </div>
   <div class="card mb-4">
@@ -15,6 +15,8 @@
         <thead>
           <tr>
             <th>State name</th>
+            <th>Author</th>
+            <th>Date created</th>
             <th>Completion date</th>
             <th>Approved</th>
           </tr>
@@ -23,18 +25,14 @@
           {% for state in page %}
             <tr>
               <td>
-                <a href="#">{{ state.state }}</a>
+                <a href="{% url 'tasks:get_state_details' task.id state.id %}">{{ state.state.name }}</a>
               </td>
+              <td>{{ state.author.username }}</td>
+              <td>{{ state.date_created }}</td>
               <td>{{ state.completion_date }}</td>
-              {% if state.approvement_id %}
-              <td> 
-                <input type="checkbox" disabled="disabled">
+               <td> 
+                {% include 'partials/td_approvement_part.html' with approvement=state.approvement %}
               </td>
-              {% else %}
-              <td>
-                <input type="checkbox" disabled="disabled" checked="checked">
-              </td>
-              {% endif %}
             </tr>
           {% endfor %}
         </tbody>
