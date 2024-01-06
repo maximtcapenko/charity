@@ -12,5 +12,6 @@ urlpatterns = [
     path('comments/<uuid:id>/details/', views.get_comment_details, name='get_comment_details'),
     path('<uuid:task_id>/states/<uuid:id>/details/', views.get_state_details, name='get_state_details'),
     path('<uuid:task_id>/states/<uuid:id>/approve/',views.approve_task_state, name='approve_task_state'),
-    path('<uuid:id>/move_to_next_state/', views.move_to_next_state, name='move_to_next_state')
+    path('<uuid:id>/move_to_next_state/', views.move_to_next_state, name='move_to_next_state'),
+    path('<uuid:id>/files', views.attach_file, name='attach_file')
 ]

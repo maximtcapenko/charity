@@ -1,5 +1,5 @@
-from typing import Any
 from django import forms
+from django.db import models
 from .models import Process, ProcessState
 from commons.mixins import FormControlMixin
 
@@ -24,19 +24,14 @@ class CreateProcessStateForm(forms.ModelForm, FormControlMixin):
         self.fields['process'].widget = forms.HiddenInput()
 
     def save(self):
-        prev_state = ProcessState.objects.filter(
-            next_state__isnull=True).first()
-        self.instance.is_first = True if prev_state is None else False
+        last_order_position = ProcessState.objects.filter(process__id=self.instance.process_id) \
+            .aggregate(result=models.Max('order_position'))['result']
+        self.instance.order_position = last_order_position + 1 if last_order_position else 1
+        
+        return super().save()
 
-        instance = super().save()
-
-        if prev_state:
-            prev_state.next_state = instance
-            prev_state.save()
-
-        return instance
 
     class Meta:
         model = ProcessState
         exclude = ['id', 'date_created',
-                   'is_inactive', 'is_first', 'next_state']
+                   'is_inactive', 'order_position']

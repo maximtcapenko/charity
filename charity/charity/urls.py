@@ -27,5 +27,6 @@ urlpatterns = [
     path('tasks/', include('tasks.urls')),
     path('wards/', include('wards.urls')),
     path('budgets/', include('budgets.urls')),
-    path('processes/', include('processes.urls'))
+    path('processes/', include('processes.urls')),
+    path('files/', include('files.urls'))
 ]

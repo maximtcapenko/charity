@@ -46,8 +46,8 @@ def get_list(request):
                                                 .volunteer_profile.fund_id),
                                        models.Q(projects__isnull=True) |
                                        models.Q(projects__is_closed=False)) \
-        .annotate(active_project_count=models.Count('projects'),
-                  states_count=models.Count('states')) \
+        .annotate(active_project_count=models.Count('projects', distinct=True),
+                  states_count=models.Count('states', distinct=True)) \
         .order_by('-date_created') \
         .values('id', 'name', 'date_created', 'is_inactive',
                 'states_count', 'active_project_count') \
@@ -64,7 +64,7 @@ def get_list(request):
 def get_details(request, id):
     process = get_object_or_404(Process, pk=id)
     paginator = Paginator(process.states.order_by(
-        'date_created'), DEFAULT_PAGE_SIZE)
+        'order_position'), DEFAULT_PAGE_SIZE)
 
     return render(request, 'process_details.html', {
         'process': process,

@@ -14,8 +14,7 @@ class Project(Base):
     notes = models.TextField(blank=True, null=True)
     fund = models.ForeignKey(
         Fund, on_delete=models.PROTECT, related_name='projects')
-    cover = models.ForeignKey(Attachment, null=True,
-                              blank=True, on_delete=models.SET_NULL)
+    cover = models.ImageField(upload_to='covers', null=True)
     wards = models.ManyToManyField(Ward, related_name='projects')
     processes = models.ManyToManyField(Process, related_name='projects')
     leader = models.ForeignKey(

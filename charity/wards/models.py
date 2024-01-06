@@ -19,8 +19,7 @@ class Ward(Base):
     is_inactive = models.BooleanField()
     fund = models.ForeignKey(
         Fund, on_delete=models.PROTECT, related_name='wards')
-    cover = models.ForeignKey(Attachment, null=True,
-                              on_delete=models.SET_NULL, related_name='wards')
+    cover = models.ImageField(upload_to='covers', null=True)
     attachments = models.ManyToManyField(
         Attachment, related_name='ward_attachments')
 

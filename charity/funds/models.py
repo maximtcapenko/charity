@@ -1,14 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 from commons.models import Base
-from files.models import Attachment
 
 
 class Fund(Base):
     name = models.CharField(max_length=256, blank=False,
                             unique=True, null=False)
     notes = models.TextField(blank=True, null=True)
-    cover = models.ForeignKey(Attachment, on_delete=models.SET_NULL, null=True)
+    cover = models.ImageField(upload_to='covers', null=True)
 
     def __str__(self):
         return self.name
@@ -19,7 +18,7 @@ class VolunteerProfile(Base):
         Fund, on_delete=models.PROTECT, related_name='volunteers')
     user = models.OneToOneField(
         User, related_name='volunteer_profile', on_delete=models.PROTECT)
-    cover = models.ForeignKey(Attachment, on_delete=models.SET_NULL, null=True)
+    cover = models.ImageField(upload_to='covers', null=True)
     title = models.CharField(max_length=256, null=True, blank=True)
     mobile_phone = models.CharField(max_length=12, null=True, blank=True)
 

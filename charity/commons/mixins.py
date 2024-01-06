@@ -1,8 +1,10 @@
 from django import forms
 
 
-class FormControlMixin:
+class FileUploadMixin:
+    pass
 
+class FormControlMixin:
     def __init__(self, *args, **kwargs):
         for field in iter(self.fields):
             if (isinstance(self.fields[field].widget, forms.CheckboxInput)):

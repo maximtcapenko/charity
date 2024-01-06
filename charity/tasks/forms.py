@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from commons.mixins import FormControlMixin
 from commons.functions import get_argument_or_error
 from funds.models import Approvement
+from files.forms import CreateAttachmentForm
 from processes.models import Process, ProcessState
 from wards.models import Ward
 from .models import Comment, Task, TaskState
@@ -114,6 +115,9 @@ class ActivateTaskStateForm(forms.ModelForm, FormControlMixin):
         self.instance.author = author
         self.instance.save()
 
+        if not task.state:
+            task.is_started = True
+
         task.state = self.instance
         task.states.add(self.instance)
         task.save()
@@ -159,3 +163,17 @@ class ApproveTaskStateForm(forms.Form, FormControlMixin):
         state.save()
 
         return state
+
+
+class TaskCreateAttachmentForm(CreateAttachmentForm):
+    def save(self):
+        task = get_argument_or_error('task', self.initial)
+        user = get_argument_or_error('user', self.initial)
+        fund = get_argument_or_error('fund', self.initial)
+
+        self.instance.author = user
+        self.instance.save()
+        
+        task.attachments.add(self.instance)
+
+        return self.instance

@@ -9,8 +9,9 @@ from commons.functions import user_should_be_volunteer, render_generic_form
 from projects.models import Project
 
 from .forms import CreateTaskForm, UpdateTaskForm, \
-    CreateCommentForm, ActivateTaskStateForm, ApproveTaskStateForm
-from .models import Task, Comment, TaskState
+    CreateCommentForm, ActivateTaskStateForm, ApproveTaskStateForm, \
+    TaskCreateAttachmentForm
+from .models import Task, Comment
 
 
 def _get_task_or_404(request, task_id):
@@ -116,6 +117,25 @@ def approve_task_state(request, task_id, id):
             }
         }
     )
+
+
+@login_required
+@user_passes_test(user_should_be_volunteer)
+def attach_file(request, id):
+    task = _get_task_or_404(request, id)
+    return render_generic_form(
+        request=request,
+        form_class=TaskCreateAttachmentForm,
+        context={
+            'return_url': '%s?%s' % (
+                reverse('tasks:get_details', args=[id]), 'tab=files'),
+            'title': 'Upload file',
+            'post_form_initial': {
+                'user': request.user,
+                'task': task,
+                'fund': request.user.volunteer_profile.fund
+            }
+        })
 
 
 @login_required

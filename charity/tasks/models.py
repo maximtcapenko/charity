@@ -31,7 +31,6 @@ class TaskState(Base):
     author = models.ForeignKey(User, on_delete=models.PROTECT)
     approvement = models.ForeignKey(
         Approvement, on_delete=models.SET_NULL, null=True)
-    prev_state = models.ForeignKey('self', null=True, on_delete=models.PROTECT)
     approvements = models.ManyToManyField(Approvement, related_name='approved_task_states')
 
 
@@ -61,16 +60,6 @@ class Task(Base):
     attachments = models.ManyToManyField(Attachment)
     states = models.ManyToManyField(TaskState, related_name='state_tasks')
 
-    @property
-    def is_approved(self):
-        if self.should_be_approved:
-            if self.expense and self.expense.budget.approvement_id \
-                    and self.expense.approvement:
-                return not self.expense.approvement.is_rejected
-            else:
-                return False
-        else:
-            return True
 
     @property
     def should_be_approved(self):
@@ -101,7 +90,7 @@ def project_expired_tasks_count(self):
 
 
 def project_active_tasks_count(self):
-    return Task.objects.filter(project__id=self.id, is_done=False, is_started=True) \
+    return self.tasks.filter(is_done=False, is_started=True) \
         .aggregate(total=models.Count('id'))['total']
 
 
