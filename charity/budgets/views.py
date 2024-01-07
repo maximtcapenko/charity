@@ -177,7 +177,7 @@ def get_details(request, id):
     tabs = {
         'incomes': lambda budget: Paginator(
             budget.incomes
-                  .select_related('author', 'approvement')
+                  .select_related('author','author__volunteer_profile', 'approvement')
                   .order_by('-date_created'),
             DEFAULT_PAGE_SIZE
         ),

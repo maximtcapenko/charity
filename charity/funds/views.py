@@ -28,14 +28,15 @@ def get_details(request, id):
     tabs = {
         'contributions': lambda fund: Paginator(
             fund.contributions.select_related(
-                'author', 'contributor').order_by('-date_created'),
+                'author', 'author__volunteer_profile', 'contributor').order_by('-date_created'),
             DEFAULT_PAGE_SIZE),
         'contributors': lambda fund: Paginator(
             fund.contributors.order_by('-date_created'),
             DEFAULT_PAGE_SIZE
         ),
         'budgets': lambda fund: Paginator(
-            fund.budgets.order_by('-date_created'),
+            fund.budgets.select_related(
+                'manager', 'manager__volunteer_profile').order_by('-date_created'),
             DEFAULT_PAGE_SIZE),
         'projects': lambda fund: Paginator(
             fund.active_projects.select_related(

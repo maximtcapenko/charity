@@ -1,10 +1,7 @@
 {% if not approvement %}
-  <i class="fa-solid fa-hourglass-end"></i>
-  Pending
+  <span class="badge bg-info text-dark">pending</span>
 {% elif approvement.is_rejected %}
-  <i class="fa-solid fa-ban"></i>
-  Rejected
+  <span class="badge bg-danger">rejected</span>
 {% else %}
-  <i class="fa-regular fa-circle-check"></i>
-  Approved
+  <span class="badge bg-success">approved</span>
 {% endif %}

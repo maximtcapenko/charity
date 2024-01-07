@@ -15,10 +15,10 @@
         <thead>
           <tr>
             <th>State name</th>
-            <th>Author</th>
             <th>Date created</th>
             <th>Completion date</th>
-            <th>Approved</th>
+            <th>Status</th>
+            <th>Author</th>
           </tr>
         </thead>
         <tbody>
@@ -27,12 +27,12 @@
               <td>
                 <a href="{% url 'tasks:get_state_details' task.id state.id %}">{{ state.state.name }}</a>
               </td>
-              <td>{{ state.author.username }}</td>
               <td>{{ state.date_created }}</td>
               <td>{{ state.completion_date }}</td>
                <td> 
                 {% include 'partials/td_approvement_part.html' with approvement=state.approvement %}
               </td>
+              <td><a href="{% url 'funds:get_volunteer_details' state.author.volunteer_profile.id %}">{{ state.author.username }}</a>
             </tr>
           {% endfor %}
         </tbody>

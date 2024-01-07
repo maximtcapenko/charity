@@ -30,11 +30,10 @@
                 <a href="{% url 'projects:get_details' project.id %}">{{ project.name }}</a>
               </td>
               <td>{{ project.date_created }}</td>
-              <td>{{ project.active_tasks_count }}</td>
-              <td>{{ project.approved_budget }}</td>
+              <td><span class="badge bg-primary rounded-circle">{{ project.active_tasks_count }}</span></td>
+              <td>{{ project.approved_budget|floatformat:'2g' }}</td>
               <td>
-                {{ project.leader.volunteer_profile|cover }}
-                <a href="{% url 'funds:get_volunteer_details' project.leader.volunteer_profile.id %}">{{ project.leader.username }}</a>
+                {% include 'partials/user_image_part.html' with user=project.leader %}
               </td>
             </tr>
           {% endfor %}

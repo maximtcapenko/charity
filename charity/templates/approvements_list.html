@@ -8,18 +8,24 @@
         <thead>
           <tr>
             <th>Created</th>
-            <th>Author</th>
-            <th>Is rejected</th>
             <th>Notes</th>
+            <th>Status</th>
+            <th>Author</th>
           </tr>
         </thead>
         <tbody>
           {% for approvement in page %}
             <tr>
               <td>{{ approvement.date_created }}</td>
-              <td>{{ approvement.author.username }}</td>
-              <td>{{ approvement.is_rejected }}</td>
               <td>{{ approvement.notes }}</td>
+              <td>
+                {% if approvement.is_rejected %}
+                  <span class="badge bg-danger">rejected</span>
+                {% else %}
+                  <span class="badge bg-success">approved</span>
+                {% endif %}
+               </td>
+              <td><a href="{% url 'funds:get_volunteer_details' approvement.author.volunteer_profile.id %}">{{ approvement.author.username }}</a>
             </tr>
           {% endfor %}
         </tbody>

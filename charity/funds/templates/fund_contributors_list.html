@@ -15,19 +15,27 @@
       <table class="table table-bordered">
         <thead>
           <tr>
+            <th>Name</th>
             <th>Notes</th>
             <th>Date created</th>
-            <th>Is company</th>
+            <th>Type</th>
           </tr>
         </thead>
         <tbody>
           {% for contributor in page %}
             <tr>
               <td>
-                <a href="#">{{ contributor.notes }}</a>
+                <a href="#">{{ contributor.name }}</a>
               </td>
+              <td>{{ contributor.notes }}</td>
               <td>{{ contributor.date_created }}</td>
-              <td>{{ contributor.is_company }}</td>
+              <td>
+                {% if contributor.is_company %}
+                  <span class="badge bg-primary">company</span>
+                {% else %}
+                  <span class="badge bg-primary">person</span>
+                {% endif %}
+              </td>
             </tr>
           {% endfor %}
         </tbody>

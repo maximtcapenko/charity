@@ -1,0 +1,4 @@
+{% load customtags %}
+
+{{ user.volunteer_profile|cover }}
+<a href="{% url 'funds:get_volunteer_details' user.volunteer_profile.id %}">{{ user.username }}</a>

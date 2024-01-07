@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2 class="mt-4">{{ ward.name }}</h2>
+
+  <ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item">
+      <a href="{% url 'funds:get_current_details' %}?tab=projects">{{ ward.fund.name }}</a>
+    </li>
+    <li class="breadcrumb-item active">Details</li>
+  </ol>
+  <div class="card mb-4">
+    <div class="card-body">
+      <div>
+        <i class="far fa-calendar-alt"></i>
+        Created: {{ ward.date_created }}
+      </div>
+      <div>
+        <i class="fa-regular fa-clipboard"></i>
+        Notes: {{ ward.notes }}
+      </div>
+      <div>
+        <i class="fa-solid fa-pen-to-square"></i>
+        <a href="#">Edit</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

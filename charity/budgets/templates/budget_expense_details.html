@@ -23,7 +23,7 @@
     </div>
     <div>
       <i class="fas fa-sack-dollar"></i>
-      Amount:<a href="#"> {{ expense.amount }} </a>
+      Amount:<a href="#"> {{ expense.amount|floatformat:'2g' }} </a>
     </div>
     <div>
       {% include 'partials/li_approvement_part.html' with approvement=expense.approvement %}

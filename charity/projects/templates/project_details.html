@@ -16,11 +16,11 @@
       </div>
       <div>
         <i class="fas fa-user"></i>
-        Leader: {{ project.leader.username }}
+        Leader: <a href="{% url 'funds:get_volunteer_details' project.leader.volunteer_profile.id %}">{{ project.leader.username }}</a>
       </div>
       <div>
         <i class="fas fa-sack-dollar"></i>
-        Budget: {{ project.approved_budget }}
+        Budget: {{ project.approved_budget|floatformat:'2g' }}
       </div>
       <div>
         <i class="fa-regular fa-clipboard"></i>

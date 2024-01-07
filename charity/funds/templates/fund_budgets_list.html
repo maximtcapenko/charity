@@ -17,11 +17,10 @@
           <tr>
             <th>Budget name</th>
             <th>Created</th>
-            <th>Author</th>
-            <th>Manager</th>
             <th>Avaliable</th>
             <th>Spent</th>
             <th>State</th>
+            <th>Manager</th>
           </tr>
         </thead>
         <tbody>
@@ -31,12 +30,13 @@
                 <a href="{% url 'budgets:get_details' budget.id %}">{{ budget.name }}</a>
               </td>
               <td>{{ budget.date_created }}</td>
-              <td>{{ budget.author.username }}</td>
-              <td>{{ budget.manager.username }}</td>
-              <td>{{ budget.avaliable_income_amount }}</td>
+              <td>{{ budget.avaliable_income_amount|floatformat:'2g' }}</td>
               <td>0</td>
               <td>
                 {% include 'partials/td_approvement_part.html' with approvement=budget.approvement %}
+              </td>
+              <td>
+                {% include 'partials/user_image_part.html' with user=budget.manager %}
               </td>
             </tr>
           {% endfor %}

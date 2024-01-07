@@ -18,7 +18,7 @@
           {% for ward in page %}
             <tr>
               <td>
-                <a href="#">{{ ward.name }}</a>
+                <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
               </td>
               {% if ward.is_inactive %}
               <td> 
@@ -33,6 +33,6 @@
           {% endfor %}
         </tbody>
       </table>
-      {% include 'paginator.html' with obj_page=wards_page %}
+      {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>

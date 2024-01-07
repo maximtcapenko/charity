@@ -26,7 +26,8 @@ def add_ward_to_project(request, id):
         project.id]) + '?tab=wards'
 
     return render_generic_form(
-        request=request, form_class=AddWardToProjectForm, context={
+        request=request, form_class=AddWardToProjectForm, 
+        context={
             'return_url': return_url,
             'title': 'Include ward to project',
             'get_form_initial': {
@@ -46,7 +47,8 @@ def add_process_to_project(request, id):
         project.id]) + '?tab=processes'
 
     return render_generic_form(
-        request=request, form_class=AddProcessToProjectForm, context={
+        request=request, form_class=AddProcessToProjectForm,
+        context={
             'return_url': return_url,
             'title': 'Include process to project',
             'get_form_initial': {
@@ -87,8 +89,9 @@ def close(request, id):
 @user_passes_test(user_should_be_volunteer)
 def create(request):
     return render_generic_form(
-        request=request, form_class=CreateProjectForm, context={
-            'return_url': '%s?%s' %(reverse('funds:get_current_details'), 'tab=projects'),
+        request=request, form_class=CreateProjectForm, 
+        context={
+            'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=projects'),
             'title': 'Add project',
             'get_form_initial': {
                 'fund': request.user.volunteer_profile.fund
@@ -116,7 +119,8 @@ def get_details(request, id):
             project.tasks.
             select_related(
                 'assignee', 'expense',
-                'expense__approvement')
+                'expense__approvement',
+                'assignee__volunteer_profile')
             .order_by('order_position'),
             DEFAULT_PAGE_SIZE),
         'processes': lambda project: Paginator(

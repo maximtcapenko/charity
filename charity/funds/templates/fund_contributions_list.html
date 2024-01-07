@@ -28,9 +28,9 @@
                 <a href="#">{{ contribution.contributor.name }}</a>
               </td>
               <td>{{ contribution.contribution_date }}</td>
-              <td>{{ contribution.amount }}</td>
-              <td>{{ contribution.author.username }}</td>
-            </tr>
+              <td>{{ contribution.amount|floatformat:'2g' }}</td>
+              <td><a href="{% url 'funds:get_volunteer_details' contribution.author.volunteer_profile.id %}">{{ contribution.author.username }}</a>
+              </tr>
           {% endfor %}
         </tbody>
       </table>

@@ -18,11 +18,11 @@
       </div>
       <div>
         <i class="fas fa-user"></i>
-        Assignee: {{ task.assignee.username }}
+        Assignee: <a href="{% url 'funds:get_volunteer_details' task.assignee.volunteer_profile.id %}">{{ task.assignee.username }}</a>
       </div>
       <div>
         <i class="fas fa-sack-dollar"></i>
-        Expenses: {{ task.estimated_expense_amount }}
+        Expenses: {{ task.estimated_expense_amount|floatformat:'2g' }}
       </div>
       <div>
         {% include 'partials/li_approvement_part.html' with approvement=task.expense.approvement %}

@@ -16,19 +16,23 @@
       </div>
       <div>
         <i class="fas fa-user"></i>
-        Manager: {{ budget.manager.username }}
+        Author:<a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.author.username }}</a>
+      </div>
+      <div>
+        <i class="fa-solid fa-user-tie"></i>
+        Manager:<a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.manager.username }}</a>
       </div>
       <div>
         <i class="fas fa-sack-dollar"></i>
-        Total income amount: {{ total_approved_amount }}
+        Total income amount: {{ total_approved_amount|floatformat:'2g' }}
       </div>
       <div>
         <i class="fas fa-sack-dollar"></i>
-        Total expense amount: {{ total_approved_expenses_amount }}
+        Total expense amount: {{ total_approved_expenses_amount|floatformat:'2g' }}
       </div>
       <div>
         <i class="fas fa-sack-dollar"></i>
-        Avaliable amount: {{ total_avaliable_amount }}
+        Avaliable amount: {{ total_avaliable_amount|floatformat:'2g' }}
       </div>
       <div>
         {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}

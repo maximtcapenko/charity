@@ -16,23 +16,23 @@
           <tr>
             <th>Amount</th>
             <th>Created</th>
-            <th>Author</th>
             <th>Projet</th>
-            <th>Approvement</th>
+            <th>Status</th>
+            <th>Author</th>
           </tr>
         </thead>
         <tbody>
           {% for expense in page %}
             <tr>
               <td>
-                <a href="{% url 'budgets:get_expense_details' expense.id %}">{{ expense.amount }}</a>
+                <a href="{% url 'budgets:get_expense_details' expense.id %}">{{ expense.amount|floatformat:'2g' }}</a>
               </td>
               <td>{{ expense.date_created }}</td>
-              <td>{{ expense.author.username }}</td>
               <td><a href="{% url 'projects:get_details' expense.project.id %}">{{ expense.project.name }}</a></td>
               <td>
               {% include 'partials/td_approvement_part.html' with approvement=expense.approvement %}
               </td>
+              <td><a href="{% url 'funds:get_volunteer_details' expense.author.volunteer_profile.id %}">{{ expense.author.username }}</a>
             </tr>
           {% endfor %}
         </tbody>
