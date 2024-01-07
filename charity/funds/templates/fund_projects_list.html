@@ -1,3 +1,4 @@
+{% load customtags %}
 <div>
     <a href="{% url 'projects:create' %}" class="btn btn-link" >Add project</a>
   </div>
@@ -17,9 +18,9 @@
           <tr>
             <th>Project name</th>
             <th>Created</th>
-            <th>Leader</th>
             <th>Active tasks</th>
             <th>Budget</th>
+            <th>Leader</th>
           </tr>
         </thead>
         <tbody>
@@ -29,11 +30,12 @@
                 <a href="{% url 'projects:get_details' project.id %}">{{ project.name }}</a>
               </td>
               <td>{{ project.date_created }}</td>
-              <td>
-                <a href="#">{{ project.leader.username }}</a>
-              </td>
               <td>{{ project.active_tasks_count }}</td>
               <td>{{ project.approved_budget }}</td>
+              <td>
+                {{ project.leader.volunteer_profile|cover }}
+                <a href="{% url 'funds:get_volunteer_details' project.leader.volunteer_profile.id %}">{{ project.leader.username }}</a>
+              </td>
             </tr>
           {% endfor %}
         </tbody>

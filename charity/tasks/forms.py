@@ -34,6 +34,16 @@ class CreateTaskForm(forms.ModelForm, FormControlMixin):
                 .filter(projects__in=[project]) \
                 .only('id', 'name')
 
+    def clean(self):
+        start_date = self.cleaned_data['start_date']
+        end_date = self.cleaned_data['end_date']
+
+        if start_date and end_date and start_date > end_date:
+            raise forms.ValidationError(
+                'End date can not be less then start date')
+
+        return self.cleaned_data
+
     def save(self):
         last_order_position = Task.objects.filter(project__id=self.instance.project_id) \
             .aggregate(result=Max('order_position'))['result']
@@ -54,9 +64,10 @@ class UpdateTaskForm(CreateTaskForm):
         if self.instance:
             self.fields['ward'].queryset = Ward.active_objects. \
                 filter(Q(projects__in=[self.instance.project])
-                       & ~Exists(Task.objects.filter(Q(ward=OuterRef("pk"),
-                                                     project__id=self.instance.project.id)
-                                                     & ~Q(id=self.instance.id)))) \
+                       & ~Exists(Task.objects.filter(
+                           Q(ward=OuterRef("pk"),
+                             project__id=self.instance.project.id)
+                           & ~Q(id=self.instance.id)))) \
                 .only('id', 'name')
 
             if self.instance.expense and \
@@ -126,6 +137,22 @@ class ActivateTaskStateForm(forms.ModelForm, FormControlMixin):
 
     def clean(self):
         task = get_argument_or_error('task', self.initial)
+        '''validate if budget of task is approved'''
+        if task.should_be_approved:
+            if task.expense == None:
+                raise forms.ValidationError(
+                    'Current task has estimation but not included to any budget')
+            elif task.expense.budget.approvement == None:
+                raise forms.ValidationError(
+                    'Current task has estimation but budget is not approved yet')
+            elif task.expense.budget.approvement.is_rejected:
+                raise forms.ValidationError(
+                    'Current task has estimation but budget has been rejected')
+            elif task.expense.approvement.is_rejected:
+                raise forms.ValidationError(
+                    'Current task has estimation but it has been rejected')
+
+        '''validate if current state has approvement'''
         if task.state and not task.state.approvement_id:
             raise forms.ValidationError('Current task state is not approved')
 
@@ -135,8 +162,7 @@ class ActivateTaskStateForm(forms.ModelForm, FormControlMixin):
         model = TaskState
         exclude = [
             'id', 'date_created',
-            'approvement', 'prev_state',
-            'completion_date', 'author', 'approvements']
+            'approvement', 'completion_date', 'author', 'approvements']
 
 
 class ApproveTaskStateForm(forms.Form, FormControlMixin):
@@ -172,8 +198,9 @@ class TaskCreateAttachmentForm(CreateAttachmentForm):
         fund = get_argument_or_error('fund', self.initial)
 
         self.instance.author = user
+        self.instance.fund = fund
         self.instance.save()
-        
+
         task.attachments.add(self.instance)
 
         return self.instance

@@ -18,7 +18,8 @@ class VolunteerProfile(Base):
         Fund, on_delete=models.PROTECT, related_name='volunteers')
     user = models.OneToOneField(
         User, related_name='volunteer_profile', on_delete=models.PROTECT)
-    cover = models.ImageField(upload_to='covers', null=True)
+    cover = models.ImageField(
+        upload_to='covers', null=True)
     title = models.CharField(max_length=256, null=True, blank=True)
     mobile_phone = models.CharField(max_length=12, null=True, blank=True)
 
@@ -32,10 +33,15 @@ class Approvement(Base):
 
 
 class Contributor(Base):
+    name = models.CharField(max_length=256, blank=False,
+                            unique=True, null=False)
     fund = models.ForeignKey(
         Fund, on_delete=models.PROTECT, related_name='contributors')
     notes = models.TextField(blank=True, null=True)
     is_company = models.BooleanField()
+
+    def __str__(self):
+        return self.name
 
 
 class Contribution(Base):

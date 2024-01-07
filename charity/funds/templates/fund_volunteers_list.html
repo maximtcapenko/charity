@@ -1,3 +1,4 @@
+{% load customtags %}
 <div>
     <a href="{% url 'funds:add_volunteer' %}" class="btn btn-link" >Add volunteer</a>
   </div>
@@ -25,7 +26,8 @@
           {% for volunteer in page %}
             <tr>
               <td>
-                <a href="#">{{ volunteer.user.username }}</a>
+                {{ volunteer|cover }}
+                <a href="{% url 'funds:get_volunteer_details' volunteer.id %}">{{ volunteer.user.username }}</a>
               </td>
               <td>{{ volunteer.user.email }}</td>
               <td>{{ volunteer.title }}</td>

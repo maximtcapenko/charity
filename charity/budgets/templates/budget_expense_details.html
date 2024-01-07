@@ -29,6 +29,7 @@
       {% include 'partials/li_approvement_part.html' with approvement=expense.approvement %}
     </div>
 </div>
+</div>
 <div>
 {% if not expense.budget.approvement or expense.budget.approvement.is_rejected %}
     <a href="{% url 'budgets:approve_budget_expense' expense.id %}" class="btn btn-link" >Add approvement</a>

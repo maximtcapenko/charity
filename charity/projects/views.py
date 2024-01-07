@@ -88,7 +88,7 @@ def close(request, id):
 def create(request):
     return render_generic_form(
         request=request, form_class=CreateProjectForm, context={
-            'return_url': reverse('funds:get_current_details'),
+            'return_url': '%s?%s' %(reverse('funds:get_current_details'), 'tab=projects'),
             'title': 'Add project',
             'get_form_initial': {
                 'fund': request.user.volunteer_profile.fund

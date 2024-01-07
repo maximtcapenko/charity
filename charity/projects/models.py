@@ -1,9 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from commons.models import Base
-from budgets.models import Budget
 from funds.models import Fund
-from files.models import Attachment
 from processes.models import Process
 from wards.models import Ward
 
@@ -35,8 +33,8 @@ def fund_active_projects_count(self):
 
 def fund_active_projects(self):
     return Project.objects.filter(fund__id=self.id, is_closed=False)\
-               .select_related('leader') \
-               .all()
+        .select_related('leader') \
+        .all()
 
 
 def ward_active_projects(self):

@@ -1,5 +1,5 @@
 <div>
-  {% if task.state.approvement_id %}
+  {% if task.expense.approvement.is_rejected == False %}
     <a href="{% url 'tasks:move_to_next_state' task.id %}" class="btn btn-link">Move to next</a>
   {% else %}
    <a href="{% url 'tasks:move_to_next_state' task.id %}" class="btn btn-link disabled">Move to next</a>

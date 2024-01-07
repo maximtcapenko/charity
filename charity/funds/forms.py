@@ -26,7 +26,7 @@ class CreateContributionForm(forms.ModelForm, FormControlMixin):
     def clean(self):
         validate_form_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
-    
+
     def save(self):
         user = get_argument_or_error('user', self.initial)
         self.instance.author = user
@@ -71,3 +71,22 @@ class CreateContributorForm(forms.ModelForm, FormControlMixin):
     class Meta:
         model = Contributor
         exclude = ['id', 'date_created']
+
+
+class UpdateVolunteerProfile(forms.ModelForm, FormControlMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        FormControlMixin.__init__(self)
+
+        self.fields['fund'].widget = forms.HiddenInput()
+
+    def clean(self):
+        validate_form_field('fund', self.initial, self.cleaned_data)
+        return self.cleaned_data
+
+    class Meta:
+        model = VolunteerProfile
+        exclude = ['id',
+                   'date_created',
+                   'user',
+                   'cover']

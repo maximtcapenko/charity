@@ -1,13 +1,15 @@
 from django.db import models
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.urls import reverse
+from django.views.decorators.http import require_http_methods
 from commons import DEFAULT_PAGE_SIZE
 from commons.functions import user_should_be_volunteer, user_should_be_superuser, \
     render_generic_form
-from .models import Fund
-from .forms import CreateContributionForm, CreateVolunteerForm, CreateContributorForm
+from .models import Fund, VolunteerProfile
+from .forms import CreateContributionForm, CreateVolunteerForm, \
+    CreateContributorForm, UpdateVolunteerProfile
 
 
 @login_required
@@ -36,7 +38,8 @@ def get_details(request, id):
             fund.budgets.order_by('-date_created'),
             DEFAULT_PAGE_SIZE),
         'projects': lambda fund: Paginator(
-            fund.active_projects.order_by('-date_created'),
+            fund.active_projects.select_related(
+                'leader', 'leader__volunteer_profile').order_by('-date_created'),
             DEFAULT_PAGE_SIZE),
         'processes': lambda fund: Paginator(
             fund.processes.annotate(active_project_count=models.Count('projects', distinct=True),
@@ -68,6 +71,55 @@ def get_details(request, id):
 @user_passes_test(user_should_be_volunteer)
 def get_current_details(request):
     return get_details(request, request.user.volunteer_profile.fund_id)
+
+
+@login_required
+@user_passes_test(user_should_be_volunteer)
+def get_volunteer_details(request, id):
+    volunteer = get_object_or_404(
+        VolunteerProfile.objects.filter(
+            fund__id=request.user.volunteer_profile.fund_id),
+        pk=id)
+    return render(request, 'fund_volunteer_details.html', {
+        'volunteer': volunteer
+    })
+
+
+@require_http_methods(['POST'])
+@login_required
+@user_passes_test(user_should_be_volunteer)
+def add_volunteer_cover(request, id):
+    cover = request.FILES['cover']
+    if cover:
+        volunteer = get_object_or_404(
+            VolunteerProfile.objects.filter(
+                fund__id=request.user.volunteer_profile.fund_id),
+            pk=id)
+        volunteer.cover = cover
+        volunteer.save()
+
+    return redirect(reverse('funds:get_volunteer_details', args=[id]))
+
+
+@login_required
+@user_passes_test(user_should_be_volunteer)
+def edit_volunteer_profile(request, id):
+    volunteer = get_object_or_404(
+        VolunteerProfile.objects.filter(
+            fund__id=request.user.volunteer_profile.fund_id),
+        pk=id)
+    initial = {
+        'fund': request.user.volunteer_profile.fund
+    }
+    return render_generic_form(
+        request=request, form_class=UpdateVolunteerProfile,
+        context={
+            'title': 'Edit volunteer',
+            'return_url': reverse('funds:get_volunteer_details', args=[id]),
+            'instance': volunteer,
+            'get_form_initial': initial,
+            'post_form_initial': initial
+        })
 
 
 @login_required
