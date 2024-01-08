@@ -2,6 +2,7 @@ from django.db import models
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
@@ -11,8 +12,9 @@ from .models import Ward
 from projects.models import Project
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def create(request):
     return render_generic_form(
         request=request, form_class=CreateWardForm, context={
@@ -24,8 +26,9 @@ def create(request):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def get_list(request):
     total_count = Ward.objects.count()
     total_active_count = Ward.active_objects.count()
@@ -36,7 +39,6 @@ def get_list(request):
                                     models.Q(projects__isnull=True) |
                                     models.Q(projects__is_closed=False)) \
         .annotate(active_project_count=models.Count('projects')) \
-        .order_by('-date_created') \
         .values('id', 'name', 'date_created', 'is_inactive', 'active_project_count') \
         .all()
 
@@ -49,8 +51,9 @@ def get_list(request):
     })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def get_details(request, id):
     ward = get_object_or_404(Ward.objects.filter(
         fund_id=request.user.volunteer_profile.fund_id), pk=id)

@@ -62,6 +62,9 @@ class UpdateTaskForm(CreateTaskForm):
         super().__init__(*args, **kwargs)
 
         if self.instance:
+            if self.instance.is_started:
+                self.fields['start_date'].disabled = True
+
             self.fields['ward'].queryset = Ward.active_objects. \
                 filter(Q(projects__in=[self.instance.project])
                        & ~Exists(Task.objects.filter(
@@ -92,15 +95,31 @@ class CreateCommentForm(forms.ModelForm, FormControlMixin):
         #                ~Q(id=user.id)) \
         #        .only('id', 'username')
         self.fields['author'].widget = forms.HiddenInput()
+        self.fields['task'].widget = forms.HiddenInput()
 
-    def save(self):
-        self.instance.task = self.initial['task']
+        reply = self.initial.get('reply')
+        if reply:
+            self.fields['reply'].widget = forms.HiddenInput()
+        else:
+            self.fields.pop('reply')
 
-        return super().save()
+    def clean(self):
+        task = get_argument_or_error('task', self.initial)
+        if task.id != self.cleaned_data['task'].id:
+            raise forms.ValidationError('Task in form is not the same as target task')
+        
+        form_reply = self.cleaned_data.get('reply')
+
+        if form_reply:
+            reply = get_argument_or_error('reply', self.initial)
+            if form_reply.id != reply.id:
+                raise forms.ValidationError('Reply in form is not the same as target comment')
+    
+        return self.cleaned_data
 
     class Meta:
         model = Comment
-        exclude = ['id', 'task', 'reply', 'tagged_interlocutors']
+        exclude = ['id', 'tagged_interlocutors']
 
 
 class ActivateTaskStateForm(forms.ModelForm, FormControlMixin):

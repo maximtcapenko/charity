@@ -2,6 +2,7 @@ from django.db import models
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
@@ -11,8 +12,9 @@ from .forms import CreateProcessForm, CreateProcessStateForm
 from .models import Process
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def create(request):
     return render_generic_form(
         request=request, form_class=CreateProcessForm,
@@ -25,8 +27,9 @@ def create(request):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def create_state(request, id):
     return render_generic_form(
         request=request, form_class=CreateProcessStateForm, context={
@@ -39,8 +42,9 @@ def create_state(request, id):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def get_list(request):
     query_set = Process.objects.filter(models.Q(fund_id=request.user
                                                 .volunteer_profile.fund_id),
@@ -48,7 +52,6 @@ def get_list(request):
                                        models.Q(projects__is_closed=False)) \
         .annotate(active_project_count=models.Count('projects', distinct=True),
                   states_count=models.Count('states', distinct=True)) \
-        .order_by('-date_created') \
         .values('id', 'name', 'date_created', 'is_inactive',
                 'states_count', 'active_project_count') \
         .all()
@@ -59,8 +62,9 @@ def get_list(request):
     })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def get_details(request, id):
     process = get_object_or_404(Process, pk=id)
     paginator = Paginator(process.states.order_by(

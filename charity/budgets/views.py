@@ -3,6 +3,7 @@ from django.db import models
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
@@ -19,8 +20,9 @@ def _get_budget_or_404(request, id):
         fund_id=request.user.volunteer_profile.fund_id), pk=id)
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def create(request):
     return render_generic_form(
         request=request, form_class=CreateBudgetForm,
@@ -38,8 +40,9 @@ def create(request):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def edit_details(request, id):
     budget = _get_budget_or_404(request, id)
     return render_generic_form(
@@ -58,8 +61,9 @@ def edit_details(request, id):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def create_budget_income(request, id):
     budget = _get_budget_or_404(request, id)
 
@@ -78,8 +82,9 @@ def create_budget_income(request, id):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def approve_budget(request, id):
     return render_generic_form(
         request=request,
@@ -95,8 +100,9 @@ def approve_budget(request, id):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def approve_budget_income(request, id):
     return render_generic_form(
         request=request,
@@ -112,8 +118,9 @@ def approve_budget_income(request, id):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def approve_budget_expense(request, id):
     return render_generic_form(
         request=request,
@@ -129,14 +136,14 @@ def approve_budget_expense(request, id):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def get_income_details(request, id):
     income = get_object_or_404(Income.objects.filter(
         budget__fund__id=request.user.volunteer_profile.fund_id), pk=id)
 
-    paginator = Paginator(income.approvements.order_by('-date_created'),
-                          DEFAULT_PAGE_SIZE)
+    paginator = Paginator(income.approvements.all(), DEFAULT_PAGE_SIZE)
 
     return render(request, 'budget_income_details.html', {
         'income': income,
@@ -144,14 +151,14 @@ def get_income_details(request, id):
     })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def get_expense_details(request, id):
     expense = get_object_or_404(Expense.objects.filter(
         budget__fund__id=request.user.volunteer_profile.fund_id), pk=id)
 
-    paginator = Paginator(expense.approvements.order_by('-date_created'),
-                          DEFAULT_PAGE_SIZE)
+    paginator = Paginator(expense.approvements.all(), DEFAULT_PAGE_SIZE)
 
     return render(request, 'budget_expense_details.html', {
         'expense': expense,
@@ -159,36 +166,35 @@ def get_expense_details(request, id):
     })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def get_list(request):
     paginator = Paginator(Budget.objects.filter(
-        fund_id=request.user.volunteer_profile.fund_id)
-        .order_by('date_created'), DEFAULT_PAGE_SIZE)
+        fund_id=request.user.volunteer_profile.fund_id), DEFAULT_PAGE_SIZE)
     return render(request, 'budgets_list.html', {
         'page': paginator.get_page(request.GET.get('page'))
     })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def get_details(request, id):
     default_tab = 'incomes'
     tabs = {
         'incomes': lambda budget: Paginator(
             budget.incomes
-                  .select_related('author','author__volunteer_profile', 'approvement')
-                  .order_by('-date_created'),
+                  .select_related('author', 'author__volunteer_profile', 'approvement'),
             DEFAULT_PAGE_SIZE
         ),
         'expenses': lambda budget: Paginator(
             budget.expenses
-            .select_related('author', 'approvement', 'project')
-            .order_by('-date_created'),
+            .select_related('author', 'approvement', 'project'),
             DEFAULT_PAGE_SIZE
         ),
         'approvements': lambda budget: Paginator(
-            budget.approvements.order_by('-date_created'),
+            budget.approvements.all(),
             DEFAULT_PAGE_SIZE
         )
     }
@@ -215,8 +221,9 @@ def get_details(request, id):
     })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def budget_expenses_planing(request, id):
     budget = _get_budget_or_404(request, id)
     if budget.approvement and budget.approvement.is_rejected == False:
@@ -252,8 +259,9 @@ def budget_expenses_planing(request, id):
     })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def add_budget_expenses(request, id):
     budget = _get_budget_or_404(request, id)
     task_id = request.GET.get('task_id')

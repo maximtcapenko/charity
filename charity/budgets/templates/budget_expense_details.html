@@ -22,8 +22,12 @@
       Author: {{ expense.author.username }}
     </div>
     <div>
+      <i class="fa-solid fa-list-check"></i>
+      Task: <a href="{% url 'tasks:get_details' expense.task.id %}">{{ expense.task.name }} </a>
+    </div>
+    <div>
       <i class="fas fa-sack-dollar"></i>
-      Amount:<a href="#"> {{ expense.amount|floatformat:'2g' }} </a>
+      Amount: {{ expense.amount|floatformat:'2g' }}
     </div>
     <div>
       {% include 'partials/li_approvement_part.html' with approvement=expense.approvement %}

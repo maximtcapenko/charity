@@ -21,7 +21,7 @@ class FormControlMixin:
                 self.fields[field].empty_label = '%s %s' % (
                     'Select', self.fields[field].label)
                 self.fields[field].widget.attrs.update({
-                    'class': 'form-control'
+                    'class': 'form-select'
                 })
 
             else:

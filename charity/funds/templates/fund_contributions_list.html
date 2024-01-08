@@ -25,7 +25,7 @@
           {% for contribution in page %}
             <tr>
               <td>
-                <a href="#">{{ contribution.contributor.name }}</a>
+                <a href="{% url 'funds:get_contribution_details' contribution.id %}">{{ contribution.contributor.name }}</a>
               </td>
               <td>{{ contribution.contribution_date }}</td>
               <td>{{ contribution.amount|floatformat:'2g' }}</td>

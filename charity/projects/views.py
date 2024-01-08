@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import render, get_object_or_404
+from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
@@ -18,15 +19,16 @@ def _get_project_or_404(request, project_id):
         pk=project_id)
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def add_ward_to_project(request, id):
     project = _get_project_or_404(request=request, project_id=id)
     return_url = reverse('projects:get_details', args=[
         project.id]) + '?tab=wards'
 
     return render_generic_form(
-        request=request, form_class=AddWardToProjectForm, 
+        request=request, form_class=AddWardToProjectForm,
         context={
             'return_url': return_url,
             'title': 'Include ward to project',
@@ -39,8 +41,9 @@ def add_ward_to_project(request, id):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def add_process_to_project(request, id):
     project = _get_project_or_404(request=request, project_id=id)
     return_url = reverse('projects:get_details', args=[
@@ -60,8 +63,9 @@ def add_process_to_project(request, id):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def edit_details(request, id):
     project = _get_project_or_404(request=request, project_id=id)
     return render_generic_form(
@@ -78,18 +82,20 @@ def edit_details(request, id):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def close(request, id):
     project = get_object_or_404(Project, pk=id)
     return HttpResponseNotAllowed([request.method])
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
 def create(request):
     return render_generic_form(
-        request=request, form_class=CreateProjectForm, 
+        request=request, form_class=CreateProjectForm,
         context={
             'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=projects'),
             'title': 'Add project',
@@ -99,8 +105,9 @@ def create(request):
         })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def get_list(request):
     projects = Project.objects.filter(
         fund_id=request.user.volunteer_profile.fund_id).all()
@@ -110,8 +117,9 @@ def get_list(request):
     })
 
 
-@login_required
 @user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def get_details(request, id):
     default_tab = 'tasks'
     tabs = {
@@ -124,11 +132,11 @@ def get_details(request, id):
             .order_by('order_position'),
             DEFAULT_PAGE_SIZE),
         'processes': lambda project: Paginator(
-            project.processes.order_by('-date_created'),
+            project.processes.all(),
             DEFAULT_PAGE_SIZE
         ),
         'wards': lambda project: Paginator(
-            project.wards.order_by('-date_created'),
+            project.wards.all(),
             DEFAULT_PAGE_SIZE
         )
     }

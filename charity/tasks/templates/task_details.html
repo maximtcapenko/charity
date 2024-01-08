@@ -22,7 +22,7 @@
       </div>
       <div>
         <i class="fas fa-sack-dollar"></i>
-        Expenses: {{ task.estimated_expense_amount|floatformat:'2g' }}
+        Expenses: <a href="{% url 'budgets:get_expense_details' task.expense.id %}">{{ task.estimated_expense_amount|floatformat:'2g' }}</a>
       </div>
       <div>
         {% include 'partials/li_approvement_part.html' with approvement=task.expense.approvement %}
