@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from commons.mixins import FormControlMixin
-from commons.functions import get_argument_or_error, validate_form_field
+from commons.functions import get_argument_or_error, validate_modelform_field
 
 from funds.models import Approvement
 from .models import Budget, Income, Contribution
@@ -23,7 +23,7 @@ class CreateBudgetForm(forms.ModelForm, FormControlMixin):
             .only('id', 'username')
 
     def clean(self):
-        validate_form_field('fund', self.initial, self.cleaned_data)
+        validate_modelform_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
 
     def save(self):
@@ -36,7 +36,7 @@ class CreateBudgetForm(forms.ModelForm, FormControlMixin):
         model = Budget
         exclude = ['id', 'date_creted',
                    'author', 'is_closed',
-                   'approvement', 'approvements']
+                   'approvement', 'approvements', 'reviewers']
 
 
 class UpdateBudgetForm(CreateBudgetForm):
@@ -49,7 +49,7 @@ class UpdateBudgetForm(CreateBudgetForm):
             raise forms.ValidationError(
                 'Budget is approved and can not be edited')
 
-        validate_form_field('fund', self.initial, self.cleaned_data)
+        validate_modelform_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
 
     def clean_manager(self):
@@ -180,3 +180,36 @@ class ApproveBudgetForm(BaseApproveForm):
                 'Budget can not be approved, there are not approved items')
 
         return self.cleaned_data
+
+
+class AddBudgetReviewerForm(forms.Form, FormControlMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        FormControlMixin.__init__(self)
+
+        self.fields['budget'].widget = forms.HiddenInput()
+        budget = get_argument_or_error('budget', self.initial)
+        self.fields['reviewer'].queryset = User.objects.filter(
+            ~models.Q(id__in=budget.reviewers.values('id')))
+
+    reviewer = forms.ModelChoiceField(
+        User.objects, label='Reviewer', required=True)
+    budget = forms.ModelChoiceField(Budget.objects, required=True)
+
+    def clean(self):
+        validate_modelform_field('budget', self.initial, self.cleaned_data)
+        budget = self.cleaned_data['budget']
+
+        if budget.approvement \
+                and budget.approvement.is_rejected == False:
+            raise forms.ValidationError(
+                'Reviewer can not be added because budget is approved')
+
+        return self.cleaned_data
+
+    def save(self):
+        budget = get_argument_or_error('budget', self.initial)
+        reviewer = self.cleaned_data['reviewer']
+        budget.reviewers.add(reviewer)
+
+        return reviewer

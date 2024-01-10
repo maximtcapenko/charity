@@ -36,14 +36,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'funds.apps.FundsConfig',
-    'files.apps.FilesConfig',
+    'budgets.apps.BudgetsConfig',
     'commons.apps.CommonsConfig',
+    'files.apps.FilesConfig',
+    'funds.apps.FundsConfig',
+    'processes.apps.ProcessesConfig',
     'projects.apps.ProjectsConfig',
     'tasks.apps.TasksConfig',
-    'processes.apps.ProcessesConfig',
-    'wards.apps.WardsConfig',
-    'budgets.apps.BudgetsConfig'
+    'wards.apps.WardsConfig'
 ]
 
 MIDDLEWARE = [
@@ -54,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'commons.middlewares.BadRequestMiddleware'
 ]
 
 ROOT_URLCONF = 'charity.urls'

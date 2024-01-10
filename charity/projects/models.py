@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import signals
+from django.dispatch import receiver
 from django.contrib.auth.models import User
 from commons.models import Base
 from funds.models import Fund
@@ -17,8 +19,18 @@ class Project(Base):
     processes = models.ManyToManyField(Process, related_name='projects')
     leader = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name='leaded_projects')
+    reviewers = models.ManyToManyField(User, related_name='project_reviewers')
     closed_date = models.DateField(null=True, blank=True)
     is_closed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+
+@receiver(signals.post_save, sender=Project)
+def add_default_reviewers(sender, instance, created, **kwargs):
+    if created:
+        instance.reviewers.add(instance.leader)
 
 
 def fund_projects_count(self):

@@ -174,17 +174,12 @@ def attach_file(request, id):
 def get_details(request, id):
     default_tab = 'states'
     tabs = {
-        'states': lambda task: Paginator(task.states
-                                         .select_related('author'),
-                                         per_page=DEFAULT_PAGE_SIZE),
-        'comments': lambda task: Paginator(task.comments.filter(
-            reply_id__isnull=True)
-            .annotate(replies_count=models.Count('replies'))
-            .order_by('date_created')
-            .values('id', 'author__id', 'author__username', 'date_created', 'notes', 'replies_count'),
-            per_page=DEFAULT_PAGE_SIZE),
-        'files': lambda task: Paginator(task.attachments.all(), 
-                                        per_page=DEFAULT_PAGE_SIZE)
+        'states': lambda task: task.states.select_related('author'),
+        'comments': lambda task: task.comments.filter(
+            reply_id__isnull=True).annotate(
+                replies_count=models.Count('replies')).order_by('date_created')
+        .values('id', 'author__id', 'author__username', 'date_created', 'notes', 'replies_count'),
+        'files': lambda task:  task.attachments.all()
     }
 
     tab = request.GET.get('tab', default_tab)
@@ -201,7 +196,8 @@ def get_details(request, id):
     else:
         authors = None
 
-    paginator = tabs.get(tab)(task)
+    queryset = tabs.get(tab)(task)
+    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
     return render(request, 'task_details.html', {
         'tabs': tabs.keys(),

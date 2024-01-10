@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 
 from commons.mixins import FormControlMixin
-from commons.functions import get_argument_or_error, validate_form_field
+from commons.functions import get_argument_or_error, validate_modelform_field
 from .models import Fund, Contribution, Contributor, VolunteerProfile
 
 
@@ -24,7 +24,7 @@ class CreateContributionForm(forms.ModelForm, FormControlMixin):
             .filter(fund__id=fund.id)
 
     def clean(self):
-        validate_form_field('fund', self.initial, self.cleaned_data)
+        validate_modelform_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
 
     def save(self):
@@ -49,7 +49,7 @@ class CreateVolunteerForm(forms.ModelForm, FormControlMixin):
         self.fields['fund'].widget = forms.HiddenInput()
 
     def clean(self):
-        validate_form_field('fund', self.initial, self.cleaned_data)
+        validate_modelform_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
 
     class Meta:
@@ -65,7 +65,7 @@ class CreateContributorForm(forms.ModelForm, FormControlMixin):
         self.fields['fund'].widget = forms.HiddenInput()
 
     def clean(self):
-        validate_form_field('fund', self.initial, self.cleaned_data)
+        validate_modelform_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
 
     class Meta:
@@ -81,7 +81,7 @@ class UpdateVolunteerProfile(forms.ModelForm, FormControlMixin):
         self.fields['fund'].widget = forms.HiddenInput()
 
     def clean(self):
-        validate_form_field('fund', self.initial, self.cleaned_data)
+        validate_modelform_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
 
     class Meta:

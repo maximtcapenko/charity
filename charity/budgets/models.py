@@ -1,5 +1,7 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
+from django.db.models import signals
+from django.dispatch import receiver
 from commons.models import Base
 from funds.models import Fund, Approvement, Contribution
 
@@ -20,6 +22,7 @@ class Budget(Base):
         User, null=True, on_delete=models.PROTECT, related_name='managed_budgets')
     approvements = models.ManyToManyField(
         Approvement, related_name='budget_approvements')
+    reviewers = models.ManyToManyField(User, related_name='budget_reviewers')
 
     def __str__(self):
         return self.name
@@ -59,6 +62,12 @@ class Income(Base):
     @property
     def is_approved(self):
         return self.approvement.is_rejected == False
+
+
+@receiver(signals.post_save, sender=Budget)
+def add_default_reviewers(sender, instance, created, **kwargs):
+    if created:
+        instance.reviewers.add(instance.manager)
 
 
 def fund_active_budgets_count(self):

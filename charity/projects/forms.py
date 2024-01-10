@@ -3,7 +3,7 @@ from django.db.models import Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
 from commons.mixins import FormControlMixin
-from commons.functions import get_argument_or_error
+from commons.functions import get_argument_or_error, validate_modelform_field
 
 from .models import Project
 from processes.models import Process, ProcessState
@@ -25,7 +25,7 @@ class CreateProjectForm(forms.ModelForm, FormControlMixin):
     class Meta:
         model = Project
         exclude = ['date_created', 'id', 'wards', 'closed_date',
-                   'is_closed', 'cover', 'budget', 'processes']
+                   'is_closed', 'cover', 'budget', 'processes', 'reviewers']
 
 
 class UpdateProjectForm(CreateProjectForm):
@@ -75,7 +75,7 @@ class AddProcessToProjectForm(forms.Form, FormControlMixin):
 
     process = forms.ModelChoiceField(
         Process.objects, required=True, label='Process')
-    
+
     def save(self):
         project = get_argument_or_error('project', self.initial)
         process = self.cleaned_data['process']
@@ -83,3 +83,30 @@ class AddProcessToProjectForm(forms.Form, FormControlMixin):
         project.save()
 
         return project
+
+
+class AddProjectReviewerForm(forms.Form, FormControlMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        FormControlMixin.__init__(self)
+
+        self.fields['project'].widget = forms.HiddenInput()
+        project = get_argument_or_error('project', self.initial)
+        self.fields['reviewer'].queryset = User.objects.filter(
+            Q(volunteer_profile__fund__id=project.fund_id) &
+            ~Q(id__in=project.reviewers.values('id')))
+
+    reviewer = forms.ModelChoiceField(
+        User.objects, label='Reviewer', required=True)
+    project = forms.ModelChoiceField(Project.objects, required=True)
+
+    def clean(self):
+        validate_modelform_field('project', self.initial, self.cleaned_data)
+        return self.cleaned_data
+
+    def save(self):
+        project = get_argument_or_error('project', self.initial)
+        reviewer = self.cleaned_data['reviewer']
+        project.reviewers.add(reviewer)
+
+        return reviewer

@@ -13,5 +13,9 @@ urlpatterns = [
     path('<uuid:id>/add_ward_to_project/',
          views.add_ward_to_project, name='add_ward_to_project'),
     path('<uuid:id>/add_process_to_project/',
-         views.add_process_to_project, name='add_process_to_project')
+         views.add_process_to_project, name='add_process_to_project'),
+    path('<uuid:id>/reviewers/add/', views.add_project_reviewer,
+         name='add_project_reviewer'),
+    path('<uuid:id>/reviewers/<uuid:reviewer_id>/remove/',
+         views.remove_project_reviewer, name='remove_project_reviewer')
 ]

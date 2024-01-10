@@ -51,8 +51,8 @@ def get_details(request, id):
     if not tab in tabs:
         tab = default_tab
 
-    query_set = tabs.get(tab)(fund)
-    paginator = Paginator(query_set, DEFAULT_PAGE_SIZE)
+    queryset = tabs.get(tab)(fund)
+    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
     return render(request, 'fund_details.html', {
         'fund': fund,

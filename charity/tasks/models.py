@@ -31,7 +31,12 @@ class TaskState(Base):
     author = models.ForeignKey(User, on_delete=models.PROTECT)
     approvement = models.ForeignKey(
         Approvement, on_delete=models.SET_NULL, null=True)
-    approvements = models.ManyToManyField(Approvement, related_name='approved_task_states')
+    approvements = models.ManyToManyField(
+        Approvement, related_name='approved_task_states')
+    
+    def __str__(self):
+        return self.state.name
+    
 
 
 class Task(Base):
@@ -60,6 +65,8 @@ class Task(Base):
     attachments = models.ManyToManyField(Attachment)
     states = models.ManyToManyField(TaskState, related_name='state_tasks')
 
+    def __str__(self):
+        return self.name
 
     @property
     def should_be_approved(self):

@@ -7,10 +7,11 @@ from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
+from commons.exceptions import ApplicationError
 from commons.functions import user_should_be_volunteer, render_generic_form
 from .models import Budget, Income
 from .forms import CreateBudgetForm, CreateIncomeForm, \
-    BudgetItemApproveForm, ApproveBudgetForm, UpdateBudgetForm
+    BudgetItemApproveForm, ApproveBudgetForm, UpdateBudgetForm, AddBudgetReviewerForm
 from projects.models import Project
 from tasks.models import Task, Expense
 
@@ -27,8 +28,7 @@ def create(request):
     return render_generic_form(
         request=request, form_class=CreateBudgetForm,
         context={
-            'return_url': '%s?%s' % (
-                reverse('funds:get_current_details'), 'tab=budgets'),
+            'return_url': f'{reverse("funds:get_current_details")}?tab=budgets',
             'title': 'Add budget',
             'post_form_initial': {
                 'fund': request.user.volunteer_profile.fund,
@@ -66,7 +66,6 @@ def edit_details(request, id):
 @require_http_methods(['GET', 'POST'])
 def create_budget_income(request, id):
     budget = _get_budget_or_404(request, id)
-
     return render_generic_form(
         request=request, form_class=CreateIncomeForm,
         context={
@@ -89,8 +88,7 @@ def approve_budget(request, id):
     return render_generic_form(
         request=request,
         form_class=ApproveBudgetForm, context={
-            'return_url': '%s?%s' % (reverse('budgets:get_details', args=[id]),
-                                     'tab=approvements'),
+            'return_url': f'{reverse("budgets:get_details", args=[id])}?tab=approvements',
             'title': 'Add approvement',
             'post_form_initial': {
                 'user': request.user,
@@ -103,17 +101,17 @@ def approve_budget(request, id):
 @user_passes_test(user_should_be_volunteer)
 @login_required
 @require_http_methods(['GET', 'POST'])
-def approve_budget_income(request, id):
+def approve_budget_income(request, income_id):
     return render_generic_form(
         request=request,
         form_class=BudgetItemApproveForm, context={
-            'return_url': reverse('budgets:get_income_details', args=[id]),
+            'return_url': reverse('budgets:get_income_details', args=[income_id]),
             'title': 'Add approvement',
             'post_form_initial': {
                 'user': request.user,
                 'fund': request.user.volunteer_profile.fund,
                 'target': get_object_or_404(Income.objects.filter(
-                    budget__fund__id=request.user.volunteer_profile.fund_id), pk=id)
+                    budget__fund__id=request.user.volunteer_profile.fund_id), pk=income_id)
             },
         })
 
@@ -121,27 +119,68 @@ def approve_budget_income(request, id):
 @user_passes_test(user_should_be_volunteer)
 @login_required
 @require_http_methods(['GET', 'POST'])
-def approve_budget_expense(request, id):
+def approve_budget_expense(request, expense_id):
     return render_generic_form(
         request=request,
         form_class=BudgetItemApproveForm, context={
-            'return_url': reverse('budgets:get_expense_details', args=[id]),
+            'return_url': reverse('budgets:get_expense_details', args=[expense_id]),
             'title': 'Add approvement',
             'post_form_initial': {
                 'user': request.user,
                 'fund': request.user.volunteer_profile.fund,
                 'target': get_object_or_404(Expense.objects.filter(
-                    budget__fund__id=request.user.volunteer_profile.fund_id), pk=id)
+                    budget__fund__id=request.user.volunteer_profile.fund_id), pk=expense_id)
             },
         })
 
 
 @user_passes_test(user_should_be_volunteer)
 @login_required
+@require_http_methods(['GET', 'POST'])
+def add_budget_reviewer(request, id):
+    initial = {
+        'budget': _get_budget_or_404(request, id)
+    }
+    return render_generic_form(
+        request=request, form_class=AddBudgetReviewerForm, context={
+            'return_url': f'{reverse("budgets:get_details", args=[id])}?tab=reviewers',
+            'title': 'Add budget reviewer',
+            'get_form_initial': initial,
+            'post_form_initial': initial
+        })
+
+
+@user_passes_test(user_should_be_volunteer)
+@login_required
 @require_http_methods(['GET'])
-def get_income_details(request, id):
+def remove_budget_reviewer(request, id, reviewer_id):
+    budget = _get_budget_or_404(request, id)
+    return_url = f'{reverse("budgets:get_details", args=[id])}?tab=reviewers'
+    if budget.reviewers.count() == 1:
+        """redirect to error page with return url"""
+        raise ApplicationError(
+            'Budget must have at least one reviewer', return_url)
+
+    if budget.incomes.filter(approvement__author__id=reviewer_id).exists():
+        raise ApplicationError(
+            'Reviewer has reviewed incomes in budget', return_url)
+
+    if budget.expenses.filter(approvement__author__id=reviewer_id).exists():
+        raise ApplicationError(
+            'Reviewer has reviewed expenses in budget', return_url)
+
+    reviewer = get_object_or_404(budget.reviewers, pk=reviewer_id)
+    budget.reviewers.remove(reviewer)
+
+    return redirect(return_url)
+
+
+@user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
+def get_income_details(request, income_id):
     income = get_object_or_404(Income.objects.filter(
-        budget__fund__id=request.user.volunteer_profile.fund_id), pk=id)
+        budget__fund__id=request.user.volunteer_profile.fund_id), pk=income_id)
 
     paginator = Paginator(income.approvements.all(), DEFAULT_PAGE_SIZE)
 
@@ -154,9 +193,9 @@ def get_income_details(request, id):
 @user_passes_test(user_should_be_volunteer)
 @login_required
 @require_http_methods(['GET'])
-def get_expense_details(request, id):
+def get_expense_details(request, expense_id):
     expense = get_object_or_404(Expense.objects.filter(
-        budget__fund__id=request.user.volunteer_profile.fund_id), pk=id)
+        budget__fund__id=request.user.volunteer_profile.fund_id), pk=expense_id)
 
     paginator = Paginator(expense.approvements.all(), DEFAULT_PAGE_SIZE)
 
@@ -183,20 +222,14 @@ def get_list(request):
 def get_details(request, id):
     default_tab = 'incomes'
     tabs = {
-        'incomes': lambda budget: Paginator(
-            budget.incomes
-                  .select_related('author', 'author__volunteer_profile', 'approvement'),
-            DEFAULT_PAGE_SIZE
-        ),
-        'expenses': lambda budget: Paginator(
-            budget.expenses
-            .select_related('author', 'approvement', 'project'),
-            DEFAULT_PAGE_SIZE
-        ),
-        'approvements': lambda budget: Paginator(
-            budget.approvements.all(),
-            DEFAULT_PAGE_SIZE
-        )
+        'incomes': lambda budget:
+            budget.incomes.select_related(
+                'author', 'author__volunteer_profile', 'approvement'),
+        'expenses': lambda budget:
+            budget.expenses.select_related(
+                'author', 'approvement', 'project'),
+        'approvements': lambda budget: budget.approvements.all(),
+        'reviewers': lambda budget: budget.reviewers.select_related('volunteer_profile')
     }
 
     tab = request.GET.get('tab', default_tab)
@@ -208,7 +241,8 @@ def get_details(request, id):
     total_approved_amount = budget.total_approved_amount
     total_approved_expenses_amount = budget.total_approved_expenses_amount
 
-    paginator = tabs.get(tab)(budget)
+    queryset = tabs.get(tab)(budget)
+    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
     return render(request, 'budget_details.html', {
         'tabs': tabs.keys(),

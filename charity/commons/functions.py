@@ -76,8 +76,14 @@ def get_argument_or_error(argument, arguments):
     return argument
 
 
-def validate_form_field(field, initial, cleaned_data):
-    fund = get_argument_or_error(field, initial)
-    cleaned_fund = cleaned_data[field]
-    if fund.id != cleaned_fund.id:
-        raise forms.ValidationError('Fund is not accessible')
+def validate_modelform_field(field, initial, cleaned_data):
+    """
+    Check if `field` exists in both dictionaries
+    :param `field`: name of field
+    :param `initial`: dictionary provided by code user (usual `self.initial property` of Form)
+    :param `cleaned_data`: form clead data dictionary (`self.cleaned_data` of Form)
+    """
+    target_field = get_argument_or_error(field, initial)
+    cleaned_field = cleaned_data[field]
+    if target_field.id != cleaned_field.id:
+        raise forms.ValidationError(f'{field} is not accessible')

@@ -21,3 +21,6 @@ class Attachment(Base):
     type = models.CharField(choices=AttachmentType.choices, max_length=6)
     author = models.ForeignKey(User, on_delete=models.PROTECT)
     fund = models.ForeignKey(Fund, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return f'{self.name} ({self.type})'
