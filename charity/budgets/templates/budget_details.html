@@ -16,11 +16,11 @@
       </div>
       <div>
         <i class="fas fa-user"></i>
-        Author:<a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.author.username }}</a>
+        Author: <a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.author.username }}</a>
       </div>
       <div>
         <i class="fa-solid fa-user-tie"></i>
-        Manager:<a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.manager.username }}</a>
+        Manager: <a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.manager.username }}</a>
       </div>
       <div>
         <i class="fas fa-sack-dollar"></i>
@@ -51,7 +51,9 @@
     {% for tab in tabs %}
     <li class="nav-item" role="presentation">
       {% if selected_tab == tab %}
-        <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}</a>
+        <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
+          <span class="badge bg-danger rounded-circle">{{ items_count }}</span>
+        </a>
       {% else %}
         <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
       {% endif %}

@@ -1,5 +1,5 @@
 import uuid
-from django.db import models
+from django.db.models import Exists, Q, OuterRef, Sum
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
@@ -9,6 +9,7 @@ from django.urls import reverse
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
 from commons.functions import user_should_be_volunteer, render_generic_form
+from funds.models import Approvement
 from .models import Budget, Income
 from .forms import CreateBudgetForm, CreateIncomeForm, \
     BudgetItemApproveForm, ApproveBudgetForm, UpdateBudgetForm, AddBudgetReviewerForm
@@ -161,13 +162,21 @@ def remove_budget_reviewer(request, id, reviewer_id):
         raise ApplicationError(
             'Budget must have at least one reviewer', return_url)
 
+    if budget.approvements.filter(author__id=reviewer_id).exists():
+        raise ApplicationError(
+            'Reviewer can not be removed from budget because of reviewed approvements of budget',
+            return_url
+        )
+
     if budget.incomes.filter(approvement__author__id=reviewer_id).exists():
         raise ApplicationError(
-            'Reviewer has reviewed incomes in budget', return_url)
+            'Reviewer can not be removed from budget because of reviewed incomes in budget',
+            return_url)
 
     if budget.expenses.filter(approvement__author__id=reviewer_id).exists():
         raise ApplicationError(
-            'Reviewer has reviewed expenses in budget', return_url)
+            'Reviewer can not be removed from budget because of reviewed expenses in budget',
+            return_url)
 
     reviewer = get_object_or_404(budget.reviewers, pk=reviewer_id)
     budget.reviewers.remove(reviewer)
@@ -246,6 +255,7 @@ def get_details(request, id):
 
     return render(request, 'budget_details.html', {
         'tabs': tabs.keys(),
+        'items_count': paginator.count,
         'budget': budget,
         'total_approved_amount': total_approved_amount,
         'total_approved_expenses_amount': total_approved_expenses_amount,
@@ -265,13 +275,13 @@ def budget_expenses_planing(request, id):
 
     pending_expense_amount = Expense.objects.filter(
         budget_id=budget.id, approvement__isnull=True)\
-        .aggregate(pending_expense_amount=models.Sum('amount', default=0))['pending_expense_amount']
+        .aggregate(pending_expense_amount=Sum('amount', default=0))['pending_expense_amount']
 
     avaliable_income_amount = budget.avaliable_income_amount - pending_expense_amount
 
     projects = Project.objects.annotate(
-        requested_budget=models.Sum('tasks__estimated_expense_amount',
-                                    filter=models.Q(tasks__expense__isnull=True), distinct=True, default=0))\
+        requested_budget=Sum('tasks__estimated_expense_amount',
+                             filter=Q(tasks__expense__isnull=True), distinct=True, default=0))\
         .filter(is_closed=False, fund_id=budget.fund_id, tasks__isnull=False) \
         .values('id', 'name', 'requested_budget').all()
 
@@ -316,3 +326,41 @@ def add_budget_expenses(request, id):
         '%s?%s=%s' %
         (reverse('budgets:expenses_planing', args=[id]),
          'project_id', project.id))
+
+
+@user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
+def get_reviewer_details(request, id, reviewer_id):
+    default_tab = 'incomes'
+    tabs = {
+        'incomes': lambda budget, reviewer:
+            Income.objects.filter(
+                Q(budget=budget) &
+                Exists(Approvement.objects.filter(approved_incomes=OuterRef('pk'), author=reviewer)))
+        .prefetch_related('approvements'),
+        'expenses': lambda budget, reviewer:
+            Expense.objects.filter(
+                Q(budget=budget) &
+                Exists(Approvement.objects.filter(approved_expenses=OuterRef('pk'), author=reviewer)))
+        .prefetch_related('approvements'),
+    }
+
+    tab = request.GET.get('tab', default_tab)
+
+    if not tab in tabs:
+        tab = default_tab
+    budget = _get_budget_or_404(request, id)
+    reviewer = get_object_or_404(budget.reviewers, pk=reviewer_id)
+
+    queryset = tabs.get(tab)(budget, reviewer)
+    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
+
+    return render(request, 'budget_reviewer_details.html', {
+        'tabs': tabs.keys(),
+        'items_count': paginator.count,
+        'selected_tab': tab,
+        'budget': budget,
+        'reviewer': reviewer,
+        'page': paginator.get_page(request.GET.get('page'))
+    })

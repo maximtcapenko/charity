@@ -57,6 +57,7 @@ def get_details(request, id):
     return render(request, 'fund_details.html', {
         'fund': fund,
         'selected_tab': tab,
+        'items_count': paginator.count,
         'tabs': tabs.keys(),
         'page': paginator.get_page(request.GET.get('page'))
     })

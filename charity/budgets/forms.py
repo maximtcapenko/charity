@@ -153,6 +153,13 @@ class BaseApproveForm(forms.Form, FormControlMixin):
 class BudgetItemApproveForm(BaseApproveForm):
     def clean(self):
         target = get_argument_or_error('target', self.initial)
+        user = get_argument_or_error('user', self.initial)
+
+        """Validate user access"""
+        if not target.budget.reviewers.filter(id=user.id).exists():
+            raise forms.ValidationError(
+                'Current user is not budget reviewer, only reviewers can approve budget items')
+        
         if target.budget.approvement and target.budget.approvement.is_rejected == False:
             raise forms.ValidationError(
                 'Item can not be approved because budget is approved')
@@ -161,6 +168,12 @@ class BudgetItemApproveForm(BaseApproveForm):
 class ApproveBudgetForm(BaseApproveForm):
     def clean(self):
         budget = get_argument_or_error('target', self.initial)
+        user = get_argument_or_error('user', self.initial)
+
+        """Validate user access"""
+        if not budget.reviewers.filter(id=user.id).exists():
+            raise forms.ValidationError(
+                'Current user is not budget reviewer, only reviewers can approve budget')
 
         incomes = budget.incomes.exists()
         expenses = budget.expenses.exists()
@@ -190,6 +203,7 @@ class AddBudgetReviewerForm(forms.Form, FormControlMixin):
         self.fields['budget'].widget = forms.HiddenInput()
         budget = get_argument_or_error('budget', self.initial)
         self.fields['reviewer'].queryset = User.objects.filter(
+            models.Q(volunteer_profile__fund__id=budget.fund_id) &
             ~models.Q(id__in=budget.reviewers.values('id')))
 
     reviewer = forms.ModelChoiceField(

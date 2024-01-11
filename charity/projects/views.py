@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
+from django.db.models import Exists, Q, OuterRef
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_http_methods
@@ -8,6 +9,8 @@ from django.urls import reverse
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
 from commons.functions import render_generic_form, user_should_be_volunteer
+from funds.models import Approvement
+from tasks.models import Task, TaskState
 from .forms import CreateProjectForm, AddWardToProjectForm, \
     AddProcessToProjectForm, UpdateProjectForm, AddProjectReviewerForm
 from .models import Project
@@ -129,9 +132,9 @@ def remove_project_reviewer(request, id, reviewer_id):
     project = _get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=reviewers'
 
-    if project.tasks.filter(expense__approvement__author__id=reviewer_id).exists():
+    if project.tasks.filter(state__approvement__author__id=reviewer_id).exists():
         raise ApplicationError(
-            'Reviewer has reviewed tasks in project', return_url)
+            'Reviewer can not be removed from project because of reviewed tasks in project', return_url)
 
     if project.reviewers.count() == 1:
         """redirect to error page with return url"""
@@ -162,13 +165,12 @@ def get_list(request):
 def get_details(request, id):
     default_tab = 'tasks'
     tabs = {
-        'tasks': lambda projrect:
-            project.tasks.
-            select_related(
-                'assignee', 'expense',
-                'expense__approvement',
-                'assignee__volunteer_profile')
-            .order_by('order_position'),
+        'tasks': lambda project: project.tasks.
+        select_related(
+            'assignee', 'expense',
+            'expense__approvement',
+            'assignee__volunteer_profile')
+        .order_by('order_position'),
         'processes': lambda project: project.processes.all(),
         'wards': lambda project: project.wards.all(),
         'reviewers': lambda project: project.reviewers.select_related('volunteer_profile')
@@ -188,7 +190,32 @@ def get_details(request, id):
 
     return render(request, 'project_details.html', {
         'tabs': tabs.keys(),
+        'items_count': paginator.count,
         'project': project,
         'selected_tab': tab,
+        'page': paginator.get_page(request.GET.get('page'))
+    })
+
+
+@user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
+def get_reviewer_details(request, id, reviewer_id):
+    project = get_object_or_404(Project.objects.filter(
+        fund_id=request.user.volunteer_profile.fund_id), pk=id)
+
+    reviewer = get_object_or_404(project.reviewers, pk=reviewer_id)
+
+    queryset = TaskState.objects.filter(
+        Q(task__project=project) & 
+        Exists(Approvement.objects.filter(approved_task_states=OuterRef('pk'), author=reviewer))) \
+            .prefetch_related('approvements') \
+            .prefetch_related('state_tasks') \
+            .select_related('state')
+    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
+
+    return render(request, 'project_reviewer_details.html', {
+        'project': project,
+        'reviewer': reviewer,
         'page': paginator.get_page(request.GET.get('page'))
     })

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mt-4">{{ reviewer.username }}</h2>
+
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'budgets:get_details' budget.id %}?tab=reviewers">{{ budget.name }}</a>
+  </li>
+  <li class="breadcrumb-item active">Details</li>
+</ol>
+<ul class="nav nav-pills mb-3">
+  {% for tab in tabs %}
+  <li class="nav-item" role="presentation">
+    {% if selected_tab == tab %}
+      <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
+        <span class="badge bg-danger rounded-circle">{{ items_count }}</span>
+      </a>
+    {% else %}
+      <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+<div>
+  {% for tab in tabs %}
+  {% if selected_tab == tab %}
+    {% include 'reviews/budget_'|add:tab|add:'_list.html' %}
+  {% endif %}
+  {% endfor %}
+</div>
+{% endblock %}

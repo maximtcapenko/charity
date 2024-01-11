@@ -1,0 +1,35 @@
+<div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Reviewed incomes
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Amount</th>
+            <th>Date created</th>
+            <th>Reviews</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for income in page %}
+            <tr>
+              <td>
+                <a href="{% url 'budgets:get_income_details' income.id %}">{{ income.amount }}</a>
+              </td>
+               <td>{{ income.date_created }}</td>
+               <td>
+                    <ul>
+                    {% for approvement in income.approvements.all %}
+                       <li> {{ approvement.date_created }} {% include 'partials/td_approvement_part.html' %}</li>
+                    {% endfor %}
+                    </ul>
+               </td>
+             </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
+  </div>

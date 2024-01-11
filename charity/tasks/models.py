@@ -22,7 +22,7 @@ class Expense(Base):
     approvement = models.ForeignKey(
         Approvement, on_delete=models.SET_NULL, null=True)
     approvements = models.ManyToManyField(
-        Approvement, related_name='expense_approvements')
+        Approvement, related_name='approved_expenses')
 
 
 class TaskState(Base):

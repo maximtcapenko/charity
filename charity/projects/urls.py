@@ -16,6 +16,8 @@ urlpatterns = [
          views.add_process_to_project, name='add_process_to_project'),
     path('<uuid:id>/reviewers/add/', views.add_project_reviewer,
          name='add_project_reviewer'),
-    path('<uuid:id>/reviewers/<uuid:reviewer_id>/remove/',
-         views.remove_project_reviewer, name='remove_project_reviewer')
+    path('<uuid:id>/reviewers/<int:reviewer_id>/remove/',
+         views.remove_project_reviewer, name='remove_project_reviewer'),
+    path('<uuid:id>/reviewers/<int:reviewer_id>/details', views.get_reviewer_details,
+         name='get_reviewer_details')
 ]

@@ -201,6 +201,7 @@ def get_details(request, id):
 
     return render(request, 'task_details.html', {
         'tabs': tabs.keys(),
+        'items_count': paginator.count,
         'authors': authors,
         'selected_tab': tab,
         'task': task,

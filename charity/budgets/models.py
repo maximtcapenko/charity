@@ -57,7 +57,7 @@ class Income(Base):
     approvement = models.ForeignKey(
         Approvement, on_delete=models.SET_NULL, null=True)
     approvements = models.ManyToManyField(
-        Approvement, related_name='income_approvements')
+        Approvement, related_name='approved_incomes')
 
     @property
     def is_approved(self):

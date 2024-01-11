@@ -57,7 +57,9 @@
     {% for tab in tabs %}
     <li class="nav-item" role="presentation">
       {% if selected_tab == tab %}
-        <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}</a>
+        <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
+          <span class="badge bg-danger rounded-circle">{{ items_count }}</span>
+        </a>
       {% else %}
         <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
       {% endif %}

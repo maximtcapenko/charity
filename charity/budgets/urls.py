@@ -23,5 +23,6 @@ urlpatterns = [
     path('<uuid:id>/approve/', views.approve_budget, name='approve_budget'),
     path('<uuid:id>/edit/',views.edit_details, name='edit_details'),
     path('<uuid:id>/reviewers/add/', views.add_budget_reviewer, name='add_budget_reviewer'),
-    path('<uuid:id>/reviewers/<uuid:reviewer_id>/remove/', views.remove_budget_reviewer, name='remove_budget_reviewer')
+    path('<uuid:id>/reviewers/<int:reviewer_id>/remove/', views.remove_budget_reviewer, name='remove_budget_reviewer'),
+    path('<uuid:id>/reviewers/<int:reviewer_id>/details/', views.get_reviewer_details, name='get_reviewer_details')
 ]
