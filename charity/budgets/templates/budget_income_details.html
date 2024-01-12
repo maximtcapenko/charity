@@ -18,11 +18,23 @@
       Author: {{ income.author.username }}
     </div>
     <div>
+      <i class="fas fa-user"></i>
+      {% if  income.reviewer %}
+        Reviewer: <a href="{% url 'funds:get_volunteer_details' income.reviewer.volunteer_profile.id %}">{{ income.reviewer.username }}</a>
+      {% else%}
+      Reviewer: 
+      {% endif %}
+    </div>
+    <div>
       <i class="fas fa-sack-dollar"></i>
       Amount:<a href="#"> {{ income.amount|floatformat:'2g' }} </a>
     </div>
     <div>
       {% include 'partials/li_approvement_part.html' with approvement=income.approvement %}
+    </div>
+    <div>
+      <i class="fa-regular fa-clipboard"></i>
+      Notes: {{ income.notes }}
     </div>
   </div>
 </div>

@@ -6,7 +6,11 @@ from commons.mixins import FormControlMixin
 from commons.functions import get_argument_or_error, validate_modelform_field
 
 from funds.models import Approvement
+from tasks.models import Expense, Task
+
+from .functions import get_budget_available_income
 from .models import Budget, Income, Contribution
+from .signals import exprense_created
 
 
 class CreateBudgetForm(forms.ModelForm, FormControlMixin):
@@ -93,6 +97,7 @@ class CreateIncomeForm(forms.ModelForm, FormControlMixin):
         FormControlMixin.__init__(self)
 
         self.fields['budget'].widget = forms.HiddenInput()
+        self.fields['reviewer'].queryset = budget.reviewers
 
     def save(self):
         user = get_argument_or_error('user', self.initial)
@@ -124,6 +129,62 @@ class CreateIncomeForm(forms.ModelForm, FormControlMixin):
                    'approvement']
 
 
+class CreateExpenseForm(forms.ModelForm, FormControlMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        budget = get_argument_or_error('budget', self.initial)
+
+        FormControlMixin.__init__(self)
+
+        self.fields['budget'].widget = forms.HiddenInput()
+        self.fields['project'].widget = forms.HiddenInput()
+
+        task = self.initial.get('task')
+        if task:
+            self.fields['amount'].initial = task.estimated_expense_amount
+            self.fields['amount'].disabled = True
+
+        self.fields['reviewer'].queryset = budget.reviewers
+
+    task = forms.ModelChoiceField(Task.objects, disabled=True, label='Task')
+
+    def save(self):
+        user = get_argument_or_error('user', self.initial)
+        self.instance.author = user        
+        self.instance.save()
+        task = self.cleaned_data['task']
+        task.expense = self.instance
+        task.save()
+
+        exprense_created.send(sender=Expense, instance=self.instance)
+
+        return self.instance
+
+    def clean(self):
+        budget = get_argument_or_error('budget', self.initial)
+        if budget.approvement_id:
+            forms.ValidationError(
+                'Can not add new income record, current budget is approved')
+        task = get_argument_or_error('task', self.cleaned_data)
+        avaliable_income_amount = get_budget_available_income(budget)
+
+        if task.estimated_expense_amount > avaliable_income_amount:
+            raise forms.ValidationError(
+                'Task estimated expense amount is begger then avaliabe amount in cuurent budget')
+
+        elif task.estimated_expense_amount <= 0:
+            raise forms.ValidationError('Expense can not be empty or negative')
+
+        return self.cleaned_data
+
+    class Meta:
+        model = Expense
+        exclude = ['id', 'author',
+                   'date_created', 'approvements',
+                   'approvement']
+
+
 class BaseApproveForm(forms.Form, FormControlMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -144,8 +205,8 @@ class BaseApproveForm(forms.Form, FormControlMixin):
             is_rejected=self.cleaned_data['is_rejected'])
 
         target.approvement = approvement
-        target.approvements.add(approvement)
         target.save()
+        target.approvements.add(approvement)
 
         return target
 
@@ -159,7 +220,7 @@ class BudgetItemApproveForm(BaseApproveForm):
         if not target.budget.reviewers.filter(id=user.id).exists():
             raise forms.ValidationError(
                 'Current user is not budget reviewer, only reviewers can approve budget items')
-        
+
         if target.budget.approvement and target.budget.approvement.is_rejected == False:
             raise forms.ValidationError(
                 'Item can not be approved because budget is approved')

@@ -19,7 +19,7 @@ class Project(Base):
     processes = models.ManyToManyField(Process, related_name='projects')
     leader = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name='leaded_projects')
-    reviewers = models.ManyToManyField(User, related_name='project_reviewers')
+    reviewers = models.ManyToManyField(User, related_name='reviewed_projects')
     closed_date = models.DateField(null=True, blank=True)
     is_closed = models.BooleanField(default=False)
 

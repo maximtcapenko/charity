@@ -24,6 +24,7 @@ class CreateTaskForm(forms.ModelForm, FormControlMixin):
                 .filter(volunteer_profile__fund_id=project.fund_id) \
                 .only('id', 'username')
 
+            self.fields['reviewer'].queryset = project.reviewers
             self.fields['ward'].queryset = Ward.active_objects. \
                 filter(Q(projects__in=[project])
                        & ~Exists(Task.objects.filter(ward=OuterRef("pk"),
@@ -38,6 +39,11 @@ class CreateTaskForm(forms.ModelForm, FormControlMixin):
         start_date = self.cleaned_data['start_date']
         end_date = self.cleaned_data['end_date']
 
+        reviewer = self.cleaned_data['reviewer']
+        assignee = self.cleaned_data['assignee']
+        if reviewer == assignee:
+            raise forms.ValidationError('Assignee can not be reviewer')
+        
         if start_date and end_date and start_date > end_date:
             raise forms.ValidationError(
                 'End date can not be less then start date')
@@ -48,12 +54,16 @@ class CreateTaskForm(forms.ModelForm, FormControlMixin):
         last_order_position = Task.objects.filter(project__id=self.instance.project_id) \
             .aggregate(result=Max('order_position'))['result']
         self.instance.order_position = last_order_position + 1 if last_order_position else 1
+        if not self.instance.author_id:
+            author = get_argument_or_error('user', self.initial)
+            self.instance.author = author
 
         return super().save()
 
     class Meta:
         model = Task
-        exclude = ['date_created', 'id', 'expense', 'state', 'states',
+        exclude = ['date_created', 'id', 'expense', 'state',
+                   'states', 'subscribers', 'author',
                    'attachments', 'order_position', 'is_done', 'is_started']
 
 
@@ -81,6 +91,10 @@ class UpdateTaskForm(CreateTaskForm):
                 self.fields.pop('process')
 
     def save(self):
+        if self.instance.reviewer_id \
+                and not self.instance.subscribers.contains(self.instance.reviewer):
+            self.instance.subscribers.add(self.instance.reviewer)
+
         self.instance.save()
         return self.instance
 
@@ -106,15 +120,17 @@ class CreateCommentForm(forms.ModelForm, FormControlMixin):
     def clean(self):
         task = get_argument_or_error('task', self.initial)
         if task.id != self.cleaned_data['task'].id:
-            raise forms.ValidationError('Task in form is not the same as target task')
-        
+            raise forms.ValidationError(
+                'Task in form is not the same as target task')
+
         form_reply = self.cleaned_data.get('reply')
 
         if form_reply:
             reply = get_argument_or_error('reply', self.initial)
             if form_reply.id != reply.id:
-                raise forms.ValidationError('Reply in form is not the same as target comment')
-    
+                raise forms.ValidationError(
+                    'Reply in form is not the same as target comment')
+
         return self.cleaned_data
 
     class Meta:

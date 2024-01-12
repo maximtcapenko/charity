@@ -21,6 +21,9 @@ class Expense(Base):
         User, on_delete=models.PROTECT)
     approvement = models.ForeignKey(
         Approvement, on_delete=models.SET_NULL, null=True)
+    reviewer = models.ForeignKey(
+        User, on_delete=models.PROTECT, null=True, related_name='reviewed_expenses')
+    notes = models.TextField(blank=True, null=True)
     approvements = models.ManyToManyField(
         Approvement, related_name='approved_expenses')
 
@@ -33,10 +36,9 @@ class TaskState(Base):
         Approvement, on_delete=models.SET_NULL, null=True)
     approvements = models.ManyToManyField(
         Approvement, related_name='approved_task_states')
-    
+
     def __str__(self):
         return self.state.name
-    
 
 
 class Task(Base):
@@ -55,6 +57,9 @@ class Task(Base):
         Process, on_delete=models.PROTECT)
     project = models.ForeignKey(
         Project, on_delete=models.PROTECT, related_name='tasks')
+    author = models.ForeignKey(User, on_delete=models.PROTECT, related_name='created_tasks')
+    reviewer = models.ForeignKey(
+        User, on_delete=models.PROTECT, null=True, related_name='reviewed_tasks')
     assignee = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name='assigned_tasks')
     state = models.ForeignKey(TaskState, on_delete=models.PROTECT, null=True)
@@ -64,6 +69,7 @@ class Task(Base):
         Ward, on_delete=models.PROTECT, null=True, related_name='tasks')
     attachments = models.ManyToManyField(Attachment)
     states = models.ManyToManyField(TaskState, related_name='state_tasks')
+    subscribers = models.ManyToManyField(User, related_name='subscribed_tasks')
 
     def __str__(self):
         return self.name

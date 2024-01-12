@@ -1,7 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import signals
-from django.dispatch import receiver
 from commons.models import Base
 from funds.models import Fund, Approvement, Contribution
 
@@ -54,6 +52,10 @@ class Income(Base):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     author = models.ForeignKey(
         User, on_delete=models.PROTECT)
+    reviewer = models.ForeignKey(
+        User, on_delete=models.PROTECT, null=True, related_name='reviewed_incomes')
+    notes = models.TextField(blank=True, null=True)
+
     approvement = models.ForeignKey(
         Approvement, on_delete=models.SET_NULL, null=True)
     approvements = models.ManyToManyField(
@@ -62,12 +64,6 @@ class Income(Base):
     @property
     def is_approved(self):
         return self.approvement.is_rejected == False
-
-
-@receiver(signals.post_save, sender=Budget)
-def add_default_reviewers(sender, instance, created, **kwargs):
-    if created:
-        instance.reviewers.add(instance.manager)
 
 
 def fund_active_budgets_count(self):

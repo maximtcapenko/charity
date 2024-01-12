@@ -1,5 +1,6 @@
 <html lang="en">
   {% load static %}
+  {% load customtags %}
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -18,9 +19,23 @@
       <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
       <!-- Navbar Search -->
       <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-        <div class="input-group"></div>
       </form>
       <!-- Navbar -->
+      <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fa-solid fa-bell"></i>
+            {% if user.is_authenticated %}
+              <span class="badge bg-danger rounded-circle">{{ user.not_viewed_notifications.count }}</span>
+            {% endif %}
+          </a>
+          {% if user.is_authenticated %}
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+            {{ user.not_viewed_notifications |notifications_list}}
+          </ul>
+        </li>
+      </ul>
+      {% endif %}
       <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
@@ -89,7 +104,7 @@
           <div class="container-fluid px-4">
             <div class="d-flex align-items-center justify-content-between small">
               <div class="text-muted">
-                Copyright &copy; Charity{% now 'Y' %}
+                Copyright &copy; Charity {% now 'Y' %}
               </div>
             </div>
           </div>

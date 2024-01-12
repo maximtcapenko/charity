@@ -21,8 +21,20 @@
         Assignee: <a href="{% url 'funds:get_volunteer_details' task.assignee.volunteer_profile.id %}">{{ task.assignee.username }}</a>
       </div>
       <div>
+        <i class="fas fa-user"></i>
+        {% if  task.reviewer %}
+          Reviewer: <a href="{% url 'funds:get_volunteer_details' task.reviewer.volunteer_profile.id %}">{{ task.reviewer.username }}</a>
+        {% else%}
+        Reviewer: 
+        {% endif %}
+      </div>
+      <div>
         <i class="fas fa-sack-dollar"></i>
+        {% if  task.expense %}
         Expenses: <a href="{% url 'budgets:get_expense_details' task.expense.id %}">{{ task.estimated_expense_amount|floatformat:'2g' }}</a>
+        {% else %}
+        Expenses: {{ task.estimated_expense_amount|floatformat:'2g' }}
+        {% endif %}
       </div>
       <div>
         {% include 'partials/li_approvement_part.html' with approvement=task.expense.approvement %}

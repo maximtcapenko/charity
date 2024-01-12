@@ -11,7 +11,7 @@
     <div class="card-body">
       <div>
         <i class="fas fa-sack-dollar"></i>
-        Available Income: {{ avaliable_income_amount }}
+        Available Income: {{ avaliable_income_amount|floatformat:'2g' }}
       </div>
       <div>
         {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
@@ -25,9 +25,9 @@
       <option value="">Select Project</option>
       {% for project in projects %}
        {% if selected_project == project.id|stringformat:"s" %}
-          <option selected="true" value="{{ project.id }}">{{ project.name }} ({{ project.requested_budget }})</option>
+          <option selected="true" value="{{ project.id }}">{{ project.name }} ({{ project.requested_budget|floatformat:'2g' }})</option>
         {% else %}
-          <option value="{{ project.id }}">{{ project.name }} ({{ project.requested_budget }})</option>
+          <option value="{{ project.id }}">{{ project.name }} ({{ project.requested_budget|floatformat:'2g' }})</option>
        {% endif %}
       {% endfor %}
     </select>

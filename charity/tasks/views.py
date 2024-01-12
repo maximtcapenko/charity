@@ -38,6 +38,10 @@ def create(request):
             'return_url': reverse('projects:get_details', args=[project_id]),
             'get_form_initial': {
                 'project': project
+            },
+            'post_form_initial': {
+                'project': project,
+                'user': request.user
             }
         })
 

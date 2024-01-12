@@ -20,11 +20,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 
+from commons import views as common_views
+
 urlpatterns = [
     path("accounts/login/", auth_views.LoginView.as_view(template_name="login.html")),
     path("accounts/logout/", auth_views.LogoutView.as_view()),
     path('admin/', admin.site.urls),
     path('funds/', include('funds.urls')),
+    path('notifications/<uuid:id>/details/', common_views.view_notification_details, name='view_notification_details'),
     path('projects/', include('projects.urls')),
     path('tasks/', include('tasks.urls')),
     path('wards/', include('wards.urls')),
