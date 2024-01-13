@@ -2,8 +2,8 @@ from django import forms
 from django.contrib.auth.models import User
 from django.db import models
 
-from commons.mixins import FormControlMixin
-from commons.functions import get_argument_or_error, validate_modelform_field
+from commons.mixins import InitialValidationMixin, FormControlMixin
+from commons.functions import validate_modelform_field
 
 from funds.models import Approvement
 from tasks.models import Expense, Task
@@ -13,15 +13,18 @@ from .models import Budget, Income, Contribution
 from .signals import exprense_created
 
 
-class CreateBudgetForm(forms.ModelForm, FormControlMixin):
+class CreateBudgetForm(
+        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['fund', 'author']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        FormControlMixin.__init__(self)
+        InitialValidationMixin.__init__(self, *args, **kwargs)
+        FormControlMixin.__init__(self, *args, **kwargs)
+
+        fund = self.initial['fund']
 
         self.fields['fund'].widget = forms.HiddenInput()
-
-        fund = get_argument_or_error('fund', self.initial)
-
         self.fields['manager'].queryset = User.objects \
             .filter(volunteer_profile__fund_id=fund.id) \
             .only('id', 'username')
@@ -31,8 +34,8 @@ class CreateBudgetForm(forms.ModelForm, FormControlMixin):
         return self.cleaned_data
 
     def save(self):
-        user = get_argument_or_error('user', self.initial)
-        self.instance.author = user
+        author = self.initial['author']
+        self.instance.author = author
 
         return super().save()
 
@@ -64,7 +67,10 @@ class UpdateBudgetForm(CreateBudgetForm):
         return manager
 
 
-class CreateIncomeForm(forms.ModelForm, FormControlMixin):
+class CreateIncomeForm(
+        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['budget', 'author']
+
     class ContributionModelChoiceField(forms.ModelChoiceField):
         def clean(self, value):
             if value:
@@ -83,8 +89,9 @@ class CreateIncomeForm(forms.ModelForm, FormControlMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
 
-        budget = get_argument_or_error('budget', self.initial)
+        budget = self.initial['budget']
 
         self.fields['contribution'] = CreateIncomeForm.ContributionModelChoiceField(
             queryset=Contribution.objects.filter(
@@ -100,13 +107,11 @@ class CreateIncomeForm(forms.ModelForm, FormControlMixin):
         self.fields['reviewer'].queryset = budget.reviewers
 
     def save(self):
-        user = get_argument_or_error('user', self.initial)
-        self.instance.author = user
+        self.instance.author = self.initial['author']
         return super().save()
 
     def clean(self):
-        budget = get_argument_or_error('budget', self.initial)
-        if budget.approvement_id:
+        if self.initial['budget'].approvement_id:
             forms.ValidationError(
                 'Can not add new income record, current budget is approved')
 
@@ -129,29 +134,25 @@ class CreateIncomeForm(forms.ModelForm, FormControlMixin):
                    'approvement']
 
 
-class CreateExpenseForm(forms.ModelForm, FormControlMixin):
+class CreateExpenseForm(
+        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['budget', 'project', 'author', 'task']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        budget = get_argument_or_error('budget', self.initial)
-
+        InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
         self.fields['budget'].widget = forms.HiddenInput()
         self.fields['project'].widget = forms.HiddenInput()
-
-        task = self.initial.get('task')
-        if task:
-            self.fields['amount'].initial = task.estimated_expense_amount
-            self.fields['amount'].disabled = True
-
-        self.fields['reviewer'].queryset = budget.reviewers
+        self.fields['amount'].initial = self.initial['task'].estimated_expense_amount
+        self.fields['amount'].disabled = True
+        self.fields['reviewer'].queryset = self.initial['budget'].reviewers
 
     task = forms.ModelChoiceField(Task.objects, disabled=True, label='Task')
 
     def save(self):
-        user = get_argument_or_error('user', self.initial)
-        self.instance.author = user        
+        self.instance.author = self.initial['author']
         self.instance.save()
         task = self.cleaned_data['task']
         task.expense = self.instance
@@ -162,11 +163,14 @@ class CreateExpenseForm(forms.ModelForm, FormControlMixin):
         return self.instance
 
     def clean(self):
-        budget = get_argument_or_error('budget', self.initial)
+        budget = self.initial['budget']
         if budget.approvement_id:
             forms.ValidationError(
                 'Can not add new income record, current budget is approved')
-        task = get_argument_or_error('task', self.cleaned_data)
+
+        validate_modelform_field('task', self.initial, self.cleaned_data)
+
+        task = self.cleaned_data['task']
         avaliable_income_amount = get_budget_available_income(budget)
 
         if task.estimated_expense_amount > avaliable_income_amount:
@@ -185,9 +189,13 @@ class CreateExpenseForm(forms.ModelForm, FormControlMixin):
                    'approvement']
 
 
-class BaseApproveForm(forms.Form, FormControlMixin):
+class BaseApproveForm(
+        forms.Form, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['author', 'fund', 'target']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
     is_rejected = forms.BooleanField(label='Reject', required=False)
@@ -195,12 +203,10 @@ class BaseApproveForm(forms.Form, FormControlMixin):
                             label='Notes', required=False)
 
     def save(self):
-        user = get_argument_or_error('user', self.initial)
-        fund = get_argument_or_error('fund', self.initial)
-        target = get_argument_or_error('target', self.initial)
+        target = self.initial['target']
 
         approvement = Approvement.objects.create(
-            author=user, fund=fund,
+            author=self.initial['author'], fund=self.initial['fund'],
             notes=self.cleaned_data['notes'],
             is_rejected=self.cleaned_data['is_rejected'])
 
@@ -213,11 +219,10 @@ class BaseApproveForm(forms.Form, FormControlMixin):
 
 class BudgetItemApproveForm(BaseApproveForm):
     def clean(self):
-        target = get_argument_or_error('target', self.initial)
-        user = get_argument_or_error('user', self.initial)
+        target = self.initial['target']
 
         """Validate user access"""
-        if not target.budget.reviewers.filter(id=user.id).exists():
+        if not target.budget.reviewers.filter(id=self.initial['author'].id).exists():
             raise forms.ValidationError(
                 'Current user is not budget reviewer, only reviewers can approve budget items')
 
@@ -228,11 +233,10 @@ class BudgetItemApproveForm(BaseApproveForm):
 
 class ApproveBudgetForm(BaseApproveForm):
     def clean(self):
-        budget = get_argument_or_error('target', self.initial)
-        user = get_argument_or_error('user', self.initial)
+        budget = self.initial['target']
 
         """Validate user access"""
-        if not budget.reviewers.filter(id=user.id).exists():
+        if not budget.reviewers.filter(id=self.initial['author'].id).exists():
             raise forms.ValidationError(
                 'Current user is not budget reviewer, only reviewers can approve budget')
 
@@ -256,13 +260,17 @@ class ApproveBudgetForm(BaseApproveForm):
         return self.cleaned_data
 
 
-class AddBudgetReviewerForm(forms.Form, FormControlMixin):
+class AddBudgetReviewerForm(
+        forms.Form, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['budget']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
         self.fields['budget'].widget = forms.HiddenInput()
-        budget = get_argument_or_error('budget', self.initial)
+        budget = self.initial['budget']
         self.fields['reviewer'].queryset = User.objects.filter(
             models.Q(volunteer_profile__fund__id=budget.fund_id) &
             ~models.Q(id__in=budget.reviewers.values('id')))
@@ -283,8 +291,7 @@ class AddBudgetReviewerForm(forms.Form, FormControlMixin):
         return self.cleaned_data
 
     def save(self):
-        budget = get_argument_or_error('budget', self.initial)
         reviewer = self.cleaned_data['reviewer']
-        budget.reviewers.add(reviewer)
+        self.initial['budget'].reviewers.add(reviewer)
 
         return reviewer
