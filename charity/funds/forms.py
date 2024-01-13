@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 
-from commons.mixins import FormControlMixin
-from commons.functions import get_argument_or_error, validate_modelform_field
+from commons.mixins import FormControlMixin, InitialValidationMixin
+from commons.functions import validate_modelform_field
 from .models import Fund, Contribution, Contributor, VolunteerProfile
 
 
@@ -12,24 +12,26 @@ class FundForm(forms.ModelForm):
         exclude = ('date_created', )
 
 
-class CreateContributionForm(forms.ModelForm, FormControlMixin):
+class CreateContributionForm(
+        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['fund', 'author']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
-
-        fund = get_argument_or_error('fund', self.initial)
 
         self.fields['fund'].widget = forms.HiddenInput()
         self.fields['contributor'].queryset = Contributor.objects \
-            .filter(fund__id=fund.id)
+            .filter(fund__id=self.initial['fund'].id)
 
     def clean(self):
         validate_modelform_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
 
     def save(self):
-        user = get_argument_or_error('user', self.initial)
-        self.instance.author = user
+        self.instance.author = self.initial['author']
+
         return super().save()
 
     class Meta:
@@ -37,9 +39,13 @@ class CreateContributionForm(forms.ModelForm, FormControlMixin):
         exclude = ['id', 'date_created', 'author']
 
 
-class CreateVolunteerForm(forms.ModelForm, FormControlMixin):
+class CreateVolunteerForm(
+        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['fund']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
         self.fields['user'].queryset = User.objects.filter(
@@ -57,9 +63,13 @@ class CreateVolunteerForm(forms.ModelForm, FormControlMixin):
         exclude = ['id', 'date_created', 'cover']
 
 
-class CreateContributorForm(forms.ModelForm, FormControlMixin):
+class CreateContributorForm(
+        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['fund']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
         self.fields['fund'].widget = forms.HiddenInput()
@@ -73,9 +83,13 @@ class CreateContributorForm(forms.ModelForm, FormControlMixin):
         exclude = ['id', 'date_created']
 
 
-class UpdateVolunteerProfile(forms.ModelForm, FormControlMixin):
+class UpdateVolunteerProfile(
+        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['fund']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
         self.fields['fund'].widget = forms.HiddenInput()

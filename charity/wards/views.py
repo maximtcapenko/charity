@@ -20,7 +20,7 @@ def create(request):
         request=request, form_class=CreateWardForm, context={
             'title': 'Add ward',
             'return_url': reverse('wards:get_list'),
-            'get_form_initial': {
+            'initial': {
                 'fund': request.user.volunteer_profile.fund
             }
         })

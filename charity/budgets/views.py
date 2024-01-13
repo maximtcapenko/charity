@@ -29,12 +29,9 @@ def create(request):
         context={
             'return_url': f'{reverse("funds:get_current_details")}?tab=budgets',
             'title': 'Add budget',
-            'post_form_initial': {
+            'initial': {
                 'fund': request.user.volunteer_profile.fund,
-                'user': request.user,
-            },
-            'get_form_initial': {
-                'fund': request.user.volunteer_profile.fund
+                'author': request.user,
             }
         })
 
@@ -49,12 +46,9 @@ def edit_details(request, id):
         context={
             'return_url': reverse('budgets:get_details', args=[id]),
             'title': 'Edit budget',
-            'post_form_initial': {
+            'initial': {
                 'fund': request.user.volunteer_profile.fund,
-                'user': request.user,
-            },
-            'get_form_initial': {
-                'fund': request.user.volunteer_profile.fund
+                'author': request.user,
             },
             'instance': budget
         })
@@ -70,11 +64,8 @@ def add_budget_income(request, id):
         context={
             'return_url': reverse('budgets:get_details', args=[budget.id]),
             'title': 'Add income',
-            'post_form_initial': {
-                'user': request.user,
-                'budget': budget
-            },
-            'get_form_initial': {
+            'initial': {
+                'author': request.user,
                 'budget': budget
             }
         })
@@ -102,13 +93,8 @@ def add_budget_expense(request, id):
         context={
             'return_url': return_url,
             'title': 'Add expense',
-            'post_form_initial': {
-                'user': request.user,
-                'budget': budget,
-                'project': project,
-                'task': task
-            },
-            'get_form_initial': {
+            'initial': {
+                'author': request.user,
                 'budget': budget,
                 'project': project,
                 'task': task
@@ -125,8 +111,8 @@ def approve_budget(request, id):
         form_class=ApproveBudgetForm, context={
             'return_url': f'{reverse("budgets:get_details", args=[id])}?tab=approvements',
             'title': 'Add approvement',
-            'post_form_initial': {
-                'user': request.user,
+            'initial': {
+                'author': request.user,
                 'fund': request.user.volunteer_profile.fund,
                 'target': get_budget_or_404(request, id)
             },
@@ -142,8 +128,8 @@ def approve_budget_income(request, income_id):
         form_class=BudgetItemApproveForm, context={
             'return_url': reverse('budgets:get_income_details', args=[income_id]),
             'title': 'Add approvement',
-            'post_form_initial': {
-                'user': request.user,
+            'initial': {
+                'author': request.user,
                 'fund': request.user.volunteer_profile.fund,
                 'target': get_object_or_404(Income.objects.filter(
                     budget__fund__id=request.user.volunteer_profile.fund_id), pk=income_id)
@@ -160,8 +146,8 @@ def approve_budget_expense(request, expense_id):
         form_class=BudgetItemApproveForm, context={
             'return_url': reverse('budgets:get_expense_details', args=[expense_id]),
             'title': 'Add approvement',
-            'post_form_initial': {
-                'user': request.user,
+            'initial': {
+                'author': request.user,
                 'fund': request.user.volunteer_profile.fund,
                 'target': get_object_or_404(Expense.objects.filter(
                     budget__fund__id=request.user.volunteer_profile.fund_id), pk=expense_id)
@@ -180,8 +166,7 @@ def add_budget_reviewer(request, id):
         request=request, form_class=AddBudgetReviewerForm, context={
             'return_url': f'{reverse("budgets:get_details", args=[id])}?tab=reviewers',
             'title': 'Add budget reviewer',
-            'get_form_initial': initial,
-            'post_form_initial': initial
+            'initial': initial
         })
 
 

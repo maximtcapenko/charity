@@ -2,8 +2,8 @@ from django import forms
 from django.db.models import Max, Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
-from commons.mixins import FormControlMixin
 from commons.functions import get_argument_or_error
+from commons.mixins import FormControlMixin, InitialValidationMixin
 from funds.models import Approvement
 from files.forms import CreateAttachmentForm
 from processes.models import Process, ProcessState
@@ -11,29 +11,32 @@ from wards.models import Ward
 from .models import Comment, Task, TaskState
 
 
-class CreateTaskForm(forms.ModelForm, FormControlMixin):
+class CreateTaskForm(
+        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['project', 'author']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
         self.fields['project'].widget = forms.HiddenInput()
 
-        if (self.initial):
-            project = get_argument_or_error('project', self.initial)
-            self.fields['assignee'].queryset = User.objects \
-                .filter(volunteer_profile__fund_id=project.fund_id) \
-                .only('id', 'username')
+        project = self.initial['project']
+        self.fields['assignee'].queryset = User.objects \
+            .filter(volunteer_profile__fund_id=project.fund_id) \
+            .only('id', 'username')
 
-            self.fields['reviewer'].queryset = project.reviewers
-            self.fields['ward'].queryset = Ward.active_objects. \
-                filter(Q(projects__in=[project])
-                       & ~Exists(Task.objects.filter(ward=OuterRef("pk"),
-                                                     project__id=project.id))) \
-                .only('id', 'name')
+        self.fields['reviewer'].queryset = project.reviewers
+        self.fields['ward'].queryset = Ward.active_objects. \
+            filter(Q(projects__in=[project])
+                   & ~Exists(Task.objects.filter(ward=OuterRef("pk"),
+                                                 project__id=project.id))) \
+            .only('id', 'name')
 
-            self.fields['process'].queryset = Process.objects \
-                .filter(projects__in=[project]) \
-                .only('id', 'name')
+        self.fields['process'].queryset = Process.objects \
+            .filter(projects__in=[project]) \
+            .only('id', 'name')
 
     def clean(self):
         start_date = self.cleaned_data['start_date']
@@ -43,7 +46,7 @@ class CreateTaskForm(forms.ModelForm, FormControlMixin):
         assignee = self.cleaned_data['assignee']
         if reviewer == assignee:
             raise forms.ValidationError('Assignee can not be reviewer')
-        
+
         if start_date and end_date and start_date > end_date:
             raise forms.ValidationError(
                 'End date can not be less then start date')
@@ -55,8 +58,7 @@ class CreateTaskForm(forms.ModelForm, FormControlMixin):
             .aggregate(result=Max('order_position'))['result']
         self.instance.order_position = last_order_position + 1 if last_order_position else 1
         if not self.instance.author_id:
-            author = get_argument_or_error('user', self.initial)
-            self.instance.author = author
+            self.instance.author = self.initial['author']
 
         return super().save()
 
@@ -99,9 +101,13 @@ class UpdateTaskForm(CreateTaskForm):
         return self.instance
 
 
-class CreateCommentForm(forms.ModelForm, FormControlMixin):
+class CreateCommentForm(
+        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['task', 'author']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
         # self.fields['tagged_interlocutors'].queryset = User.objects \
@@ -118,8 +124,7 @@ class CreateCommentForm(forms.ModelForm, FormControlMixin):
             self.fields.pop('reply')
 
     def clean(self):
-        task = get_argument_or_error('task', self.initial)
-        if task.id != self.cleaned_data['task'].id:
+        if self.initial['task'].id != self.cleaned_data['task'].id:
             raise forms.ValidationError(
                 'Task in form is not the same as target task')
 
@@ -138,12 +143,16 @@ class CreateCommentForm(forms.ModelForm, FormControlMixin):
         exclude = ['id', 'tagged_interlocutors']
 
 
-class ActivateTaskStateForm(forms.ModelForm, FormControlMixin):
+class ActivateTaskStateForm(
+        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['task', 'author']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
-        task = get_argument_or_error('task', self.initial)
+        task = self.initial['task']
 
         current_state = task.state
         if current_state:
@@ -156,8 +165,8 @@ class ActivateTaskStateForm(forms.ModelForm, FormControlMixin):
             queryset).order_by('order_position')
 
     def save(self):
-        author = get_argument_or_error('user', self.initial)
-        task = get_argument_or_error('task', self.initial)
+        author = self.initial['author']
+        task = self.initial['task']
         self.instance.author = author
         self.instance.save()
 
@@ -171,7 +180,7 @@ class ActivateTaskStateForm(forms.ModelForm, FormControlMixin):
         return self.instance
 
     def clean(self):
-        task = get_argument_or_error('task', self.initial)
+        task = self.initial['task']
         '''validate if budget of task is approved'''
         if task.should_be_approved:
             if task.expense == None:
@@ -200,9 +209,13 @@ class ActivateTaskStateForm(forms.ModelForm, FormControlMixin):
             'approvement', 'completion_date', 'author', 'approvements']
 
 
-class ApproveTaskStateForm(forms.Form, FormControlMixin):
+class ApproveTaskStateForm(
+        forms.Form, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['fund', 'author', 'state']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
     is_rejected = forms.BooleanField(label='Reject', required=False)
@@ -210,12 +223,12 @@ class ApproveTaskStateForm(forms.Form, FormControlMixin):
                             label='Notes', required=False)
 
     def save(self):
-        user = get_argument_or_error('user', self.initial)
-        state = get_argument_or_error('state', self.initial)
-        fund = get_argument_or_error('fund', self.initial)
+        author = self.initial['author']
+        state = self.initial['state']
+        fund = self.initial['fund']
 
         approvement = Approvement.objects.create(
-            author=user, fund=fund,
+            author=author, fund=fund,
             notes=self.cleaned_data['notes'],
             is_rejected=self.cleaned_data['is_rejected'])
 
@@ -226,13 +239,19 @@ class ApproveTaskStateForm(forms.Form, FormControlMixin):
         return state
 
 
-class TaskCreateAttachmentForm(CreateAttachmentForm):
-    def save(self):
-        task = get_argument_or_error('task', self.initial)
-        user = get_argument_or_error('user', self.initial)
-        fund = get_argument_or_error('fund', self.initial)
+class TaskCreateAttachmentForm(CreateAttachmentForm, InitialValidationMixin):
+    __initial__ = ['fund', 'author', 'task']
 
-        self.instance.author = user
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
+
+    def save(self):
+        task = self.initial['task']
+        author = self.initial['author']
+        fund = self.initial['fund']
+
+        self.instance.author = author
         self.instance.fund = fund
         self.instance.save()
 

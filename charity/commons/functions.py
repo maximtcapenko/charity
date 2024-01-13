@@ -1,7 +1,7 @@
 from django import forms
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import redirect, render
-from .exceptions import NullArgumentError
+from .exceptions import NullArgumentError, ApplicationError
 from .mixins import FileUploadMixin
 
 
@@ -25,6 +25,7 @@ def render_generic_form(request, form_class, context):
     if not title:
         raise NullArgumentError(error_message % 'title')
 
+    initial = context.get('initial')
     post_form_initial = context.get('post_form_initial')
     get_form_initial = context.get('get_form_initial')
     instance = context.get('instance')
@@ -38,7 +39,9 @@ def render_generic_form(request, form_class, context):
         form_template = 'generic_createform.html'
 
     if request.method == 'POST':
-        if post_form_initial:
+        if initial:
+            params['initial'] = initial
+        elif post_form_initial:
             params['initial'] = post_form_initial
 
         if issubclass(form_class, FileUploadMixin):
@@ -57,7 +60,9 @@ def render_generic_form(request, form_class, context):
                 'form': form
             })
     elif request.method == 'GET':
-        if get_form_initial:
+        if initial:
+            params['initial'] = initial
+        elif get_form_initial:
             params['initial'] = get_form_initial
 
         return render(request, form_template, {
@@ -72,7 +77,8 @@ def render_generic_form(request, form_class, context):
 def get_argument_or_error(argument, arguments):
     argument = arguments.get(argument)
     if not argument:
-        raise NullArgumentError('Argument %s is none' % argument)
+        raise ValueError(f'Missing required parameter:{argument}')
+    
     return argument
 
 
@@ -82,8 +88,9 @@ def validate_modelform_field(field, initial, cleaned_data):
     :param `field`: name of field
     :param `initial`: dictionary provided by code user (usual `self.initial property` of Form)
     :param `cleaned_data`: form clead data dictionary (`self.cleaned_data` of Form)
+    :raise 'forms.ValidationError'
     """
     target_field = get_argument_or_error(field, initial)
     cleaned_field = cleaned_data[field]
     if target_field.id != cleaned_field.id:
-        raise forms.ValidationError(f'{field} is not accessible')
+        raise forms.ValidationError(f'{field} has different value from initial')

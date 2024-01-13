@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.db import models
+from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
@@ -36,12 +36,9 @@ def create(request):
         request=request, form_class=CreateTaskForm, context={
             'title': 'Add task',
             'return_url': reverse('projects:get_details', args=[project_id]),
-            'get_form_initial': {
-                'project': project
-            },
-            'post_form_initial': {
+            'initial': {
                 'project': project,
-                'user': request.user
+                'author': request.user
             }
         })
 
@@ -56,10 +53,7 @@ def edit_details(request, id):
             'return_url': reverse('tasks:get_details', args=[id]),
             'title': 'Update task',
             'instance': task,
-            'get_form_initial': {
-                'project': task.project
-            },
-            'post_form_initial': {
+            'initial': {
                 'project': task.project
             }
         }
@@ -75,12 +69,9 @@ def move_to_next_state(request, id):
         request=request, form_class=ActivateTaskStateForm, context={
             'return_url': reverse('tasks:get_details', args=[id]),
             'title': 'Move task to next state',
-            'get_form_initial': {
-                'task': task
-            },
-            'post_form_initial': {
+            'initial': {
                 'task': task,
-                'user': request.user
+                'author': request.user
             }
         }
     )
@@ -97,11 +88,7 @@ def add_comment(request, id):
         request=request, form_class=CreateCommentForm, context={
             'title': 'Add new comment',
             'return_url': return_url,
-            'get_form_initial': {
-                'author': request.user,
-                'task': task
-            },
-            'post_form_initial': {
+            'initial': {
                 'author': request.user,
                 'task': task
             }
@@ -124,8 +111,7 @@ def reply_to_comment(request, task_id, id):
         request=request, form_class=CreateCommentForm, context={
             'title': 'Reply',
             'return_url': return_url,
-            'get_form_initial': initial,
-            'post_form_initial': initial
+            'initial': initial
         })
 
 
@@ -143,8 +129,8 @@ def approve_task_state(request, task_id, id):
             'return_url': '%s?%s' % (
                 reverse('tasks:get_details', args=[task_id]), 'tab=states'),
             'title': 'Approve task',
-            'post_form_initial': {
-                'user': request.user,
+            'nitial': {
+                'author': request.user,
                 'state': state,
                 'fund': request.user.volunteer_profile.fund
             }
@@ -164,8 +150,8 @@ def attach_file(request, id):
             'return_url': '%s?%s' % (
                 reverse('tasks:get_details', args=[id]), 'tab=files'),
             'title': 'Upload file',
-            'post_form_initial': {
-                'user': request.user,
+            'initial': {
+                'author': request.user,
                 'task': task,
                 'fund': request.user.volunteer_profile.fund
             }
@@ -181,7 +167,7 @@ def get_details(request, id):
         'states': lambda task: task.states.select_related('author'),
         'comments': lambda task: task.comments.filter(
             reply_id__isnull=True).annotate(
-                replies_count=models.Count('replies')).order_by('date_created')
+                replies_count=Count('replies')).order_by('date_created')
         .values('id', 'author__id', 'author__username', 'date_created', 'notes', 'replies_count'),
         'files': lambda task:  task.attachments.all()
     }

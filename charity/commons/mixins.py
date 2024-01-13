@@ -1,8 +1,11 @@
+from functools import wraps
+
 from django import forms
 
 
 class FileUploadMixin:
     pass
+
 
 class FormControlMixin:
     def __init__(self, *args, **kwargs):
@@ -28,3 +31,28 @@ class FormControlMixin:
                 self.fields[field].widget.attrs.update({
                     'class': 'form-control'
                 })
+
+
+class InitialValidationMixin:
+    def __init__(self, *args, **kwargs):
+        if not hasattr(self, '__initial__'):
+            raise ValueError(
+                'Form requires initial fields, but __initial__ is not defined')
+
+        params = []
+
+        for field in self.__initial__:
+            '''validate each required field'''
+            if not self.initial.get(field):
+                params.append(field)
+
+        if len(params) > 0:
+            raise ValueError(f'Missing required parameters: {params}')
+
+
+def require_initial(*args):
+    def decorator(func):
+        def wrapper(self, *args, **kwargs):
+            func(self, *args, **kwargs)
+        return wrapper
+    return decorator

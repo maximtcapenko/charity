@@ -35,7 +35,7 @@ def get_details(request, id):
         'budgets': lambda fund: fund.budgets.select_related(
             'manager', 'manager__volunteer_profile'),
         'projects': lambda fund: fund.active_projects.select_related(
-                'leader', 'leader__volunteer_profile'),
+            'leader', 'leader__volunteer_profile'),
         'processes': lambda fund:
             fund.processes.annotate(active_project_count=models.Count('projects', distinct=True),
                                     states_count=models.Count('states', distinct=True))
@@ -138,17 +138,16 @@ def edit_volunteer_profile(request, id):
         VolunteerProfile.objects.filter(
             fund__id=request.user.volunteer_profile.fund_id),
         pk=id)
-    initial = {
-        'fund': request.user.volunteer_profile.fund
-    }
+
     return render_generic_form(
         request=request, form_class=UpdateVolunteerProfile,
         context={
             'title': 'Edit volunteer',
             'return_url': reverse('funds:get_volunteer_details', args=[id]),
             'instance': volunteer,
-            'get_form_initial': initial,
-            'post_form_initial': initial
+            'initial': {
+                'fund': request.user.volunteer_profile.fund
+            },
         })
 
 
@@ -162,12 +161,9 @@ def add_contribution(request):
         context={
             'title': 'Add contribution',
             'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=contributions'),
-            'get_form_initial': {
-                'fund': request.user.volunteer_profile.fund
-            },
-            'post_form_initial': {
+            'initial': {
                 'fund': request.user.volunteer_profile.fund,
-                'user': request.user
+                'author': request.user
             }
         })
 
@@ -182,10 +178,7 @@ def add_volunteer(request):
         context={
             'title': 'Add volunteer',
             'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=volunteers'),
-            'get_form_initial': {
-                'fund': request.user.volunteer_profile.fund
-            },
-            'post_form_initial': {
+            'initial': {
                 'fund': request.user.volunteer_profile.fund
             }
         }
@@ -202,10 +195,7 @@ def add_contributor(request):
         context={
             'title': 'Add contributor',
             'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=contributors'),
-            'get_form_initial': {
-                'fund': request.user.volunteer_profile.fund
-            },
-            'post_form_initial': {
+            'initial': {
                 'fund': request.user.volunteer_profile.fund
             }
         }

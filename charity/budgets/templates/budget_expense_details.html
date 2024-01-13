@@ -22,6 +22,14 @@
       Author: {{ expense.author.username }}
     </div>
     <div>
+      <i class="fas fa-user"></i>
+      {% if  expense.reviewer %}
+        Reviewer: <a href="{% url 'funds:get_volunteer_details' expense.reviewer.volunteer_profile.id %}">{{ expense.reviewer.username }}</a>
+      {% else%}
+      Reviewer: 
+      {% endif %}
+    </div>
+    <div>
       <i class="fa-solid fa-list-check"></i>
       Task: <a href="{% url 'tasks:get_details' expense.task.id %}">{{ expense.task.name }} </a>
     </div>
@@ -31,6 +39,10 @@
     </div>
     <div>
       {% include 'partials/li_approvement_part.html' with approvement=expense.approvement %}
+    </div>
+    <div>
+      <i class="fa-regular fa-clipboard"></i>
+      Notes: {{ expense.notes }}
     </div>
 </div>
 </div>

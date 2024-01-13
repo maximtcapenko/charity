@@ -36,10 +36,7 @@ def add_ward_to_project(request, id):
         context={
             'return_url': return_url,
             'title': 'Include ward to project',
-            'get_form_initial': {
-                'project': project
-            },
-            'post_form_initial': {
+            'initial': {
                 'project': project
             }
         })
@@ -58,10 +55,7 @@ def add_process_to_project(request, id):
         context={
             'return_url': return_url,
             'title': 'Include process to project',
-            'get_form_initial': {
-                'project': project
-            },
-            'post_form_initial': {
+            'initial': {
                 'project': project
             }
         })
@@ -76,10 +70,7 @@ def edit_details(request, id):
         request=request, form_class=UpdateProjectForm, context={
             'return_url': reverse('projects:get_details', args=[project.id]),
             'title': 'Update project',
-            'get_form_initial': {
-                'fund': request.user.volunteer_profile.fund
-            },
-            'post_form_initial': {
+            'initial': {
                 'fund': request.user.volunteer_profile.fund
             },
             'instance': project
@@ -103,7 +94,7 @@ def create(request):
         context={
             'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=projects'),
             'title': 'Add project',
-            'get_form_initial': {
+            'initial': {
                 'fund': request.user.volunteer_profile.fund
             }
         })
@@ -120,8 +111,7 @@ def add_project_reviewer(request, id):
         request=request, form_class=AddProjectReviewerForm, context={
             'return_url': f'{reverse("projects:get_details", args=[id])}?tab=reviewers',
             'title': 'Add project reviewer',
-            'get_form_initial': initial,
-            'post_form_initial': initial
+            'initial': initial
         })
 
 
