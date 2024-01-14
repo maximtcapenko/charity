@@ -1,3 +1,4 @@
+from typing import Any
 from django import forms
 from django.contrib.auth.models import User
 from django.db import models
@@ -10,7 +11,7 @@ from tasks.models import Expense, Task
 
 from .functions import get_budget_available_income
 from .models import Budget, Income, Contribution
-from .signals import exprense_created
+from .signals import exprense_created, budget_intem_reviewer_assigned
 
 
 class CreateBudgetForm(
@@ -175,7 +176,8 @@ class CreateExpenseForm(
 
         if task.estimated_expense_amount > avaliable_income_amount:
             raise forms.ValidationError(
-                'Task estimated expense amount is begger then avaliabe amount in cuurent budget')
+                f'Budget avaliabe amount is {avaliable_income_amount:,.2f}. \
+                Can not crate expense with amount {task.estimated_expense_amount:,.2f}')
 
         elif task.estimated_expense_amount <= 0:
             raise forms.ValidationError('Expense can not be empty or negative')
@@ -222,6 +224,13 @@ class BudgetItemApproveForm(BaseApproveForm):
         target = self.initial['target']
 
         """Validate user access"""
+        if not target.reviewer_id:
+            raise forms.ValidationError('Reviewer is not assigned')
+
+        if target.reviewer != self.initial['author']:
+            raise forms.ValidationError(
+                'Current user is not budget item reviewer')
+
         if not target.budget.reviewers.filter(id=self.initial['author'].id).exists():
             raise forms.ValidationError(
                 'Current user is not budget reviewer, only reviewers can approve budget items')
@@ -295,3 +304,50 @@ class AddBudgetReviewerForm(
         self.initial['budget'].reviewers.add(reviewer)
 
         return reviewer
+
+
+class EditBudgetItemForm(
+        forms.Form, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['target', 'budget']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
+        FormControlMixin.__init__(self)
+
+        self.fields['reviewer'].queryset = self.initial['budget'].reviewers
+
+    reviewer = forms.ModelChoiceField(
+        User.objects, label='Reviewer', required=False)
+    notes = forms.CharField(widget=forms.Textarea(),
+                            label='Notes', required=False)
+
+    def clean(self):
+        reviewer = self.cleaned_data['reviewer']
+        target = self.initial['target']
+
+        if target.approvement_id and target.approvement.is_rejected == False:
+            raise forms.ValidationError(
+                'Can not edit item because it is approved')
+
+        if reviewer and not self.initial['budget'].reviewers.contains(reviewer):
+            raise forms.ValidationError(
+                'Assigned reviewer must be in list of budget reviewers')
+
+        return self.cleaned_data
+
+    def save(self):
+        target = self.initial['target']
+        target.reviewer = self.cleaned_data['reviewer']
+        target.notes = self.cleaned_data['notes']
+
+        target.save()
+
+        if 'reviewer' in self.changed_data:
+            budget_intem_reviewer_assigned.send(
+                sender=target.__class__,
+                budget=self.initial['budget'],
+                reviewer=self.cleaned_data['reviewer'],
+                instance=target)
+
+        return target

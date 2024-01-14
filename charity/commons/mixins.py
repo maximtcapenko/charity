@@ -1,6 +1,26 @@
 from functools import wraps
 
 from django import forms
+from django.forms.utils import ErrorList
+from django.utils.safestring import mark_safe
+
+
+class DivErrorList(ErrorList):
+    def __str__(self):
+        return self.as_divs()
+
+    def as_divs(self):
+        if not self:
+            return ''
+
+        result = ''
+        for error in self:
+            result += f'<div class="alert alert-dismissible fade show alert-danger" \
+                  role="alert"><i class="fa-solid fa-triangle-exclamation"></i> \
+                  {error}<button type="button" class="btn-close" \
+                  data-bs-dismiss="alert" aria-label="Close"></button></div>'
+
+        return mark_safe(result)
 
 
 class FileUploadMixin:
@@ -9,26 +29,27 @@ class FileUploadMixin:
 
 class FormControlMixin:
     def __init__(self, *args, **kwargs):
-        for field in iter(self.fields):
-            if (isinstance(self.fields[field].widget, forms.CheckboxInput)):
-                self.fields[field].widget.attrs.update({
+        self.error_class = DivErrorList
+
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            if (isinstance(field.widget, forms.CheckboxInput)):
+                field.widget.attrs.update({
                     'class': 'form-check-input'
                 })
-            elif (isinstance(self.fields[field].widget, forms.DateInput)):
-                self.fields[field].widget = forms.DateInput(
+            elif (isinstance(field.widget, forms.DateInput)):
+                field.widget = forms.DateInput(
                     attrs={'type': 'date', 'class': 'form-control'})
-            elif (isinstance(self.fields[field].widget, forms.DateTimeInput)):
-                self.fields[field].widget = forms.DateTimeInput(
+            elif (isinstance(field.widget, forms.DateTimeInput)):
+                field.widget = forms.DateTimeInput(
                     attrs={'type': 'date', 'class': 'form-control'})
-            elif (isinstance(self.fields[field], forms.ModelChoiceField)):
-                self.fields[field].empty_label = '%s %s' % (
-                    'Select', self.fields[field].label)
-                self.fields[field].widget.attrs.update({
+            elif (isinstance(field, forms.ChoiceField)):
+                field.empty_label = '%s %s' % ('Select', field.label)
+                field.widget.attrs.update({
                     'class': 'form-select'
                 })
-
             else:
-                self.fields[field].widget.attrs.update({
+                field.widget.attrs.update({
                     'class': 'form-control'
                 })
 

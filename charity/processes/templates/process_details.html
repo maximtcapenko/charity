@@ -5,11 +5,34 @@
     <li class="breadcrumb-item active">
       <a href="{% url 'funds:get_current_details'%}?tab=processes"> {{ user.volunteer_profile.fund.name }} </a>
     </li>
-    <li class="breadcrumb-item active">Details</li>
+    <li class="breadcrumb-item active">Process Details</li>
   </ol>
   <div class="card mb-4">
     <div class="card-body">
-    
+      <div>
+        <i class="far fa-calendar-alt"></i>
+        Created: {{ process.date_created }}
+      </div>
+      <div>
+        <i class="fa-solid fa-circle-info"></i>
+        Projects usage: {{ process.active_project_count }}
+      </div>
+      <div>
+        <i class="fa-solid fa-circle-question"></i>
+        {% if not process.is_inactive %}
+         Status: <span class="badge bg-primary">active</span>
+        {% else %}
+         Status: <span class="badge bg-secondary">inactive</span>
+        {% endif %}
+      </div>
+      <div>
+        <i class="fa-regular fa-clipboard"></i>
+        Notes: {{ process.notes }}
+      </div>
+      <div>
+        <i class="fa-solid fa-pen-to-square"></i>
+        <a href="{% url 'processes:edit_details' process.id %}">Edit</a>
+      </div>
     </div>
   </div>
   <div>
@@ -25,22 +48,31 @@
         <thead>
           <tr>
             <th>State name</th>
+            <th>Position</th>
             <th>Created</th>
-            <th>Is depricated</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
-          {% for state in states_page %}
+          {% for state in page %}
             <tr>
               <td>
                 <a href="#">{{ state.name }}</a>
               </td>
+              <td>{{ state.order_position }}</td>
               <td>{{ state.date_created }}</td>
+              <td>
+                {% if not state.is_inactive %}
+                <span class="badge bg-primary">active</span>
+                {% else %}
+                <span class="badge bg-secondary">inactive</span>
+                {% endif %}
+              </td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
-      {% include 'paginator.html' with obj_page=wards_page %}
+      {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
 {% endblock %}

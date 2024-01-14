@@ -11,7 +11,8 @@
         <thead>
           <tr>
             <th>Ward name</th>
-            <th>Is active</th>
+            <th>Status</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -20,15 +21,16 @@
               <td>
                 <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
               </td>
-              {% if ward.is_inactive %}
               <td> 
-                <input type="checkbox" disabled="disabled">
+                {% if not ward.is_inactive %}
+                <span class="badge bg-primary">active</span>
+               {% else %}
+                <span class="badge bg-secondary">inactive</span>
+               {% endif %}
               </td>
-              {% else %}
               <td>
-                <input type="checkbox" disabled="disabled" checked="checked">
+                <a href="{% url 'projects:remove_project_ward' project.id ward.id %}">Remove</a>
               </td>
-              {% endif %}
             </tr>
           {% endfor %}
         </tbody>

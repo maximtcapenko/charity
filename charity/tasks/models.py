@@ -36,6 +36,13 @@ class TaskState(Base):
         Approvement, on_delete=models.SET_NULL, null=True)
     approvements = models.ManyToManyField(
         Approvement, related_name='approved_task_states')
+    notes = models.TextField(blank=True, null=True)
+    """
+    TODO: add is_in_progress or approvement_requested flag
+    so if step is in progress then it can not be approved
+    """
+    class Meta:
+        ordering = ['date_created']
 
     def __str__(self):
         return self.state.name
@@ -57,7 +64,8 @@ class Task(Base):
         Process, on_delete=models.PROTECT)
     project = models.ForeignKey(
         Project, on_delete=models.PROTECT, related_name='tasks')
-    author = models.ForeignKey(User, on_delete=models.PROTECT, related_name='created_tasks')
+    author = models.ForeignKey(
+        User, on_delete=models.PROTECT, related_name='created_tasks')
     reviewer = models.ForeignKey(
         User, on_delete=models.PROTECT, null=True, related_name='reviewed_tasks')
     assignee = models.ForeignKey(
@@ -80,7 +88,7 @@ class Task(Base):
 
     @property
     def is_expired(self):
-        return self.end_date is not None and self.end_date < datetime.date.today()
+        return self.is_started and self.end_date is not None and self.end_date < datetime.date.today()
 
 
 class Comment(Base):
@@ -117,6 +125,10 @@ def budget_approved_expenses(self):
         .aggregate(budget=models.Sum('amount', default=0))['budget']
 
 
+def user_assigned_active_tasks(self):
+    return self.assigned_tasks.filter(is_done=False)
+
+
 Project.add_to_class('active_tasks_count', property(
     fget=project_active_tasks_count))
 
@@ -130,4 +142,8 @@ Project.add_to_class('expired_tasks_count', property(
 
 Budget.add_to_class('avaliable_expenses_amount', property(
     fget=budget_approved_expenses
+))
+
+User.add_to_class('assigned_active_tasks', property(
+    fget=user_assigned_active_tasks
 ))

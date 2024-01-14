@@ -21,6 +21,7 @@
             <th>Estimated expenses</th>
             <th>Status</th>
             <th>Assignee</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -32,7 +33,9 @@
               <td>{{ task.start_date }}-{{ task.end_date }}</td>
               <td> 
                 {% if task.is_started %}
-                  <span class="badge bg-success">started</span>
+                  <span class="badge bg-success">started</span> 
+                {% else %}
+                  <span class="badge bg-secondary">not started</span> 
                 {% endif %}
                 {% if task.is_high_priority %}
                   <span class="badge bg-warning text-dark">high priority</span>
@@ -47,6 +50,9 @@
               </td>
               <td>
                 {% include 'partials/user_image_part.html' with user=task.assignee %}
+              </td>
+              <td>
+                <a href="{% url 'projects:remove_project_task' project.id task.id %}">Remove</a>
               </td>
             </tr>
           {% endfor %}

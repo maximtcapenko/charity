@@ -8,7 +8,7 @@
     <li class="breadcrumb-item">
       <a href="{% url 'projects:get_details' task.project.id %}">{{ task.project.name }}</a>
     </li>
-    <li class="breadcrumb-item active">Details</li>
+    <li class="breadcrumb-item active">Task Details</li>
   </ol>
   <div class="card mb-4">
     <div class="card-body">
@@ -31,7 +31,7 @@
       <div>
         <i class="fas fa-sack-dollar"></i>
         {% if  task.expense %}
-        Expenses: <a href="{% url 'budgets:get_expense_details' task.expense.id %}">{{ task.estimated_expense_amount|floatformat:'2g' }}</a>
+        Expenses: <a href="{% url 'budgets:get_expense_details' task.expense.budget_id task.expense.id %}">{{ task.estimated_expense_amount|floatformat:'2g' }}</a>
         {% else %}
         Expenses: {{ task.estimated_expense_amount|floatformat:'2g' }}
         {% endif %}
@@ -61,7 +61,7 @@
       </div>
       <div>
         <i class="fa-solid fa-pen-to-square"></i>
-        <a href="{% url 'tasks:update' task.id %}">Edit</a>
+        <a href="{% url 'tasks:edit_details' task.id %}">Edit</a>
       </div>
     </div>
   </div>

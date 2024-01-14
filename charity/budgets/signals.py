@@ -7,6 +7,7 @@ from tasks.models import Expense
 from .models import Budget, Income
 
 exprense_created = signals.Signal()
+budget_intem_reviewer_assigned = signals.Signal()
 
 
 @receiver(signals.post_save, sender=Budget)
@@ -44,7 +45,7 @@ def budget_income_added(sender, instance, created, **kwargs):
                 short=f'New Income ({instance.amount})',
                 receiver=receiver,
                 message=message,
-                url=reverse('budgets:get_income_details', args=[instance.id]))
+                url=reverse('budgets:get_income_details', args=[budget.id, instance.id]))
 
 
 @receiver(signals.m2m_changed, sender=Income.approvements.through)
@@ -67,7 +68,7 @@ def budget_income_approved(sender, instance, action, **kwargs):
                 short=f'Income ({instance.amount}) reviewed',
                 receiver=receiver,
                 message=message,
-                url=reverse('budgets:get_income_details', args=[instance.id]))
+                url=reverse('budgets:get_income_details', args=[budget.id, instance.id]))
 
 
 @receiver(exprense_created, sender=Expense)
@@ -92,7 +93,7 @@ def budget_expense_added(sender, instance, **kwargs):
             short=f'New Expense ({instance.amount})',
             receiver=receiver,
             message=message,
-            url=reverse('budgets:get_expense_details', args=[instance.id]))
+            url=reverse('budgets:get_expense_details', args=[budget.id, instance.id]))
 
 
 @receiver(signals.m2m_changed, sender=Expense.approvements.through)
@@ -122,4 +123,14 @@ def budget_expense_approved(sender, instance, action, **kwargs):
                 receiver=receiver,
                 short=f'Exoense ({instance.amount}) reviewed',
                 message=message,
-                url=reverse('budgets:get_expense_details', args=[instance.id]))
+                url=reverse('budgets:get_expense_details', args=[budget.id, instance.id]))
+
+
+@receiver(budget_intem_reviewer_assigned)
+def budget_income_reviewer_assigned(sender, budget, reviewer, instance, **kwargs):
+    Notification.objects.create(
+            title=Budget.__name__,
+            receiver=reviewer,
+            short='Review assignment',
+            message=f"You've been assigned to role {sender.__name__} Reviewer'",
+            url=reverse(f'budgets:get_{sender.__name__.lower()}_details', args=[budget.id, instance.id]))

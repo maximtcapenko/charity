@@ -1,5 +1,5 @@
 from django import forms
-from django.db.models import Q, Exists, OuterRef
+from django.db.models import Count, Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
 from commons.mixins import InitialValidationMixin, FormControlMixin, require_initial
@@ -68,22 +68,48 @@ class AddWardToProjectForm(
 
 class AddProcessToProjectForm(
         forms.Form, InitialValidationMixin, FormControlMixin):
+    class ProcessModelChoiceField(forms.ModelChoiceField):
+        def clean(self, value):
+            if value:
+                return Process.objects.get(pk=value)
+            return super().clean(value)
+
+        def prepare_value(self, value):
+            if value and isinstance(value, dict):
+                return value['id']
+            return super().prepare_value(value)
+
+        def label_from_instance(self, obj):
+            states_count = obj['states_count']
+            name =  obj['name']
+            return '%s (%s %s)' % (name, states_count, 'states' if states_count > 1 else 'state')
+
     __initial__ = ['project']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
-        FormControlMixin.__init__(self)
 
         project = self.initial['project']
-        self.fields['process'].queryset = Process.objects.filter(
-            Q(Exists(ProcessState.objects.filter(process=OuterRef('pk')))) &
+        self.fields['process'] = AddProcessToProjectForm.ProcessModelChoiceField(
+            queryset=Process.objects.filter(
+            Exists(ProcessState.objects.filter(process=OuterRef('pk'))) &
             Q(is_inactive=False, fund__id=project.fund_id) &
-            ~Q(projects__in=[project])
-        ).only('id', 'name')
+            ~Q(projects__in=[project]))
+            .annotate(states_count=Count('states', distinct=True))
+            .values('id', 'name', 'states_count'), label='Process')
+        
+        FormControlMixin.__init__(self)
 
     process = forms.ModelChoiceField(
         Process.objects, required=True, label='Process')
+
+    def clean_process(self):
+        process = self.cleaned_data['process']
+        if process.states.count() == 0:
+            raise forms.ValidationError('Process with 0 states can not be added to project')
+        
+        return process
 
     def save(self):
         project = self.initial['project']

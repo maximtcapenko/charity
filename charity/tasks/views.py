@@ -54,7 +54,8 @@ def edit_details(request, id):
             'title': 'Update task',
             'instance': task,
             'initial': {
-                'project': task.project
+                'project': task.project,
+                'author': request.user
             }
         }
     )
@@ -129,10 +130,11 @@ def approve_task_state(request, task_id, id):
             'return_url': '%s?%s' % (
                 reverse('tasks:get_details', args=[task_id]), 'tab=states'),
             'title': 'Approve task',
-            'nitial': {
+            'initial': {
                 'author': request.user,
                 'state': state,
-                'fund': request.user.volunteer_profile.fund
+                'fund': request.user.volunteer_profile.fund,
+                'task': task
             }
         }
     )
@@ -190,6 +192,7 @@ def get_details(request, id):
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
     return render(request, 'task_details.html', {
+        'title': 'Task',
         'tabs': tabs.keys(),
         'items_count': paginator.count,
         'authors': authors,

@@ -34,7 +34,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for process in processes_page %}
+          {% for process in page %}
             <tr>
               <td>
                 <a href="{% url 'processes:get_details' process.id %}">{{ process.name }}</a>
@@ -55,7 +55,7 @@
           {% endfor %}
         </tbody>
       </table>
-      {% include 'paginator.html' with obj_page=wards_page %}
+      {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
 {% endblock %}
