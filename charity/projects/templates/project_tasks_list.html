@@ -21,6 +21,7 @@
             <th>Estimated expenses</th>
             <th>Status</th>
             <th>Assignee</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -49,6 +50,9 @@
               </td>
               <td>
                 {% include 'partials/user_image_part.html' with user=task.assignee %}
+              </td>
+              <td>
+                <a href="{% url 'projects:remove_project_task' project.id task.id %}">Remove</a>
               </td>
             </tr>
           {% endfor %}

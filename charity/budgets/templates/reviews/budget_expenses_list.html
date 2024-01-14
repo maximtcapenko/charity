@@ -16,7 +16,7 @@
           {% for expense in page %}
             <tr>
               <td>
-                <a href="{% url 'budgets:get_expense_details' expense.id %}">{{ expense.amount }}</a>
+                <a href="{% url 'budgets:get_expense_details' expense.budget_id expense.id %}">{{ expense.amount }}</a>
               </td>
                <td>{{ expense.date_created }}</td>
                <td>

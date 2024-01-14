@@ -31,7 +31,7 @@
       <div>
         <i class="fas fa-sack-dollar"></i>
         {% if  task.expense %}
-        Expenses: <a href="{% url 'budgets:get_expense_details' task.expense.id %}">{{ task.estimated_expense_amount|floatformat:'2g' }}</a>
+        Expenses: <a href="{% url 'budgets:get_expense_details' task.expense.budget_id task.expense.id %}">{{ task.estimated_expense_amount|floatformat:'2g' }}</a>
         {% else %}
         Expenses: {{ task.estimated_expense_amount|floatformat:'2g' }}
         {% endif %}

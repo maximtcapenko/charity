@@ -13,7 +13,7 @@ from funds.models import Approvement
 from .models import Budget, Income
 from .forms import CreateBudgetForm, CreateIncomeForm, \
     BudgetItemApproveForm, ApproveBudgetForm, UpdateBudgetForm, \
-    AddBudgetReviewerForm, CreateExpenseForm
+    AddBudgetReviewerForm, CreateExpenseForm, EditBudgetItemForm
 from .functions import get_budget_or_404, get_budget_available_income
 
 from projects.models import Project
@@ -122,17 +122,17 @@ def approve_budget(request, id):
 @user_passes_test(user_should_be_volunteer)
 @login_required
 @require_http_methods(['GET', 'POST'])
-def approve_budget_income(request, income_id):
+def approve_budget_income(request, id, income_id):
+    budget = get_budget_or_404(request, id)
     return render_generic_form(
         request=request,
         form_class=BudgetItemApproveForm, context={
-            'return_url': reverse('budgets:get_income_details', args=[income_id]),
+            'return_url': reverse('budgets:get_income_details', args=[budget.id, income_id]),
             'title': 'Add approvement',
             'initial': {
                 'author': request.user,
                 'fund': request.user.volunteer_profile.fund,
-                'target': get_object_or_404(Income.objects.filter(
-                    budget__fund__id=request.user.volunteer_profile.fund_id), pk=income_id)
+                'target': get_object_or_404(budget.incomes, pk=income_id)
             },
         })
 
@@ -140,17 +140,17 @@ def approve_budget_income(request, income_id):
 @user_passes_test(user_should_be_volunteer)
 @login_required
 @require_http_methods(['GET', 'POST'])
-def approve_budget_expense(request, expense_id):
+def approve_budget_expense(request, id, expense_id):
+    budget = get_budget_or_404(request, id)
     return render_generic_form(
         request=request,
         form_class=BudgetItemApproveForm, context={
-            'return_url': reverse('budgets:get_expense_details', args=[expense_id]),
+            'return_url': reverse('budgets:get_expense_details', args=[budget.id, expense_id]),
             'title': 'Add approvement',
             'initial': {
                 'author': request.user,
                 'fund': request.user.volunteer_profile.fund,
-                'target': get_object_or_404(Expense.objects.filter(
-                    budget__fund__id=request.user.volunteer_profile.fund_id), pk=expense_id)
+                'target': get_object_or_404(budget.expenses, pk=expense_id)
             },
         })
 
@@ -168,6 +168,70 @@ def add_budget_reviewer(request, id):
             'title': 'Add budget reviewer',
             'initial': initial
         })
+
+
+@user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
+def edit_income_details(request, id, income_id):
+    budget = get_budget_or_404(request, id)
+    income = get_object_or_404(budget.incomes, pk=income_id)
+    return render_generic_form(
+        request=request, form_class=EditBudgetItemForm, context={
+            'return_url': reverse('budgets:get_income_details', args=[budget.id, income_id]),
+            'title': 'Edit budget income',
+            'initial': {
+                'budget': budget,
+                'target': income,
+                'reviewer': income.reviewer,
+                'notes': income.notes
+            }
+        }
+    )
+
+
+@user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
+def edit_expense_details(request, id, expense_id):
+    budget = get_budget_or_404(request, id)
+    expense = get_object_or_404(budget.expenses, pk=expense_id)
+    return render_generic_form(
+        request=request, form_class=EditBudgetItemForm, context={
+            'return_url': reverse('budgets:get_expense_details', args=[budget.id, expense_id]),
+            'title': 'Edit budget expense',
+            'initial': {
+                'budget': budget,
+                'target': expense,
+                'reviewer': expense.reviewer,
+                'notes': expense.notes
+            }
+        }
+    )
+
+
+@user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
+def remove_budget_expense(request, id, expense_id):
+    budget = get_budget_or_404(request, id)
+    return_url = f'{reverse("budgets:get_details", args=[id])}?tab=expenses'
+
+    if budget.approvement_id and \
+       budget.approvement.is_rejected == False:
+        raise ApplicationError(
+            'Expense can not be removed, budget is approved', return_url)
+
+    expense = get_object_or_404(budget.expenses, pk=expense_id)
+
+    if expense.approvement_id and \
+       expense.approvement.is_rejected == False:
+        raise ApplicationError(
+            'Expense can not be removed it has approvement', return_url)
+
+    expense.delete()
+
+    return redirect(return_url)
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -213,15 +277,16 @@ def remove_budget_reviewer(request, id, reviewer_id):
 @user_passes_test(user_should_be_volunteer)
 @login_required
 @require_http_methods(['GET'])
-def get_income_details(request, income_id):
-    income = get_object_or_404(Income.objects.filter(
-        budget__fund__id=request.user.volunteer_profile.fund_id), pk=income_id)
+def get_income_details(request, id, income_id):
+    budget = get_budget_or_404(request, id)
+    income = get_object_or_404(budget.incomes, pk=income_id)
 
     paginator = Paginator(income.approvements.all(), DEFAULT_PAGE_SIZE)
 
     return render(request, 'budget_income_details.html', {
         'title': 'Income',
         'income': income,
+        'budget': budget,
         'page': paginator.get_page(request.GET.get('page'))
     })
 
@@ -229,14 +294,15 @@ def get_income_details(request, income_id):
 @user_passes_test(user_should_be_volunteer)
 @login_required
 @require_http_methods(['GET'])
-def get_expense_details(request, expense_id):
-    expense = get_object_or_404(Expense.objects.filter(
-        budget__fund__id=request.user.volunteer_profile.fund_id), pk=expense_id)
+def get_expense_details(request, id, expense_id):
+    budget = get_budget_or_404(request, id)
+    expense = get_object_or_404(budget.expenses, pk=expense_id)
 
     paginator = Paginator(expense.approvements.all(), DEFAULT_PAGE_SIZE)
 
     return render(request, 'budget_expense_details.html', {
         'title': 'Expense',
+        'budget': budget,
         'expense': expense,
         'page': paginator.get_page(request.GET.get('page'))
     })

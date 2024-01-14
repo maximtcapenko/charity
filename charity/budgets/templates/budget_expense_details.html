@@ -44,13 +44,17 @@
       <i class="fa-regular fa-clipboard"></i>
       Notes: {{ expense.notes }}
     </div>
+    <div>
+      <i class="fa-solid fa-pen-to-square"></i>
+        <a href="{% url 'budgets:edit_expense_details' budget.id expense.id %}">Edit</a>
+     </div>
 </div>
 </div>
 <div>
 {% if not expense.budget.approvement or expense.budget.approvement.is_rejected %}
-    <a href="{% url 'budgets:approve_budget_expense' expense.id %}" class="btn btn-link" >Add approvement</a>
+    <a href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-link" >Add approvement</a>
 {% else %}
-  <a href="{% url 'budgets:approve_budget_expense' expense.id %}" class="btn btn-link disabled" >Add approvement</a> 
+  <a href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-link disabled" >Add approvement</a> 
 {% endif %}
 </div>
 {% include "approvements_list.html" %}

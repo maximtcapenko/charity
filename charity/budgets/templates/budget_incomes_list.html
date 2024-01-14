@@ -24,7 +24,7 @@
           {% for income in page %}
             <tr>
               <td>
-                <a href="{% url 'budgets:get_income_details' income.id %}">{{ income.amount|floatformat:'2g' }}</a>
+                <a href="{% url 'budgets:get_income_details' budget.id income.id %}">{{ income.amount|floatformat:'2g' }}</a>
               </td>
               <td>{{ income.date_created }}</td>
               <td>

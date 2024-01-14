@@ -47,6 +47,10 @@ class CreateTaskForm(
         if reviewer == assignee:
             raise forms.ValidationError('Assignee can not be reviewer')
 
+        if not self.initial['project'].reviewers.contains(reviewer):
+            raise forms.ValidationError(
+                'Reviewer is not in list of project reviewers')
+
         if start_date and end_date and start_date > end_date:
             raise forms.ValidationError(
                 'End date can not be less then start date')
@@ -86,8 +90,8 @@ class UpdateTaskForm(CreateTaskForm):
                 .only('id', 'name')
 
             if self.instance.expense and \
-                self.instance.expense.approvement_id and \
-                self.instance.expense.approvement.is_rejected == False:
+                    self.instance.expense.approvement_id and \
+                    self.instance.expense.approvement.is_rejected == False:
                 self.fields.pop('estimated_expense_amount')
 
             if self.instance.state_id:
@@ -211,7 +215,7 @@ class ActivateTaskStateForm(
 
 class ApproveTaskStateForm(
         forms.Form, InitialValidationMixin, FormControlMixin):
-    __initial__ = ['fund', 'author', 'state']
+    __initial__ = ['fund', 'author', 'state', 'task']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -221,6 +225,17 @@ class ApproveTaskStateForm(
     is_rejected = forms.BooleanField(label='Reject', required=False)
     notes = forms.CharField(widget=forms.Textarea(),
                             label='Notes', required=False)
+
+    def clean(self):
+        author = self.initial['author']
+        task = self.initial['task']
+
+        if task.reviewer != author:
+            raise forms.ValidationError('Current user is not task reviewer')
+
+        if not task.project.reviewers.filter(id=self.initial['author'].id).exists():
+            raise forms.ValidationError(
+                'Current user is not project reviewer, only reviewers can approve tasks')
 
     def save(self):
         author = self.initial['author']

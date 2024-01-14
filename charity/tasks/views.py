@@ -133,7 +133,8 @@ def approve_task_state(request, task_id, id):
             'initial': {
                 'author': request.user,
                 'state': state,
-                'fund': request.user.volunteer_profile.fund
+                'fund': request.user.volunteer_profile.fund,
+                'task': task
             }
         }
     )
