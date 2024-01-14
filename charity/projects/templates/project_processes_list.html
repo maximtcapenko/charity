@@ -11,7 +11,8 @@
         <thead>
           <tr>
             <th>Process name</th>
-            <th>Is active</th>
+            <th>Status</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -20,19 +21,20 @@
               <td>
                 <a href="{% url 'processes:get_details' process.id %}">{{ process.name }}</a>
               </td>
-              {% if process.is_inactive %}
               <td> 
-                <input type="checkbox" disabled="disabled">
+                {% if not process.is_inactive %}
+                 <span class="badge bg-primary">active</span>
+                {% else %}
+                 <span class="badge bg-secondary">inactive</span>
+                {% endif %}
               </td>
-              {% else %}
               <td>
-                <input type="checkbox" disabled="disabled" checked="checked">
+                <a href="{% url 'projects:remove_project_process'  project.id process.id %}">Remove</a>
               </td>
-              {% endif %}
             </tr>
           {% endfor %}
         </tbody>
       </table>
-      {% include 'paginator.html' with obj_page=processes_page %}
+      {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>

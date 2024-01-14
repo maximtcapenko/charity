@@ -20,7 +20,9 @@
         <tbody>
           {% for file in page %}
             <tr>
-              <td>{{ file.name }}</td>
+              <td>{{ file.name }}
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+              </td>
               <td>{{ file.type }}</td>
               <td>{{ file.date_created }}</td>
               <td>{{ file.notes }}</td>

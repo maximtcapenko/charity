@@ -55,6 +55,7 @@ def get_details(request, id):
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
     return render(request, 'fund_details.html', {
+        'title': 'Fund',
         'fund': fund,
         'selected_tab': tab,
         'items_count': paginator.count,
@@ -83,6 +84,7 @@ def get_contribution_details(request, id):
 
     paginator = Paginator(query_set, DEFAULT_PAGE_SIZE)
     return render(request, 'fund_contribution_details.html', {
+        'title': 'Contribution',
         'contribution': contribution,
         'page': paginator.get_page(request.GET.get('page'))
     })

@@ -22,7 +22,12 @@ class ProcessState(Base):
     process = models.ForeignKey(
         Process, on_delete=models.PROTECT, related_name='states')
     order_position = models.IntegerField()
+    is_approvement_required = models.BooleanField(
+        default=False, verbose_name='Require approvement')
     is_inactive = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['order_position']
 
     def __str__(self):
         return self.name

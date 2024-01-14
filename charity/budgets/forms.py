@@ -175,7 +175,8 @@ class CreateExpenseForm(
 
         if task.estimated_expense_amount > avaliable_income_amount:
             raise forms.ValidationError(
-                'Task estimated expense amount is begger then avaliabe amount in cuurent budget')
+                f'Budget avaliabe amount is {avaliable_income_amount:,.2f}. \
+                Can not crate expense with amount {task.estimated_expense_amount:,.2f}')
 
         elif task.estimated_expense_amount <= 0:
             raise forms.ValidationError('Expense can not be empty or negative')

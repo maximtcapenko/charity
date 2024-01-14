@@ -86,7 +86,8 @@ class UpdateTaskForm(CreateTaskForm):
                 .only('id', 'name')
 
             if self.instance.expense and \
-               self.instance.expense.approvement.is_rejected == False:
+                self.instance.expense.approvement_id and \
+                self.instance.expense.approvement.is_rejected == False:
                 self.fields.pop('estimated_expense_amount')
 
             if self.instance.state_id:
@@ -161,8 +162,7 @@ class ActivateTaskStateForm(
         else:
             queryset = Q(process__id=task.process_id)
 
-        self.fields['state'].queryset = ProcessState.objects.filter(
-            queryset).order_by('order_position')
+        self.fields['state'].queryset = ProcessState.objects.filter(queryset)
 
     def save(self):
         author = self.initial['author']

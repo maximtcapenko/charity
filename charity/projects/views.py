@@ -118,6 +118,23 @@ def add_project_reviewer(request, id):
 @user_passes_test(user_should_be_volunteer)
 @login_required
 @require_http_methods(['GET'])
+def remove_project_process(request, id, process_id):
+    project = _get_project_or_404(request, id)
+    return_url = f'{reverse("projects:get_details", args=[id])}?tab=processes'
+
+    if project.tasks.filter(state__state__process__id=process_id).exists():
+        raise ApplicationError(
+            'Process can not be removed from project because it is used by tasks', return_url)
+    
+    process = get_object_or_404(project.processes, pk=process_id)
+    project.processes.remove(process)
+
+    return redirect(return_url)
+
+
+@user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
 def remove_project_reviewer(request, id, reviewer_id):
     project = _get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=reviewers'
@@ -179,6 +196,7 @@ def get_details(request, id):
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
     return render(request, 'project_details.html', {
+        'title': 'Project',
         'tabs': tabs.keys(),
         'items_count': paginator.count,
         'project': project,
@@ -197,11 +215,11 @@ def get_reviewer_details(request, id, reviewer_id):
     reviewer = get_object_or_404(project.reviewers, pk=reviewer_id)
 
     queryset = TaskState.objects.filter(
-        Q(task__project=project) & 
+        Q(task__project=project) &
         Exists(Approvement.objects.filter(approved_task_states=OuterRef('pk'), author=reviewer))) \
-            .prefetch_related('approvements') \
-            .prefetch_related('state_tasks') \
-            .select_related('state')
+        .prefetch_related('approvements') \
+        .prefetch_related('state_tasks') \
+        .select_related('state')
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
     return render(request, 'project_reviewer_details.html', {

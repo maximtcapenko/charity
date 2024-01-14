@@ -60,4 +60,5 @@ def get_details(request, id):
 
     return render(request, 'ward_details.html', {
         'ward': ward,
+        'title': 'Ward'
     })

@@ -220,6 +220,7 @@ def get_income_details(request, income_id):
     paginator = Paginator(income.approvements.all(), DEFAULT_PAGE_SIZE)
 
     return render(request, 'budget_income_details.html', {
+        'title': 'Income',
         'income': income,
         'page': paginator.get_page(request.GET.get('page'))
     })
@@ -235,6 +236,7 @@ def get_expense_details(request, expense_id):
     paginator = Paginator(expense.approvements.all(), DEFAULT_PAGE_SIZE)
 
     return render(request, 'budget_expense_details.html', {
+        'title': 'Expense',
         'expense': expense,
         'page': paginator.get_page(request.GET.get('page'))
     })
@@ -280,6 +282,7 @@ def get_details(request, id):
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
     return render(request, 'budget_details.html', {
+        'title': 'Budget',
         'tabs': tabs.keys(),
         'items_count': paginator.count,
         'budget': budget,
@@ -317,6 +320,7 @@ def budget_expenses_planing(request, id):
                 .only('id', 'name', 'is_high_priority', 'estimated_expense_amount')
 
     return render(request, 'budget_expenses_planing.html', {
+        'title': 'Expense planing',
         'budget': budget,
         'avaliable_income_amount': avaliable_income_amount,
         'projects': projects,

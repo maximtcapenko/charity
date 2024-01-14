@@ -19,5 +19,6 @@ urlpatterns = [
     path('<uuid:id>/reviewers/<int:reviewer_id>/remove/',
          views.remove_project_reviewer, name='remove_project_reviewer'),
     path('<uuid:id>/reviewers/<int:reviewer_id>/details', views.get_reviewer_details,
-         name='get_reviewer_details')
+         name='get_reviewer_details'),
+     path('<uuid:id>/processes/<uuid:process_id>/remove/', views.remove_project_process, name='remove_project_process')
 ]

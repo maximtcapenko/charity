@@ -8,8 +8,8 @@ from django.urls import reverse
 from commons import DEFAULT_PAGE_SIZE
 from commons.functions import user_should_be_volunteer, render_generic_form
 
-from .forms import CreateProcessForm, CreateProcessStateForm
-from .models import Process
+from .forms import CreateProcessForm, UpdateProcessForm, CreateProcessStateForm
+from .models import Process, ProcessState 
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -20,8 +20,8 @@ def create(request):
         request=request, form_class=CreateProcessForm,
         context={
             'title': 'Add process',
-            'return_url': reverse('processes:get_list'),
-            'get_form_initial': {
+            'return_url': f'{reverse("funds:get_details")}?tab=processes',
+            'initial': {
                 'fund': request.user.volunteer_profile.fund
             }
         })
@@ -35,10 +35,29 @@ def create_state(request, id):
         request=request, form_class=CreateProcessStateForm, context={
             'title': 'Add process state',
             'return_url': reverse('processes:get_details', args=[id]),
-            'get_form_initial':  {
+            'initial':  {
                 'process': get_object_or_404(Process.objects.filter(
                     fund__id=request.user.volunteer_profile.fund_id), pk=id)
             }
+        })
+
+
+@user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET', 'POST'])
+def edit_details(request, id):
+    process = get_object_or_404(
+        Process.objects.filter(
+            fund__id=request.user.volunteer_profile.fund_id), pk=id)
+    return render_generic_form(
+        request=request, form_class=UpdateProcessForm,
+        context={
+            'title': 'Edit process',
+            'return_url': reverse('processes:get_details', args=[process.id]),
+            'initial': {
+                'fund': request.user.volunteer_profile.fund
+            },
+            'instance': process
         })
 
 
@@ -66,11 +85,12 @@ def get_list(request):
 @login_required
 @require_http_methods(['GET'])
 def get_details(request, id):
-    process = get_object_or_404(Process, pk=id)
-    paginator = Paginator(process.states.order_by(
-        'order_position'), DEFAULT_PAGE_SIZE)
+    process = get_object_or_404(Process.objects
+                                .annotate(active_project_count=models.Count('projects', distinct=True)) \
+        .values('id', 'name', 'date_created', 'is_inactive', 'notes', 'active_project_count'), pk=id)
+    paginator = Paginator(ProcessState.objects.filter(process__id=process['id']).all(), DEFAULT_PAGE_SIZE)
 
     return render(request, 'process_details.html', {
         'process': process,
-        'states_page': paginator.get_page(request.GET.get('page'))
+        'page': paginator.get_page(request.GET.get('page'))
     })
