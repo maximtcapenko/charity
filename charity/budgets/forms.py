@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from commons.mixins import InitialValidationMixin, FormControlMixin
-from commons.functions import validate_modelform_field
+from commons.functions import validate_modelform_field, should_be_approved
 
 from funds.models import Approvement
 from tasks.models import Expense, Task
@@ -35,9 +35,7 @@ class CreateBudgetForm(
         return self.cleaned_data
 
     def save(self):
-        author = self.initial['author']
-        self.instance.author = author
-
+        self.instance.author = self.initial['author']
         return super().save()
 
     class Meta:
@@ -53,7 +51,7 @@ class UpdateBudgetForm(CreateBudgetForm):
             raise forms.ValidationError(
                 'Budget is closed and can not be edited')
 
-        if self.instance.approvement:
+        if should_be_approved(self.instance):
             raise forms.ValidationError(
                 'Budget is approved and can not be edited')
 
@@ -112,7 +110,7 @@ class CreateIncomeForm(
         return super().save()
 
     def clean(self):
-        if self.initial['budget'].approvement_id:
+        if should_be_approved(self.initial['budget']):
             forms.ValidationError(
                 'Can not add new income record, current budget is approved')
 
@@ -235,7 +233,7 @@ class BudgetItemApproveForm(BaseApproveForm):
             raise forms.ValidationError(
                 'Current user is not budget reviewer, only reviewers can approve budget items')
 
-        if target.budget.approvement and target.budget.approvement.is_rejected == False:
+        if should_be_approved(target.budget):
             raise forms.ValidationError(
                 'Item can not be approved because budget is approved')
 
@@ -290,10 +288,8 @@ class AddBudgetReviewerForm(
 
     def clean(self):
         validate_modelform_field('budget', self.initial, self.cleaned_data)
-        budget = self.cleaned_data['budget']
 
-        if budget.approvement \
-                and budget.approvement.is_rejected == False:
+        if should_be_approved(self.cleaned_data['budget']):
             raise forms.ValidationError(
                 'Reviewer can not be added because budget is approved')
 
@@ -315,6 +311,8 @@ class EditBudgetItemForm(
         InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
+        self.fields['reviewer'].initial = self.initial['target'].reviewer
+        self.fields['notes'].initial = self.initial['target'].notes
         self.fields['reviewer'].queryset = self.initial['budget'].reviewers
 
     reviewer = forms.ModelChoiceField(
@@ -326,7 +324,7 @@ class EditBudgetItemForm(
         reviewer = self.cleaned_data['reviewer']
         target = self.initial['target']
 
-        if target.approvement_id and target.approvement.is_rejected == False:
+        if should_be_approved(target):
             raise forms.ValidationError(
                 'Can not edit item because it is approved')
 

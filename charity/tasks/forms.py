@@ -2,12 +2,13 @@ from django import forms
 from django.db.models import Max, Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
-from commons.functions import get_argument_or_error
+from commons.functions import get_argument_or_error, should_be_approved
 from commons.mixins import FormControlMixin, InitialValidationMixin
-from funds.models import Approvement
 from files.forms import CreateAttachmentForm
+from funds.models import Approvement
 from processes.models import Process, ProcessState
 from wards.models import Ward
+
 from .models import Comment, Task, TaskState
 
 
@@ -90,8 +91,7 @@ class UpdateTaskForm(CreateTaskForm):
                 .only('id', 'name')
 
             if self.instance.expense and \
-                    self.instance.expense.approvement_id and \
-                    self.instance.expense.approvement.is_rejected == False:
+                    should_be_approved(self.instance.expense):
                 self.fields.pop('estimated_expense_amount')
 
             if self.instance.state_id:
@@ -201,7 +201,7 @@ class ActivateTaskStateForm(
                     'Current task has estimation but it has been rejected')
 
         '''validate if current state has approvement'''
-        if task.state and not task.state.approvement_id:
+        if task.state and not should_be_approved(task.state):
             raise forms.ValidationError('Current task state is not approved')
 
         return self.cleaned_data

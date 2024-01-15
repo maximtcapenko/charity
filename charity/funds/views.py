@@ -98,8 +98,16 @@ def get_contributor_details(request, id):
         Contributor.objects.filter(
             fund_id=request.user.volunteer_profile.fund_id),
         pk=id)
+
+    query_set =  contributor.contributions.filter(incomes__isnull=False) \
+                 .select_related('incomes') \
+                 .values('incomes__budget__id', 'incomes__budget__name') \
+                 .annotate( budget_amount=models.Sum('incomes__amount', default=0))
+
+    paginator = Paginator(query_set, DEFAULT_PAGE_SIZE)
     return render(request, 'fund_contributor_details.html', {
-        'contributor': contributor
+        'contributor': contributor,
+        'page': paginator.get_page(request.GET.get('page'))
     })
 
 

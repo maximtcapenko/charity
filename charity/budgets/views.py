@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
-from commons.functions import user_should_be_volunteer, render_generic_form
+from commons.functions import user_should_be_volunteer, render_generic_form, should_be_approved
 from funds.models import Approvement
 from .models import Budget, Income
 from .forms import CreateBudgetForm, CreateIncomeForm, \
@@ -159,14 +159,13 @@ def approve_budget_expense(request, id, expense_id):
 @login_required
 @require_http_methods(['GET', 'POST'])
 def add_budget_reviewer(request, id):
-    initial = {
-        'budget': get_budget_or_404(request, id)
-    }
     return render_generic_form(
         request=request, form_class=AddBudgetReviewerForm, context={
             'return_url': f'{reverse("budgets:get_details", args=[id])}?tab=reviewers',
             'title': 'Add budget reviewer',
-            'initial': initial
+            'initial': {
+                'budget': get_budget_or_404(request, id)
+            }
         })
 
 
@@ -182,9 +181,7 @@ def edit_income_details(request, id, income_id):
             'title': 'Edit budget income',
             'initial': {
                 'budget': budget,
-                'target': income,
-                'reviewer': income.reviewer,
-                'notes': income.notes
+                'target': income
             }
         }
     )
@@ -202,12 +199,38 @@ def edit_expense_details(request, id, expense_id):
             'title': 'Edit budget expense',
             'initial': {
                 'budget': budget,
-                'target': expense,
-                'reviewer': expense.reviewer,
-                'notes': expense.notes
+                'target': expense
             }
         }
     )
+
+
+@user_passes_test(user_should_be_volunteer)
+@login_required
+@require_http_methods(['GET'])
+def remove_budget_income(request, id, income_id):
+    budget = get_budget_or_404(request, id)
+    return_url = f'{reverse("budgets:get_details", args=[id])}?tab=incomes'
+
+    if should_be_approved(budget):
+        raise ApplicationError(
+            'Income can not be removed, budget is approved', return_url)
+
+    income = get_object_or_404(budget.incomes, pk=income_id)
+
+    if should_be_approved(income):
+        raise ApplicationError(
+            'Income can not be removed it has approvement', return_url)
+
+    avaliable_income_amount = get_budget_available_income(budget)
+    if avaliable_income_amount - income.amount <= 0:
+        raise ApplicationError(
+            'Income can not be removed becasue amount of income \
+             is aready used in expense planing',
+            return_url)
+
+    income.delete()
+    return redirect(return_url)
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -217,15 +240,13 @@ def remove_budget_expense(request, id, expense_id):
     budget = get_budget_or_404(request, id)
     return_url = f'{reverse("budgets:get_details", args=[id])}?tab=expenses'
 
-    if budget.approvement_id and \
-       budget.approvement.is_rejected == False:
+    if should_be_approved(budget):
         raise ApplicationError(
             'Expense can not be removed, budget is approved', return_url)
 
     expense = get_object_or_404(budget.expenses, pk=expense_id)
 
-    if expense.approvement_id and \
-       expense.approvement.is_rejected == False:
+    if should_be_approved(expense):
         raise ApplicationError(
             'Expense can not be removed it has approvement', return_url)
 
@@ -365,7 +386,7 @@ def get_details(request, id):
 @require_http_methods(['GET'])
 def budget_expenses_planing(request, id):
     budget = get_budget_or_404(request, id)
-    if budget.approvement and budget.approvement.is_rejected == False:
+    if should_be_approved(budget):
         return redirect('%s?%s' % (reverse('budgets:get_details', args=[id]), 'tab=expenses'))
 
     avaliable_income_amount = get_budget_available_income(budget)

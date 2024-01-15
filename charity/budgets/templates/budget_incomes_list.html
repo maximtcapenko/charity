@@ -18,6 +18,7 @@
             <th>Created</th>
             <th>Status</th>
             <th>Author</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -31,6 +32,9 @@
               {% include 'partials/td_approvement_part.html' with approvement=income.approvement %}
               </td>
               <td><a href="{% url 'funds:get_volunteer_details' income.author.volunteer_profile.id %}">{{ income.author.username }}</a>
+              </td>
+              <td>
+                <a href="{% url 'budgets:remove_budget_income' budget.id income.id %}">Remove</a>
               </td>
             </tr>
           {% endfor %}

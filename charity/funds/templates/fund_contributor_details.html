@@ -1,3 +1,59 @@
 {% extends 'base.html' %}
 {% block content %}
+<h2 class="mt-4">{{ contributor.name }}</h2>
+
+  <ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item">
+      <a href="{% url 'funds:get_current_details' %}?tab=contributors">{{ contributor.fund.name}}</a>
+    </li>
+    <li class="breadcrumb-item active">Contributor Details</li>
+  </ol>
+  <div class="card mb-4">
+    <div class="card-body">
+      <div>
+        <i class="far fa-calendar-alt"></i>
+        Created: {{ contributor.date_created }}
+      </div>
+      <div>
+        <i class="fa-solid fa-circle-info"></i>
+        Type: 
+        {% if contributor.is_company %}
+        <span class="badge bg-primary">company</span>
+      {% else %}
+        <span class="badge bg-primary">person</span>
+      {% endif %}
+      </div>
+      <div>
+        <i class="fa-regular fa-clipboard"></i>
+        Notes: {{ contributor.notes }}
+      </div>
+    </div>
+  </div>
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Budgets
+    </div>
+  <div class="card-body">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Budget</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for budget in page %}
+          <tr>
+            <td>
+              <a href="{% url 'budgets:get_details' budget.incomes__budget__id %}">{{ budget.incomes__budget__name }}</a>
+            </td>
+            <td>{{ budget.budget_amount|floatformat:'2g' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% include 'paginator.html' with obj_page=page %}
+  </div>
+  </div>
 {% endblock %}

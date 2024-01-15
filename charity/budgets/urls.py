@@ -22,6 +22,7 @@ urlpatterns = [
     path('<uuid:id>/reviewers/<int:reviewer_id>/remove/', views.remove_budget_reviewer, name='remove_budget_reviewer'),
     path('<uuid:id>/reviewers/<int:reviewer_id>/details/', views.get_reviewer_details, name='get_reviewer_details'),
     path('<uuid:id>/expenses/<uuid:expense_id>/remove/', views.remove_budget_expense, name='remove_budget_expense'),
+    path('<uuid:id>/incomes/<uuid:income_id>/remove/', views.remove_budget_income, name='remove_budget_income'),
     path('<uuid:id>/incomes/<uuid:income_id>/edit/',views.edit_income_details, name='edit_income_details'),
     path('<uuid:id>/expenses/<uuid:expense_id>/edit/',views.edit_expense_details, name='edit_expense_details'),
 ]

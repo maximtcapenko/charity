@@ -78,7 +78,7 @@ def get_argument_or_error(argument, arguments):
     argument = arguments.get(argument)
     if not argument:
         raise ValueError(f'Missing required parameter:{argument}')
-    
+
     return argument
 
 
@@ -93,4 +93,10 @@ def validate_modelform_field(field, initial, cleaned_data):
     target_field = get_argument_or_error(field, initial)
     cleaned_field = cleaned_data[field]
     if target_field.id != cleaned_field.id:
-        raise forms.ValidationError(f'{field} has different value from initial')
+        raise forms.ValidationError(
+            f'{field} has different value from initial')
+
+
+def should_be_approved(target):
+    return target.approvement_id and \
+        target.approvement.is_rejected == False
