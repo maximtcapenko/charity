@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Exists, Q, OuterRef
 from django.http import HttpResponseNotAllowed
@@ -11,23 +11,17 @@ from commons.exceptions import ApplicationError
 from commons.functions import render_generic_form, user_should_be_volunteer
 from funds.models import Approvement
 from tasks.models import Task, TaskState
+
 from .forms import CreateProjectForm, AddWardToProjectForm, \
     AddProcessToProjectForm, UpdateProjectForm, AddProjectReviewerForm
+from .functions import get_project_or_404
 from .models import Project
 
 
-def _get_project_or_404(request, project_id):
-    return get_object_or_404(
-        Project.objects.filter(
-            fund__id=request.user.volunteer_profile.fund_id),
-        pk=project_id)
-
-
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def add_ward_to_project(request, id):
-    project = _get_project_or_404(request=request, project_id=id)
+    project = get_project_or_404(request=request, project_id=id)
     return_url = reverse('projects:get_details', args=[
         project.id]) + '?tab=wards'
 
@@ -43,10 +37,9 @@ def add_ward_to_project(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def add_process_to_project(request, id):
-    project = _get_project_or_404(request=request, project_id=id)
+    project = get_project_or_404(request=request, project_id=id)
     return_url = reverse('projects:get_details', args=[
         project.id]) + '?tab=processes'
 
@@ -62,10 +55,9 @@ def add_process_to_project(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def edit_details(request, id):
-    project = _get_project_or_404(request=request, project_id=id)
+    project = get_project_or_404(request=request, project_id=id)
     return render_generic_form(
         request=request, form_class=UpdateProjectForm, context={
             'return_url': reverse('projects:get_details', args=[project.id]),
@@ -78,7 +70,6 @@ def edit_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def close(request, id):
     project = get_object_or_404(Project, pk=id)
@@ -86,7 +77,6 @@ def close(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def create(request):
     return render_generic_form(
@@ -101,25 +91,22 @@ def create(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def add_project_reviewer(request, id):
-    initial = {
-        'project': _get_project_or_404(request, id)
-    }
     return render_generic_form(
         request=request, form_class=AddProjectReviewerForm, context={
             'return_url': f'{reverse("projects:get_details", args=[id])}?tab=reviewers',
             'title': 'Add project reviewer',
-            'initial': initial
+            'initial': {
+                'project': get_project_or_404(request, id)
+            }
         })
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def remove_project_process(request, id, process_id):
-    project = _get_project_or_404(request, id)
+    project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=processes'
 
     if project.tasks.filter(state__state__process__id=process_id).exists():
@@ -133,16 +120,14 @@ def remove_project_process(request, id, process_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def remove_project_task(request, id, task_id):
-    project = _get_project_or_404(request, id)
+    project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=tasks'
 
     if project.tasks.filter(Q(id=task_id) &
-                            Q(
-                                Q(expense__id__isnull=False) | 
-                                Q(state__id__isnull=False))).exists():
+                            Q(Q(expense__id__isnull=False) |
+                              Q(state__id__isnull=False))).exists():
         raise ApplicationError(
             'Task can not be removed from project because task is started or has expense', return_url)
 
@@ -153,10 +138,9 @@ def remove_project_task(request, id, task_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def remove_project_ward(request, id, ward_id):
-    project = _get_project_or_404(request, id)
+    project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=wards'
 
     if project.wards.filter(
@@ -172,13 +156,12 @@ def remove_project_ward(request, id, ward_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def remove_project_reviewer(request, id, reviewer_id):
-    project = _get_project_or_404(request, id)
+    project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=reviewers'
 
-    if project.tasks.filter(Q(state__approvement__author__id=reviewer_id)|
+    if project.tasks.filter(Q(state__approvement__author__id=reviewer_id) |
                             Q(reviewer__id=reviewer_id)).exists():
         raise ApplicationError(
             'Reviewer can not be removed from project because of reviewed tasks in project', return_url)
@@ -195,7 +178,6 @@ def remove_project_reviewer(request, id, reviewer_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_list(request):
     projects = Project.objects.filter(
@@ -207,7 +189,6 @@ def get_list(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_details(request, id):
     default_tab = 'tasks'
@@ -246,7 +227,6 @@ def get_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_reviewer_details(request, id, reviewer_id):
     project = get_object_or_404(Project.objects.filter(

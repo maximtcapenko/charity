@@ -27,6 +27,10 @@
         <i class="fa-regular fa-clipboard"></i>
         Notes: {{ contributor.notes }}
       </div>
+      <div>
+        <i class="fa-solid fa-pen-to-square"></i>
+        <a href="{% url 'funds:edit_contributor_details' contributor.id %}">Edit</a>
+      </div>
     </div>
   </div>
   <div class="card mb-4">

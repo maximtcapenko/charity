@@ -57,7 +57,7 @@
           {% for state in page %}
             <tr>
               <td>
-                <a href="#">{{ state.name }}</a>
+                <a href="{% url 'processes:get_state_details' process.id state.id%}">{{ state.name }}</a>
               </td>
               <td>{{ state.order_position }}</td>
               <td>{{ state.date_created }}</td>

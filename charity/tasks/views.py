@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Count
@@ -14,17 +14,10 @@ from projects.models import Project
 from .forms import CreateTaskForm, UpdateTaskForm, \
     CreateCommentForm, ActivateTaskStateForm, ApproveTaskStateForm, \
     TaskCreateAttachmentForm
-from .models import Task
-
-
-def _get_task_or_404(request, task_id):
-    return get_object_or_404(Task.objects.filter(
-        project__fund__id=request.user.volunteer_profile.fund_id),
-        pk=task_id)
+from .functions import get_task_or_404
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def create(request):
     project_id = request.GET.get('project_id')
@@ -44,10 +37,9 @@ def create(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def edit_details(request, id):
-    task = _get_task_or_404(request, id)
+    task = get_task_or_404(request, id)
     return render_generic_form(
         request=request, form_class=UpdateTaskForm, context={
             'return_url': reverse('tasks:get_details', args=[id]),
@@ -62,10 +54,9 @@ def edit_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def move_to_next_state(request, id):
-    task = _get_task_or_404(request, id)
+    task = get_task_or_404(request, id)
     return render_generic_form(
         request=request, form_class=ActivateTaskStateForm, context={
             'return_url': reverse('tasks:get_details', args=[id]),
@@ -79,11 +70,10 @@ def move_to_next_state(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def add_comment(request, id):
     return_url = f"{reverse('tasks:get_details', args=[id])}?tab=comments"
-    task = _get_task_or_404(request, id)
+    task = get_task_or_404(request, id)
 
     return render_generic_form(
         request=request, form_class=CreateCommentForm, context={
@@ -97,10 +87,9 @@ def add_comment(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def reply_to_comment(request, task_id, id):
-    task = _get_task_or_404(request, task_id)
+    task = get_task_or_404(request, task_id)
     comment = get_object_or_404(task.comments, pk=id)
     return_url = f"{reverse('tasks:get_comment_details', args=[task_id, id])}"
     initial = {
@@ -117,10 +106,9 @@ def reply_to_comment(request, task_id, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def approve_task_state(request, task_id, id):
-    task = _get_task_or_404(request, task_id)
+    task = get_task_or_404(request, task_id)
     state = get_object_or_404(task.states, pk=id)
 
     return render_generic_form(
@@ -141,10 +129,8 @@ def approve_task_state(request, task_id, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def attach_file(request, id):
-    task = _get_task_or_404(request, id)
     return render_generic_form(
         request=request,
         form_class=TaskCreateAttachmentForm,
@@ -154,14 +140,13 @@ def attach_file(request, id):
             'title': 'Upload file',
             'initial': {
                 'author': request.user,
-                'task': task,
+                'task': get_task_or_404(request, id),
                 'fund': request.user.volunteer_profile.fund
             }
         })
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_details(request, id):
     default_tab = 'states'
@@ -178,7 +163,7 @@ def get_details(request, id):
 
     if not tab in tabs:
         tab = default_tab
-    task = _get_task_or_404(request, id)
+    task = get_task_or_404(request, id)
 
     if tab == 'comments':
         authors_queryset = VolunteerProfile.objects.filter(
@@ -203,10 +188,9 @@ def get_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_comment_details(request, task_id, id):
-    task = _get_task_or_404(request, task_id)
+    task = get_task_or_404(request, task_id)
     comment = get_object_or_404(task.comments, pk=id)
 
     paginator = Paginator(
@@ -222,10 +206,9 @@ def get_comment_details(request, task_id, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_state_details(request, task_id, id):
-    task = _get_task_or_404(request, task_id)
+    task = get_task_or_404(request, task_id)
     state = get_object_or_404(task.states, pk=id)
 
     paginator = Paginator(state.approvements.all(),

@@ -1,6 +1,6 @@
 from django.db import models
 from django.shortcuts import redirect, render, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
@@ -13,7 +13,6 @@ from .forms import CreateContributionForm, CreateVolunteerForm, \
 
 
 @user_passes_test(user_should_be_superuser)
-@login_required
 @require_http_methods(['GET'])
 def get_list(request):
     paginator = Paginator(Fund.objects.order_by('id'), DEFAULT_PAGE_SIZE)
@@ -23,7 +22,6 @@ def get_list(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_details(request, id):
     default_tab = 'contributions'
@@ -65,14 +63,12 @@ def get_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_current_details(request):
     return get_details(request, request.user.volunteer_profile.fund_id)
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_contribution_details(request, id):
     contribution = get_object_or_404(
@@ -91,7 +87,6 @@ def get_contribution_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_contributor_details(request, id):
     contributor = get_object_or_404(
@@ -99,10 +94,10 @@ def get_contributor_details(request, id):
             fund_id=request.user.volunteer_profile.fund_id),
         pk=id)
 
-    query_set =  contributor.contributions.filter(incomes__isnull=False) \
-                 .select_related('incomes') \
-                 .values('incomes__budget__id', 'incomes__budget__name') \
-                 .annotate( budget_amount=models.Sum('incomes__amount', default=0))
+    query_set = contributor.contributions.filter(incomes__isnull=False) \
+        .select_related('incomes') \
+        .values('incomes__budget__id', 'incomes__budget__name') \
+        .annotate(budget_amount=models.Sum('incomes__amount', default=0))
 
     paginator = Paginator(query_set, DEFAULT_PAGE_SIZE)
     return render(request, 'fund_contributor_details.html', {
@@ -112,7 +107,6 @@ def get_contributor_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_volunteer_details(request, id):
     volunteer = get_object_or_404(
@@ -125,7 +119,6 @@ def get_volunteer_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['POST'])
 def add_volunteer_cover(request, id):
     cover = request.FILES['cover']
@@ -141,7 +134,22 @@ def add_volunteer_cover(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
+@require_http_methods(['GET', 'POST'])
+def edit_contributor_details(request, id):
+    return render_generic_form(request, form_class=CreateContributorForm, context={
+        'title': 'Edit contributor',
+        'return_url': reverse('funds:get_contributor_details', args=[id]),
+        'initial': {
+            'fund': request.user.volunteer_profile.fund
+        },
+        'instance': get_object_or_404(
+            Contributor.objects.filter(
+                fund_id=request.user.volunteer_profile.fund_id),
+            pk=id)
+    })
+
+
+@user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
 def edit_volunteer_profile(request, id):
     volunteer = get_object_or_404(
@@ -162,7 +170,6 @@ def edit_volunteer_profile(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def add_contribution(request):
     return render_generic_form(
@@ -179,7 +186,6 @@ def add_contribution(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def add_volunteer(request):
     return render_generic_form(
@@ -196,7 +202,6 @@ def add_volunteer(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def add_contributor(request):
     return render_generic_form(
@@ -213,7 +218,6 @@ def add_contributor(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def update_details(request, id):
     if request.method == 'POST':

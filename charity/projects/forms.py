@@ -2,7 +2,7 @@ from django import forms
 from django.db.models import Count, Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
-from commons.mixins import InitialValidationMixin, FormControlMixin, require_initial
+from commons.mixins import InitialValidationMixin, FormControlMixin
 from commons.functions import validate_modelform_field
 
 from .models import Project

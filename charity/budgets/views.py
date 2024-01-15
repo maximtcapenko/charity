@@ -1,7 +1,7 @@
 import uuid
 from django.db.models import Exists, Q, OuterRef, Sum
 from django.shortcuts import redirect, render, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
@@ -21,7 +21,6 @@ from tasks.models import Task, Expense
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def create(request):
     return render_generic_form(
@@ -37,10 +36,8 @@ def create(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def edit_details(request, id):
-    budget = get_budget_or_404(request, id)
     return render_generic_form(
         request=request, form_class=UpdateBudgetForm,
         context={
@@ -50,29 +47,26 @@ def edit_details(request, id):
                 'fund': request.user.volunteer_profile.fund,
                 'author': request.user,
             },
-            'instance': budget
+            'instance': get_budget_or_404(request, id)
         })
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def add_budget_income(request, id):
-    budget = get_budget_or_404(request, id)
     return render_generic_form(
         request=request, form_class=CreateIncomeForm,
         context={
-            'return_url': reverse('budgets:get_details', args=[budget.id]),
+            'return_url': reverse('budgets:get_details', args=[id]),
             'title': 'Add income',
             'initial': {
                 'author': request.user,
-                'budget': budget
+                'budget': get_budget_or_404(request, id)
             }
         })
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def add_budget_expense(request, id):
     budget = get_budget_or_404(request, id)
@@ -103,7 +97,6 @@ def add_budget_expense(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def approve_budget(request, id):
     return render_generic_form(
@@ -120,7 +113,6 @@ def approve_budget(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def approve_budget_income(request, id, income_id):
     budget = get_budget_or_404(request, id)
@@ -138,7 +130,6 @@ def approve_budget_income(request, id, income_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def approve_budget_expense(request, id, expense_id):
     budget = get_budget_or_404(request, id)
@@ -156,7 +147,6 @@ def approve_budget_expense(request, id, expense_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def add_budget_reviewer(request, id):
     return render_generic_form(
@@ -170,7 +160,6 @@ def add_budget_reviewer(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def edit_income_details(request, id, income_id):
     budget = get_budget_or_404(request, id)
@@ -188,7 +177,6 @@ def edit_income_details(request, id, income_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def edit_expense_details(request, id, expense_id):
     budget = get_budget_or_404(request, id)
@@ -206,7 +194,6 @@ def edit_expense_details(request, id, expense_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def remove_budget_income(request, id, income_id):
     budget = get_budget_or_404(request, id)
@@ -234,7 +221,6 @@ def remove_budget_income(request, id, income_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def remove_budget_expense(request, id, expense_id):
     budget = get_budget_or_404(request, id)
@@ -256,7 +242,6 @@ def remove_budget_expense(request, id, expense_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def remove_budget_reviewer(request, id, reviewer_id):
     budget = get_budget_or_404(request, id)
@@ -296,7 +281,6 @@ def remove_budget_reviewer(request, id, reviewer_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_income_details(request, id, income_id):
     budget = get_budget_or_404(request, id)
@@ -313,7 +297,6 @@ def get_income_details(request, id, income_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_expense_details(request, id, expense_id):
     budget = get_budget_or_404(request, id)
@@ -330,7 +313,6 @@ def get_expense_details(request, id, expense_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_list(request):
     paginator = Paginator(Budget.objects.filter(
@@ -341,7 +323,6 @@ def get_list(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_details(request, id):
     default_tab = 'incomes'
@@ -382,7 +363,6 @@ def get_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def budget_expenses_planing(request, id):
     budget = get_budget_or_404(request, id)
@@ -417,7 +397,6 @@ def budget_expenses_planing(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET'])
 def get_reviewer_details(request, id, reviewer_id):
     default_tab = 'incomes'
