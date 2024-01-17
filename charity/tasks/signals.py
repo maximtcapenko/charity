@@ -1,7 +1,13 @@
 from django.db.models import signals
 from django.dispatch import receiver
+from django.urls import reverse
 
-from .models import Task
+from commons.models import Notification
+
+from .models import Task, TaskState
+
+
+review_request_created = signals.Signal()
 
 
 @receiver(signals.post_save, sender=Task)
@@ -24,3 +30,13 @@ def add_default_subscribers_wheb_task_added(sender, instance, created, **kwargs)
             instance.subscribers.add(instance.author)
         if instance.reviewer_id and not instance.reviewer in subscribers:
             instance.subscribers.add(instance.reviewer)
+
+
+@receiver(review_request_created, sender=TaskState)
+def notify_reviewer_when_review_request_created(sender, instance, task, message, **kwargs):
+    Notification.objects.create(
+        receiver=task.reviewer,
+        title=Task.__name__,
+        url=reverse('tasks:get_state_details', args=[task.id, instance.id]),
+        short='Task review request',
+        message=f'Review task state {instance.state.name} from {task.assignee} details: {message}')

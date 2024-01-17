@@ -38,10 +38,9 @@ class TaskState(Base):
     approvements = models.ManyToManyField(
         Approvement, related_name='approved_task_states')
     notes = models.TextField(blank=True, null=True)
-    """
-    TODO: add is_in_progress or approvement_requested flag
-    so if step is in progress then it can not be approved
-    """
+    is_done = models.BooleanField(default=False, null=False)
+    is_review_requested = models.BooleanField(default=False, null=False)
+
     class Meta:
         ordering = ['date_created']
 

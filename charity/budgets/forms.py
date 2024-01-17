@@ -82,9 +82,9 @@ class CreateIncomeForm(
             return super().prepare_value(value)
 
         def label_from_instance(self, obj):
+            amount = obj['amount'] - obj['reserved_amount']
             return '%s (%s)' % (
-                obj['contribution_date'].strftime('%Y-%m-%d %H:%M'),
-                obj['amount'] - obj['reserved_amount'])
+                obj['contribution_date'].strftime('%b. %d, %Y, %-I:%M %p'), "{:2,}".format(amount))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -96,6 +96,11 @@ class CreateIncomeForm(
             queryset=Contribution.objects.filter(
                 fund__id=budget.fund_id).annotate(
                 reserved_amount=models.Sum('incomes__amount', default=0))
+            .annotate(avaliable_amount=models.ExpressionWrapper(
+                models.F('amount') - models.F('reserved_amount'), 
+                output_field=models.DecimalField()))
+            .filter(avaliable_amount__gt=0)
+            .order_by('contribution_date')
             .values(
                 'id', 'contribution_date',
                     'amount', 'reserved_amount'), label='Contribution')

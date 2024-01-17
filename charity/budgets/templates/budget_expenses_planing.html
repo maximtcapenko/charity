@@ -43,7 +43,8 @@
         <thead>
           <tr>
             <th>Task name</th>
-            <th>Is high priority</th>
+            <th>Created</th>
+            <th>State</th>
             <th>Estimated expenses</th>
             <th></th>
           </tr>
@@ -54,8 +55,15 @@
               <td>
                 <a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a>
               </td>
-              <td>{{ task.is_high_priority }}</td>
-              <td>{{ task.estimated_expense_amount }}</td>
+              <td>{{ task.date_created }}</td>
+              <td>
+                {% if task.is_high_priority %}
+                <span class="badge bg-warning text-dark">high priority</span>
+                {% else %}
+                <span class="badge bg-secondary">regular</span>
+              {% endif %}
+              </td>
+              <td>{{ task.estimated_expense_amount|floatformat:'2g' }}</td>
               <td>
                 <a href="{% url 'budgets:add_expenses' budget.id %}?task_id={{ task.id }}&project_id={{ selected_project}}" >Add expense</a>
               </td>

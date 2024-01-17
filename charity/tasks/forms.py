@@ -1,3 +1,6 @@
+import datetime
+from typing import Any
+
 from django import forms
 from django.db.models import Max, Q, Exists, OuterRef
 from django.contrib.auth.models import User
@@ -10,6 +13,7 @@ from processes.models import Process, ProcessState
 from wards.models import Ward
 
 from .models import Comment, Task, TaskState
+from .signals import review_request_created
 
 
 class CreateTaskForm(
@@ -93,6 +97,7 @@ class UpdateTaskForm(CreateTaskForm):
             if self.instance.expense and \
                     should_be_approved(self.instance.expense):
                 self.fields.pop('estimated_expense_amount')
+                self.fields['ward'].disabled = True
 
             if self.instance.state_id:
                 self.fields.pop('process')
@@ -209,7 +214,7 @@ class ActivateTaskStateForm(
     class Meta:
         model = TaskState
         exclude = [
-            'id', 'date_created',
+            'id', 'date_created', 'is_done', 'is_review_requested',
             'approvement', 'completion_date', 'author', 'approvements']
 
 
@@ -248,6 +253,12 @@ class ApproveTaskStateForm(
             is_rejected=self.cleaned_data['is_rejected'])
 
         state.approvement = approvement
+        state.is_review_requested = False
+
+        if approvement.is_rejected == False:
+            state.completion_date = datetime.datetime.utcnow()
+            state.is_done = True
+
         state.approvements.add(approvement)
         state.save()
 
@@ -273,3 +284,42 @@ class TaskCreateAttachmentForm(CreateAttachmentForm, InitialValidationMixin):
         task.attachments.add(self.instance)
 
         return self.instance
+
+
+class TaskStateReviewRequestForm(
+        forms.Form, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['fund', 'author', 'state', 'task']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
+        FormControlMixin.__init__(self)
+
+    notes = forms.CharField(widget=forms.Textarea(), min_length=10,
+                            label='Message', required=True)
+
+    def clean(self):
+        if self.initial['author'] != self.initial['task'].assignee:
+            raise forms.ValidationError('Current user is not assignee of task')
+
+        if self.initial['state'].is_review_requested:
+            raise forms.ValidationError('Review requeset already sent')
+
+        if should_be_approved(self.initial['state']):
+            raise forms.ValidationError('Current state is approved')
+
+        return self.cleaned_data
+
+    def save(self):
+        state = self.initial['state']
+        state.is_review_requested = True
+        state.save()
+
+        review_request_created.send(
+            sender=TaskState,
+            instance=state,
+            task=self.initial['task'],
+            message=self.cleaned_data['notes']
+        )
+
+        return self.initial['state']

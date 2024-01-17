@@ -10,59 +10,83 @@
     </li>
     <li class="breadcrumb-item active">Task Details</li>
   </ol>
+  
   <div class="card mb-4">
     <div class="card-body">
       <div>
-        <i class="far fa-calendar-alt"></i>
-        Period: {{ task.start_date }} - {{ task.end_date }}
-      </div>
-      <div>
-        <i class="fas fa-user"></i>
-        Assignee: <a href="{% url 'funds:get_volunteer_details' task.assignee.volunteer_profile.id %}">{{ task.assignee.username }}</a>
-      </div>
-      <div>
-        <i class="fas fa-user"></i>
-        {% if  task.reviewer %}
-          Reviewer: <a href="{% url 'funds:get_volunteer_details' task.reviewer.volunteer_profile.id %}">{{ task.reviewer.username }}</a>
-        {% else%}
-        Reviewer: 
-        {% endif %}
-      </div>
-      <div>
-        <i class="fas fa-sack-dollar"></i>
-        {% if  task.expense %}
-        Expenses: <a href="{% url 'budgets:get_expense_details' task.expense.budget_id task.expense.id %}">{{ task.estimated_expense_amount|floatformat:'2g' }}</a>
-        {% else %}
-        Expenses: {{ task.estimated_expense_amount|floatformat:'2g' }}
-        {% endif %}
-      </div>
-      <div>
-        {% include 'partials/li_approvement_part.html' with approvement=task.expense.approvement %}
-      </div>
-      <div>
-        <i class="fa-regular fa-folder"></i>
-        Ward: <a  href="{% url 'wards:get_details' task.ward_id %}"> {{ task.ward.name }} </a>
-      </div>
-      <div>
-        <i class="fa-solid fa-gear"></i>
-        Process: <a href="{% url 'processes:get_details' task.process_id%}">{{ task.process.name }}</a>
-      </div>
-      <div>
-        {% if not task.state %}
-        Current state: Not started
-        {% else %}
-        <i class="fa-solid fa-gears"></i>
-        Current state: <a href="{% url 'tasks:get_state_details' task.id task.state.id %}">{{ task.state.state.name }}</a>
-        {% endif %}
-      </div>
-      <div>
-        <i class="fa-regular fa-clipboard"></i>
-        Notes: {{ task.notes }}
-      </div>
-      <div>
-        <i class="fa-solid fa-pen-to-square"></i>
-        <a href="{% url 'tasks:edit_details' task.id %}">Edit</a>
-      </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <div>
+                  <i class="far fa-calendar-alt"></i>
+                  Period: {{ task.start_date }} - {{ task.end_date }}
+                </div>
+                <div>
+                  <i class="far fa-calendar-alt"></i>
+                  Created: {{ task.date_created}}
+                </div>
+            </div>
+            <div class="col-sm-2">
+              <div>
+                <i class="fas fa-user"></i>
+                Assignee: <a href="{% url 'funds:get_volunteer_details' task.assignee.volunteer_profile.id %}">{{ task.assignee.username }}</a>
+              </div>
+              <div>
+                <i class="fas fa-user"></i>
+                {% if  task.reviewer %}
+                  Reviewer: <a href="{% url 'funds:get_volunteer_details' task.reviewer.volunteer_profile.id %}">{{ task.reviewer.username }}</a>
+                {% else%}
+                Reviewer: 
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-sm-2">
+              <div>
+                <i class="fas fa-sack-dollar"></i>
+                {% if  task.expense %}
+                Expenses: <a href="{% url 'budgets:get_expense_details' task.expense.budget_id task.expense.id %}">{{ task.estimated_expense_amount|floatformat:'2g' }}</a>
+                {% else %}
+                Expenses: {{ task.estimated_expense_amount|floatformat:'2g' }}
+                {% endif %}
+              </div>
+              <div>
+                {% include 'partials/li_approvement_part.html' with approvement=task.expense.approvement %}
+              </div>
+            </div>
+            <div class="col">
+              <div>
+                <i class="fa-solid fa-gear"></i>
+                Process: <a href="{% url 'processes:get_details' task.process_id%}">{{ task.process.name }}</a>
+              </div>
+              <div>
+                {% if not task.state %}
+                Current state: Not started
+                {% else %}
+                <i class="fa-solid fa-gears"></i>
+                Current state: <a href="{% url 'tasks:get_state_details' task.id task.state.id %}">{{ task.state.state.name }}</a>
+                {% endif %}
+              </div>
+            </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-xs-3 col-sm-3">
+            <div>
+              <i class="fa-regular fa-folder"></i>
+              Ward: <a  href="{% url 'wards:get_details' task.ward_id %}"> {{ task.ward.name }} </a>
+            </div>
+        </div>
+        <div class="row mt-2">
+          <div>
+            {% include 'partials/card_notes_part.html' with notes=task.notes %}
+          </div>
+        </div>
+        </div>
+        <div class="row">
+          <div>
+            <i class="fa-solid fa-pen-to-square"></i>
+            <a href="{% url 'tasks:edit_details' task.id %}">Edit</a>
+          </div>
+        </div>
+    </div>
     </div>
   </div>
   <ul class="nav nav-pills mb-3">

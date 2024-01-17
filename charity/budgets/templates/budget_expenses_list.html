@@ -17,6 +17,7 @@
             <th>Amount</th>
             <th>Created</th>
             <th>Projet</th>
+            <th>Reviewer</th>
             <th>Status</th>
             <th>Author</th>
             <th></th>
@@ -30,6 +31,7 @@
               </td>
               <td>{{ expense.date_created }}</td>
               <td><a href="{% url 'projects:get_details' expense.project.id %}">{{ expense.project.name }}</a></td>
+              <td><a href="{% url 'funds:get_volunteer_details' expense.reviewer.volunteer_profile.id %}">{{ expense.reviewer.username }}</a>
               <td>
               {% include 'partials/td_approvement_part.html' with approvement=expense.approvement %}
               </td>

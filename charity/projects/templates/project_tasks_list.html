@@ -18,6 +18,7 @@
             <th>Task name</th>
             <th>Period</th>
             <th>State</th>
+            <th>Reviewer</th>
             <th>Estimated expenses</th>
             <th>Status</th>
             <th>Assignee</th>
@@ -44,6 +45,7 @@
                   <span class="badge bg-danger">expired</span>
                 {% endif %}
               </td>
+              <td><a href="{% url 'funds:get_volunteer_details' task.reviewer.volunteer_profile.id %}">{{ task.reviewer.username }}</a>
               <td>{{ task.estimated_expense_amount|floatformat:'2g' }}</td>
               <td>
                 {% include 'partials/td_approvement_part.html' with approvement=task.expense.approvement %}

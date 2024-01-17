@@ -16,6 +16,7 @@
           <tr>
             <th>Amount</th>
             <th>Created</th>
+            <th>Reviewer</th>
             <th>Status</th>
             <th>Author</th>
             <th></th>
@@ -28,6 +29,7 @@
                 <a href="{% url 'budgets:get_income_details' budget.id income.id %}">{{ income.amount|floatformat:'2g' }}</a>
               </td>
               <td>{{ income.date_created }}</td>
+              <td><a href="{% url 'funds:get_volunteer_details' income.reviewer.volunteer_profile.id %}">{{ income.reviewer.username }}</a>
               <td>
               {% include 'partials/td_approvement_part.html' with approvement=income.approvement %}
               </td>

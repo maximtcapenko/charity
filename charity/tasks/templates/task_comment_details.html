@@ -8,37 +8,37 @@
     <li class="breadcrumb-item active">Comments Details</li>
   </ol>
   <div class="card mb-4">
+    <div class="card-header">
+      <i class="fa-regular fa-message"></i>
+      Replies
+    </div>
     <div class="card-body">
         <div class="row">
-        <div class="col-2">
-            <div>
-                {% include 'partials/user_image_part.html' with user=comment.author %}
+          <div class="col-2">
+              <div>
+                  {% include 'partials/user_image_part.html' with user=comment.author %}
+              </div>
+              {{ comment.date_created }}
+          </div>
+          <div class="col-10">
+              {{ comment.notes }}
+          </div>
+        </div>
+        {% for reply in page %}
+          <div class="row mt-2 bg-light text-dark">
+            <div class="col-2">
+                <div>
+                    {% include 'partials/user_image_part.html' with user=reply.author %}
+                </div>
+                {{ reply.date_created }}
             </div>
-            {{ comment.date_created }}
-        </div>
-        <div class="col-10">
-            {{ comment.notes }}
-         </div>
-        </div>
+            <div class="col-10">
+                {{ reply.notes }}
+            </div>
+          </div>
+        {% endfor %}
     </div>
   </div>
- {% for reply in page %}
-  <div class="card mb-4">
-    <div class="card-body">
-        <div class="row">
-        <div class="col-2">
-            <div>
-                {% include 'partials/user_image_part.html' with user=reply.author %}
-            </div>
-            {{ reply.date_created }}
-        </div>
-        <div class="col-10">
-            {{ reply.notes }}
-        </div>
-        </div>
-    </div>
-  </div>
- {% endfor %}
  <div>
   <a href="{% url 'tasks:reply_to_comment' task.id  comment.id %}" class="btn btn-link">Reply</a>
 </div>

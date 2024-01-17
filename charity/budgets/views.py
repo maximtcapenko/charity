@@ -204,7 +204,6 @@ def remove_budget_income(request, id, income_id):
             'Income can not be removed, budget is approved', return_url)
 
     income = get_object_or_404(budget.incomes, pk=income_id)
-
     if should_be_approved(income):
         raise ApplicationError(
             'Income can not be removed it has approvement', return_url)
@@ -231,11 +230,12 @@ def remove_budget_expense(request, id, expense_id):
             'Expense can not be removed, budget is approved', return_url)
 
     expense = get_object_or_404(budget.expenses, pk=expense_id)
-
     if should_be_approved(expense):
         raise ApplicationError(
             'Expense can not be removed it has approvement', return_url)
-
+    task = expense.task
+    task.expense = None
+    task.save()
     expense.delete()
 
     return redirect(return_url)
@@ -251,25 +251,19 @@ def remove_budget_reviewer(request, id, reviewer_id):
         """redirect to error page with return url"""
         raise ApplicationError(
             'Budget must have at least one reviewer', return_url)
-
-    if budget.manager_id == reviewer_id:
+    elif budget.manager_id == reviewer_id:
         raise ApplicationError(
             'Reviewer can not be removed from budget because reviewer is a manager',
-            return_url
-        )
-
-    if budget.approvements.filter(author__id=reviewer_id).exists():
+            return_url)
+    elif budget.approvements.filter(author__id=reviewer_id).exists():
         raise ApplicationError(
             'Reviewer can not be removed from budget because of reviewed approvements of budget',
-            return_url
-        )
-
-    if budget.incomes.filter(approvement__author__id=reviewer_id).exists():
+            return_url)
+    elif budget.incomes.filter(approvement__author__id=reviewer_id).exists():
         raise ApplicationError(
             'Reviewer can not be removed from budget because of reviewed incomes in budget',
             return_url)
-
-    if budget.expenses.filter(approvement__author__id=reviewer_id).exists():
+    elif budget.expenses.filter(approvement__author__id=reviewer_id).exists():
         raise ApplicationError(
             'Reviewer can not be removed from budget because of reviewed expenses in budget',
             return_url)
@@ -285,7 +279,6 @@ def remove_budget_reviewer(request, id, reviewer_id):
 def get_income_details(request, id, income_id):
     budget = get_budget_or_404(request, id)
     income = get_object_or_404(budget.incomes, pk=income_id)
-
     paginator = Paginator(income.approvements.all(), DEFAULT_PAGE_SIZE)
 
     return render(request, 'budget_income_details.html', {
@@ -338,7 +331,6 @@ def get_details(request, id):
     }
 
     tab = request.GET.get('tab', default_tab)
-
     if not tab in tabs:
         tab = default_tab
 
@@ -374,17 +366,19 @@ def budget_expenses_planing(request, id):
     projects = Project.objects.annotate(
         requested_budget=Sum('tasks__estimated_expense_amount',
                              filter=Q(tasks__expense__isnull=True), distinct=True, default=0))\
-        .filter(is_closed=False, fund_id=budget.fund_id, tasks__isnull=False) \
+        .filter(is_closed=False, fund_id=budget.fund_id, tasks__isnull=False, requested_budget__gt=0) \
         .values('id', 'name', 'requested_budget').all()
 
     tasks = []
     selected_project = request.GET.get('project_id')
-    if selected_project:
+    if selected_project and len(projects) > 0:
         project = list(filter(lambda project: project['id'] == uuid.UUID(
-            selected_project), projects))[0]
+            selected_project), projects))[:1]
         if project:
-            tasks = Task.objects.filter(project_id=project['id'], expense__isnull=True) \
+            tasks = Task.objects.filter(project_id=project[0]['id'], expense__isnull=True) \
                 .only('id', 'name', 'is_high_priority', 'estimated_expense_amount')
+    else:
+        selected_project = None
 
     return render(request, 'budget_expenses_planing.html', {
         'title': 'Expense planing',
@@ -414,9 +408,9 @@ def get_reviewer_details(request, id, reviewer_id):
     }
 
     tab = request.GET.get('tab', default_tab)
-
     if not tab in tabs:
         tab = default_tab
+
     budget = get_budget_or_404(request, id)
     reviewer = get_object_or_404(budget.reviewers, pk=reviewer_id)
 

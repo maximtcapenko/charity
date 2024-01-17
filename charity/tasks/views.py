@@ -13,7 +13,7 @@ from projects.models import Project
 
 from .forms import CreateTaskForm, UpdateTaskForm, \
     CreateCommentForm, ActivateTaskStateForm, ApproveTaskStateForm, \
-    TaskCreateAttachmentForm
+    TaskCreateAttachmentForm, TaskStateReviewRequestForm
 from .functions import get_task_or_404
 
 
@@ -115,8 +115,7 @@ def approve_task_state(request, task_id, id):
         request=request,
         form_class=ApproveTaskStateForm,
         context={
-            'return_url': '%s?%s' % (
-                reverse('tasks:get_details', args=[task_id]), 'tab=states'),
+            'return_url': reverse('tasks:get_state_details', args=[task_id, id]),
             'title': 'Approve task',
             'initial': {
                 'author': request.user,
@@ -127,6 +126,28 @@ def approve_task_state(request, task_id, id):
         }
     )
 
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET', 'POST'])
+def request_task_state_review(request, task_id, id):
+    task = get_task_or_404(request, task_id)
+    state = get_object_or_404(task.states, pk=id)
+
+    return render_generic_form(
+            request=request,
+            form_class=TaskStateReviewRequestForm,
+            context={
+                'return_url': 
+                    reverse('tasks:get_state_details', args=[task_id, id]),
+                'title': 'Request task state review',
+                'initial': {
+                    'author': request.user,
+                    'state': state,
+                    'fund': request.user.volunteer_profile.fund,
+                    'task': task
+                }
+            }
+        )
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
