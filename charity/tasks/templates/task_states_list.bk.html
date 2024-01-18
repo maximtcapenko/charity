@@ -1,0 +1,42 @@
+<div>
+  {% if task.expense.approvement.is_rejected == False %}
+    <a href="{% url 'tasks:move_to_next_state' task.id %}" class="btn btn-link">Move to next</a>
+  {% else %}
+   <a href="{% url 'tasks:move_to_next_state' task.id %}" class="btn btn-link disabled">Move to next</a>
+  {% endif %}
+</div>
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      State History
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>State name</th>
+            <th>Date created</th>
+            <th>Completion date</th>
+            <th>Status</th>
+            <th>Author</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for state in page %}
+            <tr>
+              <td>
+                <a href="{% url 'tasks:get_state_details' task.id state.id %}">{{ state.state.name }}</a>
+              </td>
+              <td>{{ state.date_created }}</td>
+              <td>{{ state.completion_date }}</td>
+               <td> 
+                {% include 'partials/td_approvement_part.html' with approvement=state.approvement %}
+              </td>
+              <td><a href="{% url 'funds:get_volunteer_details' state.author.volunteer_profile.id %}">{{ state.author.username }}</a>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
+  </div>

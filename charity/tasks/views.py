@@ -15,6 +15,7 @@ from .forms import CreateTaskForm, UpdateTaskForm, \
     CreateCommentForm, ActivateTaskStateForm, ApproveTaskStateForm, \
     TaskCreateAttachmentForm, TaskStateReviewRequestForm
 from .functions import get_task_or_404
+from .renderers import TaskStateCardRenderer
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -134,20 +135,21 @@ def request_task_state_review(request, task_id, id):
     state = get_object_or_404(task.states, pk=id)
 
     return render_generic_form(
-            request=request,
-            form_class=TaskStateReviewRequestForm,
-            context={
-                'return_url': 
-                    reverse('tasks:get_state_details', args=[task_id, id]),
+        request=request,
+        form_class=TaskStateReviewRequestForm,
+        context={
+            'return_url':
+            reverse('tasks:get_state_details', args=[task_id, id]),
                 'title': 'Request task state review',
                 'initial': {
                     'author': request.user,
                     'state': state,
                     'fund': request.user.volunteer_profile.fund,
                     'task': task
-                }
             }
-        )
+        }
+    )
+
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
@@ -194,6 +196,11 @@ def get_details(request, id):
     else:
         authors = None
 
+    if tab == 'states':
+        states_renderer = TaskStateCardRenderer(task, request)
+    else:
+        states_renderer = None
+
     queryset = tabs.get(tab)(task)
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
@@ -204,6 +211,7 @@ def get_details(request, id):
         'authors': authors,
         'selected_tab': tab,
         'task': task,
+        'states_renderer': states_renderer,
         'page': paginator.get_page(request.GET.get('page'))
     })
 
