@@ -30,7 +30,15 @@ class TaskStateCardRenderer:
             self.task, task_states_list)
         html = ''
 
-        current_state_is_approved = should_be_approved(current_task_state)
+        """if no current task state then validate budget approvement"""
+        if not current_task_state:
+            if self.task.expense:
+                current_state_is_approved = should_be_approved(self.task.expense)
+            else:
+                current_state_is_approved = False
+        else:
+            current_state_is_approved = should_be_approved(current_task_state)
+            
         for process_state in process_states:
             task_states_list = task_states_dict.get(process_state.id)
 
@@ -49,7 +57,8 @@ class TaskStateCardRenderer:
                 'name': process_state.name,
                 'notes': process_state.notes,
                 'task_id': self.task.id,
-                'current_state': current_task_state if current_task_state and task_states_list and current_task_state in task_states_list else None,
+                'current_state': current_task_state if current_task_state and \
+                      task_states_list and current_task_state in task_states_list else None,
                 'task_states': task_states_list,
                 'css_class': f'card mb-3 {"border-primary" if current_task_state and process_state.id == current_task_state.state_id else ""}',
                 'btn_class': f'btn btn-primary {"disabled" if btn_should_be_disabled else ""}'

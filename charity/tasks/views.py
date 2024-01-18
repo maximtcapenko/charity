@@ -9,6 +9,7 @@ from django.urls import reverse
 from commons import DEFAULT_PAGE_SIZE
 from commons.functions import user_should_be_volunteer, render_generic_form
 from funds.models import VolunteerProfile
+from processes.models import ProcessState
 from projects.models import Project
 
 from .forms import CreateTaskForm, UpdateTaskForm, \
@@ -172,9 +173,10 @@ def attach_file(request, id):
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET'])
 def get_details(request, id):
-    default_tab = 'states'
+    default_tab = 'process'
     tabs = {
-        'states': lambda task: task.states.select_related('author'),
+        'process': lambda task: ProcessState.objects.filter(process_id=task.process_id).all(),
+        'states': lambda task: task.states.all(),
         'comments': lambda task: task.comments.filter(
             reply_id__isnull=True).annotate(
                 replies_count=Count('replies')).order_by('date_created')
@@ -196,7 +198,7 @@ def get_details(request, id):
     else:
         authors = None
 
-    if tab == 'states':
+    if tab == 'process':
         states_renderer = TaskStateCardRenderer(task, request)
     else:
         states_renderer = None

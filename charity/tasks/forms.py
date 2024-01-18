@@ -1,5 +1,4 @@
 import datetime
-from typing import Any
 
 from django import forms
 from django.db.models import Max, Q, Exists, OuterRef
@@ -171,7 +170,10 @@ class ActivateTaskStateForm(
         else:
             queryset = Q(process__id=task.process_id)
 
-        self.fields['state'].queryset = ProcessState.objects.filter(queryset)
+        self.fields['state'].queryset = ProcessState.objects.filter(
+            queryset & ~Exists(
+                task.states.filter(
+                    state=OuterRef('pk'), approvement__is_rejected=False)))
 
     def save(self):
         author = self.initial['author']
