@@ -53,9 +53,7 @@ class TaskStateCardRenderer:
 
             """render card"""
             html += loader.render_to_string(self.state_template_name, {
-                'order_position': process_state.order_position,
-                'name': process_state.name,
-                'notes': process_state.notes,
+                'process_state': process_state,
                 'task_id': self.task.id,
                 'current_state': current_task_state if current_task_state and \
                       task_states_list and current_task_state in task_states_list else None,

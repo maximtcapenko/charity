@@ -142,6 +142,8 @@ class CreateExpenseForm(
         forms.ModelForm, InitialValidationMixin, FormControlMixin):
     __initial__ = ['budget', 'project', 'author', 'task']
 
+    field_order = ['task', 'amount', 'reviewer', 'notes']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)

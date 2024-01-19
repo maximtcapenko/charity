@@ -3,7 +3,7 @@ import datetime
 from django.db import models
 from django.contrib.auth.models import User
 
-from commons.models import Base
+from commons.models import Base, Comment
 from files.models import Attachment
 from funds.models import Approvement
 from budgets.models import Budget
@@ -38,8 +38,11 @@ class TaskState(Base):
     approvements = models.ManyToManyField(
         Approvement, related_name='approved_task_states')
     notes = models.TextField(blank=True, null=True)
+    reviewer = models.ForeignKey(
+        User, on_delete=models.PROTECT, null=True, related_name='reviewed_task_states')
     is_done = models.BooleanField(default=False, null=False)
     is_review_requested = models.BooleanField(default=False, null=False)
+    comments = models.ManyToManyField(Comment, related_name='commented_task_states')
 
     class Meta:
         ordering = ['date_created']
@@ -78,6 +81,7 @@ class Task(Base):
     attachments = models.ManyToManyField(Attachment)
     states = models.ManyToManyField(TaskState, related_name='state_tasks')
     subscribers = models.ManyToManyField(User, related_name='subscribed_tasks')
+    comments = models.ManyToManyField(Comment, related_name='commented_tasks')
 
     def __str__(self):
         return self.name
@@ -89,19 +93,6 @@ class Task(Base):
     @property
     def is_expired(self):
         return self.is_started and self.end_date is not None and self.end_date < datetime.date.today()
-
-
-class Comment(Base):
-    task = models.ForeignKey(
-        Task, on_delete=models.PROTECT, related_name='comments')
-    notes = models.TextField(blank=True, null=True)
-    author = models.ForeignKey(
-        User, on_delete=models.PROTECT, related_name='comments')
-    reply = models.ForeignKey(
-        'self', null=True, on_delete=models.SET_NULL, related_name='replies')
-    '''use @user_name in comment notes in order to tag user'''
-    tagged_interlocutors = models.ManyToManyField(
-        User, related_name='tags')
 
 
 def project_expired_tasks_count(self):
