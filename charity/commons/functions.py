@@ -1,8 +1,9 @@
 from django import forms
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import redirect, render
-from .exceptions import NullArgumentError, ApplicationError
+from .exceptions import NullArgumentError
 from .mixins import FileUploadMixin
+from .utils import DictObjectWrapper
 
 
 def user_should_be_volunteer(user):
@@ -100,3 +101,7 @@ def validate_modelform_field(field, initial, cleaned_data):
 def should_be_approved(target):
     return target.approvement_id and \
         target.approvement.is_rejected == False
+
+
+def wrap_dict_set_to_objects_list(dicts):
+    return [DictObjectWrapper(dict) for dict in dicts]

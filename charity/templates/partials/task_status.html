@@ -1,5 +1,7 @@
-{% if task.is_started %}
-<span class="badge bg-success">started</span> 
+{% if task.is_started and not task.state and task.state.is_review_requested %}
+<span class="badge bg-success">started</span>
+{% elif task.is_started and task.state and task.state.is_review_requested %}
+<span class="badge bg-info text-dark">on review</span>
 {% else %}
 <span class="badge bg-secondary">not started</span> 
 {% endif %}

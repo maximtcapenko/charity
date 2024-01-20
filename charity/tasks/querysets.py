@@ -9,6 +9,16 @@ from wards.models import Ward
 from .models import Task
 
 
+def get_project_tasks_comments_count_queryset(project):
+    """
+    Returns queryset with structure:
+    `{'id', 'comments_count'}`
+    """
+    return Task.objects.filter(project=project) \
+        .annotate(comments_count=Count('comments')) \
+        .values('id', 'comments_count')
+
+
 def get_task_comments_with_reply_count_queryset(task):
     return task.comments.filter(
         reply_id__isnull=True).annotate(

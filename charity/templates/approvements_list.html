@@ -17,7 +17,7 @@
                 {{ approvement.author.volunteer_profile|cover }}
                 <a href="{% url 'funds:get_volunteer_details' approvement.author.volunteer_profile.id %}">{{ approvement.author.username }}</a>
               </div>
-              <div class="col d-flex align-content-center flex-wrap">
+              <div class="col d-flex align-items-center">
                 {% if approvement.is_rejected %}
                 <span class="badge bg-danger">rejected</span>
                 {% else %}

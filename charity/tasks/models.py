@@ -42,7 +42,8 @@ class TaskState(Base):
         User, on_delete=models.PROTECT, null=True, related_name='reviewed_task_states')
     is_done = models.BooleanField(default=False, null=False)
     is_review_requested = models.BooleanField(default=False, null=False)
-    comments = models.ManyToManyField(Comment, related_name='commented_task_states')
+    comments = models.ManyToManyField(
+        Comment, related_name='commented_task_states')
 
     class Meta:
         ordering = ['date_created']
@@ -87,12 +88,33 @@ class Task(Base):
         return self.name
 
     @property
+    def is_on_review(self):
+        return self.is_started and self.state_id and self.state.is_review_requested
+
+    @property
     def should_be_approved(self):
         return self.estimated_expense_amount > 0
 
     @property
     def is_expired(self):
         return self.is_started and self.end_date is not None and self.end_date < datetime.date.today()
+
+
+"""
+{% if task.is_started and not task.state and task.state.is_review_requested %}
+<span class="badge bg-success">started</span>
+{% elif task.is_started and task.state and task.state.is_review_requested %}
+<span class="badge bg-info text-dark">on review</span>
+{% else %}
+<span class="badge bg-secondary">not started</span> 
+{% endif %}
+{% if task.is_high_priority %}
+<span class="badge bg-warning text-dark">high priority</span>
+{% endif %}
+{% if task.is_expired %}
+<span class="badge bg-danger">expired</span>
+{% endif %}
+"""
 
 
 def project_expired_tasks_count(self):

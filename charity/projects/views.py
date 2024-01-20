@@ -16,6 +16,7 @@ from .forms import CreateProjectForm, AddWardToProjectForm, \
     AddProcessToProjectForm, UpdateProjectForm, AddProjectReviewerForm
 from .functions import get_project_or_404
 from .models import Project
+from .renderers import TasksBoardRenderer
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -216,13 +217,19 @@ def get_details(request, id):
     queryset = tabs.get(tab)(project)
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
+    page = paginator.get_page(request.GET.get('page'))
+    tasks_renderer = None
+    if tab == 'tasks':
+        tasks_renderer = TasksBoardRenderer(project, page, request)
+
     return render(request, 'project_details.html', {
         'title': 'Project',
         'tabs': tabs.keys(),
         'items_count': paginator.count,
         'project': project,
         'selected_tab': tab,
-        'page': paginator.get_page(request.GET.get('page'))
+        'tasks_renderer': tasks_renderer,
+        'page': page
     })
 
 
