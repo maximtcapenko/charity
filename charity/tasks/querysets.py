@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.db.models import Count, Exists, Q, OuterRef
+from django.db.models import Count, Exists, Q, OuterRef, Sum
 
 from funds. models import VolunteerProfile
 from processes.models import ProcessState
@@ -7,6 +7,20 @@ from projects.models import Project
 from wards.models import Ward
 
 from .models import Task
+
+
+def get_estimated_and_not_approved_tasks_queryset(project_id):
+    return Task.objects.filter(project_id=project_id, expense__isnull=True)
+
+
+def get_project_requested_expenses_queryset(fund_id):
+    """
+    Returns queryset with structure:
+    {'project__id', 'project__name', 'requested_budget'}
+    """
+    return Task.objects.filter(project__fund_id=fund_id, expense__isnull=True).values('project_id') \
+        .annotate(requested_budget=Sum('estimated_expense_amount', default=0)) \
+        .filter(requested_budget__gt=0).values('project__id', 'project__name', 'requested_budget')
 
 
 def get_project_tasks_comments_count_queryset(project):
