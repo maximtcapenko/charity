@@ -1,0 +1,49 @@
+<div class="card">
+  <div class="card-header">
+    <i class="fa-solid fa-list-check"></i>
+    Tasks
+  </div>
+  <div class="card-body">
+    <div class="col-md-2 col-xl-3">
+      <form class="bd-search d-flex align-items-center">
+        <input type="search" class="form-control" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off" />
+      </form>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <div class="bg bg-secondary text-light text-center">TODO</div>
+      </div>
+      <div class="col">
+        <div class="bg bg-primary text-light text-center">In Progress</div>
+      </div>
+      <div class="col">
+        <div class="bg bg-info text-dark text-center">On Review</div>
+      </div>
+      <div class="col">
+        <div class="bg bg-success text-light text-center">Done</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        {{ todo_tasks }}
+      </div>
+      <div class="col">
+        {{ in_progress_tasks }}
+      </div>
+      <div class="col">
+        {{ on_review_tasks }}
+      </div>
+      <div class="col">
+        {{ done_tasts }}
+      </div>
+    </div>
+
+    <div class="row mt-2">
+      <div>
+        {% include 'paginator.html' with obj_page=page %}
+      </div>
+    </div>
+  </div>
+</div>

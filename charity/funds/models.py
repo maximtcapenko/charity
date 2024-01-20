@@ -31,6 +31,9 @@ class Approvement(Base):
     is_rejected = models.BooleanField()
     notes = models.TextField(blank=True, null=True)
 
+    class Meta:
+        ordering = ['date_created']
+
 
 class Contributor(Base):
     name = models.CharField(max_length=256, blank=False,

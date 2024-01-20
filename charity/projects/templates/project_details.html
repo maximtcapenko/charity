@@ -10,29 +10,39 @@
   </ol>
   <div class="card mb-4">
     <div class="card-body">
-      <div>
-        <i class="far fa-calendar-alt"></i>
-        Created: {{ project.date_created }}
-      </div>
-      <div>
-        <i class="fas fa-user"></i>
-        Leader: <a href="{% url 'funds:get_volunteer_details' project.leader.volunteer_profile.id %}">{{ project.leader.username }}</a>
-      </div>
-      <div>
-        <i class="fas fa-sack-dollar"></i>
-        Budget: {{ project.approved_budget|floatformat:'2g' }}
-      </div>
-      <div>
-        <i class="fa-regular fa-clipboard"></i>
-        Notes: {{ project.notes }}
-      </div>
-      <div>
-          <i class="fa-solid fa-pen-to-square"></i>
-          <a href="{% url 'projects:update' project.id %}">Edit</a>
-          &nbsp;
-          <i class="fa-solid fa-lock"></i>
-          <a href="{% url 'projects:close' project.id %}">Close</a>
-       </div>
+        <div class="row">
+          <div class="col">
+            <div class="bg-light text-dark">
+              <i class="fa-regular fa-clipboard"></i>
+              <strong>Description</strong>: {{ project.notes }}
+            </div>
+          </div>
+          <div class="col">
+            <div class="bg-light text-dark">
+              <div>
+                <strong>Created</strong>: {{ project.date_created }}
+              </div>
+              <div>
+                <strong>Leader</strong>: <a href="{% url 'funds:get_volunteer_details' project.leader.volunteer_profile.id %}">{{ project.leader.username }}</a>
+              </div>
+              <div>
+                <strong>Budget</strong>: {{ project.approved_budget|floatformat:'2g' }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="row">
+            <div class="col-1">
+              <i class="fa-solid fa-pen-to-square"></i>
+              <a href="{% url 'projects:update' project.id %}">Edit</a>
+            </div>
+            <div class="col">
+              <i class="fa-solid fa-lock"></i>
+              <a href="{% url 'projects:close' project.id %}">Close</a>
+            </div>
+         </div>
+        </div>
      </div>
   </div>
   <ul class="nav nav-pills mb-3">

@@ -24,10 +24,10 @@
     <select class="form-control" name="project_id" required="true" id="id_project" onchange="javascript:this.form.submit()">
       <option value="">Select Project</option>
       {% for project in projects %}
-       {% if selected_project == project.id|stringformat:"s" %}
-          <option selected="true" value="{{ project.id }}">{{ project.name }} ({{ project.requested_budget|floatformat:'2g' }})</option>
+       {% if selected_project == project.project.id|stringformat:"s" %}
+          <option selected="true" value="{{ project.project.id }}">{{ project.project.name }} ({{ project.requested_budget|floatformat:'2g' }})</option>
         {% else %}
-          <option value="{{ project.id }}">{{ project.name }} ({{ project.requested_budget|floatformat:'2g' }})</option>
+          <option value="{{ project.project.id }}">{{ project.project.name }} ({{ project.requested_budget|floatformat:'2g' }})</option>
        {% endif %}
       {% endfor %}
     </select>

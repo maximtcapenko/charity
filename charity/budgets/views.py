@@ -1,5 +1,5 @@
 import uuid
-from django.db.models import Exists, Q, OuterRef, Sum
+from django.db.models import Exists, Q, OuterRef
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
@@ -8,7 +8,8 @@ from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
-from commons.functions import user_should_be_volunteer, render_generic_form, should_be_approved
+from commons.functions import user_should_be_volunteer, render_generic_form,\
+      should_be_approved, wrap_dict_set_to_objects_list
 from funds.models import Approvement
 from .models import Budget, Income
 from .forms import CreateBudgetForm, CreateIncomeForm, \
@@ -17,6 +18,8 @@ from .forms import CreateBudgetForm, CreateIncomeForm, \
 from .functions import get_budget_or_404, get_budget_available_income
 
 from projects.models import Project
+from tasks.querysets import get_estimated_and_not_approved_tasks_queryset,\
+      get_project_requested_expenses_queryset
 from tasks.models import Task, Expense
 
 
@@ -363,20 +366,14 @@ def budget_expenses_planing(request, id):
 
     avaliable_income_amount = get_budget_available_income(budget)
 
-    projects = Project.objects.annotate(
-        requested_budget=Sum('tasks__estimated_expense_amount',
-                             filter=Q(tasks__expense__isnull=True), distinct=True, default=0))\
-        .filter(is_closed=False, fund_id=budget.fund_id, tasks__isnull=False, requested_budget__gt=0) \
-        .values('id', 'name', 'requested_budget').all()
-
+    results = wrap_dict_set_to_objects_list(get_project_requested_expenses_queryset(budget.fund_id))
     tasks = []
     selected_project = request.GET.get('project_id')
-    if selected_project and len(projects) > 0:
-        project = list(filter(lambda project: project['id'] == uuid.UUID(
-            selected_project), projects))[:1]
-        if project:
-            tasks = Task.objects.filter(project_id=project[0]['id'], expense__isnull=True) \
-                .only('id', 'name', 'is_high_priority', 'estimated_expense_amount')
+    if selected_project and len(results) > 0:
+        result = next(filter(lambda result: result.project.id == uuid.UUID(
+            selected_project), results), None)
+        if result:
+            tasks = get_estimated_and_not_approved_tasks_queryset(result.project.id)
     else:
         selected_project = None
 
@@ -384,7 +381,7 @@ def budget_expenses_planing(request, id):
         'title': 'Expense planing',
         'budget': budget,
         'avaliable_income_amount': avaliable_income_amount,
-        'projects': projects,
+        'projects': results,
         'selected_project': selected_project,
         'tasks': tasks
     })

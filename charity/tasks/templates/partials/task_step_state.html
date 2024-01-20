@@ -1,0 +1,9 @@
+{% if not task_state.approvement and not task_state.is_review_requested %}
+  <span class="badge bg-primary">in progress</span>
+{% elif task_state.is_review_requested %}
+  <span class="badge bg-info text-dark">on review</span>
+{% elif task_state.approvement.is_rejected %}
+  <a href="{% url 'tasks:get_state_details' task_id task_state.id %}" class="badge bg-danger">rejected</a>
+{% else %}
+{{ task_state.approvement.date_created }} <a href="{% url 'tasks:get_state_details' task_id task_state.id %}" class="badge bg-success">approved</a>
+{% endif %}

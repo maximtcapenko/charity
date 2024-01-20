@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 class="mt-4">{{state.state.name }}</h2>
+<h2 class="mt-4">{{ state.state.name }}</h2>
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
       <a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a>
@@ -9,26 +9,67 @@
   </ol>
   <div class="card mb-4">
     <div class="card-body">
-      <div class="row">
-        <div>
-          <i class="fa-solid fa-circle-question"></i>
-          {% if state.state.is_approvement_required %} 
-            Approvement requirement: <span class="badge bg-primary">yes</span>
-          {% else %}
-            Approvement requirement: <span class="badge bg-primary">no</span>
-          {% endif %}
-         </div>
-         <div>
-            {% include 'partials/li_approvement_part.html' with approvement=state.approvement %}
-         </div>
-         <div>
-            <i class="fa-solid fa-gear"></i>
-            Process: <a href="{% url 'processes:get_details' task.process_id%}">{{ task.process.name }}</a>
-        </div>
-      </div>
-      <div class="row mt-2">
-        <div>
-          {% include 'partials/card_notes_part.html' with notes=state.state %}
+      <div>
+          <div class="row">
+            <div class="col">
+              <div class="bg-light text-dark">
+                <i class="fa-regular fa-clipboard"></i>
+                <strong>Description</strong>: {{ state.state.notes }}
+              </div>
+              <p></p>
+              <div class="bg-light text-dark">
+                <i class="fa-regular fa-clipboard"></i>
+                <strong>Notes</strong>: {{ state.notes }}
+              </div>
+            </div>
+            <div class="col">
+              <div class="bg-light text-dark">
+                  <div>
+                    <strong>Author</strong>: 
+                    <a href="{% url 'funds:get_volunteer_details' state.author.volunteer_profile.id %}">{{ state.author.username }}</a>
+                  </div>
+                  <div>
+                    <strong>Created</strong>: {{ state.date_created }}
+                  </div>
+                  <div>
+                    <strong>Reviewer</strong>:
+                    {% if state.reviewer %}
+                    <a href="{% url 'funds:get_volunteer_details' state.reviewer.volunteer_profile.id %}">{{ state.reviewer.username }} </a>
+                    {% else %}
+                    <a href="{% url 'funds:get_volunteer_details' task.reviewer.volunteer_profile.id %}">{{ task.reviewer.username }} </a>
+                    {% endif %}
+                  </div>
+                  {% if state.state.is_approvement_required %} 
+                  <strong>Approvement requirement</strong>: <span class="badge bg-primary">yes</span>
+                  {% else %}
+                  <strong>Approvement requirement</strong>: <span class="badge bg-primary">no</span>
+                  {% endif %}
+                 </div>
+                 <div>
+                  <strong>Status</strong>:
+                  {% if not state.approvement and not state.is_approvement_required %}
+                  <span class="badge bg-primary">in progress</span>
+                  {% endif %}
+                  {% if state.is_review_requested %}
+                  <span class="badge bg-info text-dark">on review</span>
+                  {% endif %}
+                  {% if state.approvement.is_rejected %}
+                  <span class="badge bg-danger">rejected</span>
+                  {% endif %}
+                  {% if state.approvement.is_rejected == False %}
+                  <span class="badge bg-success">approved</span>
+                  {% endif %}
+                  {% if state.is_done %}
+                  <span class="badge bg-success">done</span>
+                  {% endif %}
+                 </div>
+                 <div>
+                    <strong>Completion date</strong>: {{ state.completion_date}}
+                 </div>
+                 <div>
+                  <strong>Process</strong>: <a href="{% url 'processes:get_details' task.process_id%}">{{ task.process.name }}</a>
+                </div>
+            </div>
         </div>
       </div>
       <div class="row">
@@ -44,9 +85,9 @@
   </div>
   <div>
     {% if state.is_review_requested %}
-      <a href="{% url 'tasks:approve_task_state' task.id state.id %}" class="btn btn-link">Add approvement</a>
+      <a href="{% url 'tasks:approve_task_state' task.id state.id %}" class="btn btn-link">Add review</a>
       {%else%}
-      <a href="{% url 'tasks:approve_task_state' task.id state.id %}" class="btn btn-link disabled">Add approvement</a>
+      <a href="{% url 'tasks:approve_task_state' task.id state.id %}" class="btn btn-link disabled">Add review</a>
     {% endif %}
   </div>
   {% include 'approvements_list.html' %}

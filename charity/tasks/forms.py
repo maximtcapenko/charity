@@ -1,24 +1,25 @@
 import datetime
-from typing import Any
 
 from django import forms
-from django.db.models import Max, Q, Exists, OuterRef
+from django.db.models import Max
 from django.contrib.auth.models import User
 
-from commons.functions import get_argument_or_error, should_be_approved
+from commons.functions import should_be_approved
 from commons.mixins import FormControlMixin, InitialValidationMixin
 from files.forms import CreateAttachmentForm
 from funds.models import Approvement
-from processes.models import Process, ProcessState
-from wards.models import Ward
+from processes.models import Process
 
-from .models import Comment, Task, TaskState
+from .querysets import get_available_task_process_states_queryset, \
+    get_available_task_rewiewers_queryset, get_available_project_wards_queryset
+from .models import Task, TaskState
 from .signals import review_request_created
 
 
 class CreateTaskForm(
         forms.ModelForm, InitialValidationMixin, FormControlMixin):
     __initial__ = ['project', 'author']
+    field_order = ['ward']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -33,11 +34,8 @@ class CreateTaskForm(
             .only('id', 'username')
 
         self.fields['reviewer'].queryset = project.reviewers
-        self.fields['ward'].queryset = Ward.active_objects. \
-            filter(Q(projects__in=[project])
-                   & ~Exists(Task.objects.filter(ward=OuterRef("pk"),
-                                                 project__id=project.id))) \
-            .only('id', 'name')
+        self.fields['ward'].queryset = get_available_project_wards_queryset(
+            project).only('id', 'name')
 
         self.fields['process'].queryset = Process.objects \
             .filter(projects__in=[project]) \
@@ -73,7 +71,7 @@ class CreateTaskForm(
 
     class Meta:
         model = Task
-        exclude = ['date_created', 'id', 'expense', 'state',
+        exclude = ['date_created', 'id', 'expense', 'state', 'comments',
                    'states', 'subscribers', 'author',
                    'attachments', 'order_position', 'is_done', 'is_started']
 
@@ -86,13 +84,9 @@ class UpdateTaskForm(CreateTaskForm):
             if self.instance.is_started:
                 self.fields['start_date'].disabled = True
 
-            self.fields['ward'].queryset = Ward.active_objects. \
-                filter(Q(projects__in=[self.instance.project])
-                       & ~Exists(Task.objects.filter(
-                           Q(ward=OuterRef("pk"),
-                             project__id=self.instance.project.id)
-                           & ~Q(id=self.instance.id)))) \
-                .only('id', 'name')
+            self.fields['ward'].queryset = get_available_project_wards_queryset(
+                self.instance.project, task_id=self.instance.id
+            ).only('id', 'name')
 
             if self.instance.expense and \
                     should_be_approved(self.instance.expense):
@@ -111,51 +105,11 @@ class UpdateTaskForm(CreateTaskForm):
         return self.instance
 
 
-class CreateCommentForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin):
-    __initial__ = ['task', 'author']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
-        FormControlMixin.__init__(self)
-
-        # self.fields['tagged_interlocutors'].queryset = User.objects \
-        #        .filter(Q(volunteer_profile__fund_id=user.volunteer_profile.fund_id) &
-        #                ~Q(id=user.id)) \
-        #        .only('id', 'username')
-        self.fields['author'].widget = forms.HiddenInput()
-        self.fields['task'].widget = forms.HiddenInput()
-
-        reply = self.initial.get('reply')
-        if reply:
-            self.fields['reply'].widget = forms.HiddenInput()
-        else:
-            self.fields.pop('reply')
-
-    def clean(self):
-        if self.initial['task'].id != self.cleaned_data['task'].id:
-            raise forms.ValidationError(
-                'Task in form is not the same as target task')
-
-        form_reply = self.cleaned_data.get('reply')
-
-        if form_reply:
-            reply = get_argument_or_error('reply', self.initial)
-            if form_reply.id != reply.id:
-                raise forms.ValidationError(
-                    'Reply in form is not the same as target comment')
-
-        return self.cleaned_data
-
-    class Meta:
-        model = Comment
-        exclude = ['id', 'tagged_interlocutors']
-
-
 class ActivateTaskStateForm(
         forms.ModelForm, InitialValidationMixin, FormControlMixin):
     __initial__ = ['task', 'author']
+
+    field_order = ['state', 'reviewer', 'notes']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -164,14 +118,13 @@ class ActivateTaskStateForm(
 
         task = self.initial['task']
 
-        current_state = task.state
-        if current_state:
-            queryset = Q(process__id=task.process_id) & ~Q(
-                id=current_state.state_id)
-        else:
-            queryset = Q(process__id=task.process_id)
+        self.fields['state'].queryset = get_available_task_process_states_queryset(
+            task)
+        if self.initial.get('state'):
+            self.fields['state'].disabled = True
 
-        self.fields['state'].queryset = ProcessState.objects.filter(queryset)
+        self.fields['reviewer'].queryset = get_available_task_rewiewers_queryset(
+            task)
 
     def save(self):
         author = self.initial['author']
@@ -190,6 +143,9 @@ class ActivateTaskStateForm(
 
     def clean(self):
         task = self.initial['task']
+        if self.instance.reviewer == task.assignee:
+            raise forms.ValidationError('Reviewer can not be assignee of task')
+
         '''validate if budget of task is approved'''
         if task.should_be_approved:
             if task.expense == None:
@@ -214,7 +170,7 @@ class ActivateTaskStateForm(
     class Meta:
         model = TaskState
         exclude = [
-            'id', 'date_created', 'is_done', 'is_review_requested',
+            'id', 'date_created', 'is_done', 'is_review_requested', 'comments',
             'approvement', 'completion_date', 'author', 'approvements']
 
 
@@ -235,12 +191,8 @@ class ApproveTaskStateForm(
         author = self.initial['author']
         task = self.initial['task']
 
-        if task.reviewer != author:
+        if task.reviewer != author or self.initial['state'].reviewer != author:
             raise forms.ValidationError('Current user is not task reviewer')
-
-        if not task.project.reviewers.filter(id=self.initial['author'].id).exists():
-            raise forms.ValidationError(
-                'Current user is not project reviewer, only reviewers can approve tasks')
 
     def save(self):
         author = self.initial['author']

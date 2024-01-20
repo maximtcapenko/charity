@@ -1,20 +1,22 @@
 from django.contrib.auth.decorators import user_passes_test
-from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
+from commons.forms import CreateCommentForm
 from commons.functions import user_should_be_volunteer, render_generic_form
-from funds.models import VolunteerProfile
+from processes.models import ProcessState
 from projects.models import Project
 
+from .querysets import get_available_task_process_states_queryset,\
+      get_task_comments_authors_queryset, get_task_comments_with_reply_count_queryset
 from .forms import CreateTaskForm, UpdateTaskForm, \
-    CreateCommentForm, ActivateTaskStateForm, ApproveTaskStateForm, \
+    ActivateTaskStateForm, ApproveTaskStateForm, \
     TaskCreateAttachmentForm, TaskStateReviewRequestForm
 from .functions import get_task_or_404
+from .renderers import TaskStateCardRenderer
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -55,15 +57,24 @@ def edit_details(request, id):
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
-def move_to_next_state(request, id):
+def start_next_state(request, id):
     task = get_task_or_404(request, id)
+    process_state_id = request.GET.get('process_state_id')
+    process_state = None
+
+    if process_state_id:
+        '''validate if this state exists in process and it is avaliable to be acrivated'''
+        queryset = get_available_task_process_states_queryset(task)
+        process_state = get_object_or_404(queryset, pk=process_state_id)
+
     return render_generic_form(
         request=request, form_class=ActivateTaskStateForm, context={
             'return_url': reverse('tasks:get_details', args=[id]),
-            'title': 'Move task to next state',
+            'title': 'Start next state',
             'initial': {
                 'task': task,
-                'author': request.user
+                'author': request.user,
+                'state': process_state
             }
         }
     )
@@ -81,7 +92,7 @@ def add_comment(request, id):
             'return_url': return_url,
             'initial': {
                 'author': request.user,
-                'task': task
+                'target': task
             }
         })
 
@@ -95,7 +106,7 @@ def reply_to_comment(request, task_id, id):
     initial = {
         'author': request.user,
         'reply': comment,
-        'task': task
+        'target': task
     }
     return render_generic_form(
         request=request, form_class=CreateCommentForm, context={
@@ -134,20 +145,21 @@ def request_task_state_review(request, task_id, id):
     state = get_object_or_404(task.states, pk=id)
 
     return render_generic_form(
-            request=request,
-            form_class=TaskStateReviewRequestForm,
-            context={
-                'return_url': 
-                    reverse('tasks:get_state_details', args=[task_id, id]),
+        request=request,
+        form_class=TaskStateReviewRequestForm,
+        context={
+            'return_url':
+            reverse('tasks:get_state_details', args=[task_id, id]),
                 'title': 'Request task state review',
                 'initial': {
                     'author': request.user,
                     'state': state,
                     'fund': request.user.volunteer_profile.fund,
                     'task': task
-                }
             }
-        )
+        }
+    )
+
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
@@ -170,13 +182,13 @@ def attach_file(request, id):
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET'])
 def get_details(request, id):
-    default_tab = 'states'
+    default_tab = 'process'
     tabs = {
-        'states': lambda task: task.states.select_related('author'),
-        'comments': lambda task: task.comments.filter(
-            reply_id__isnull=True).annotate(
-                replies_count=Count('replies')).order_by('date_created')
-        .values('id', 'author__id', 'author__username', 'date_created', 'notes', 'replies_count'),
+        'process': lambda task: ProcessState.objects.filter(process_id=task.process_id).all(),
+        'comments': lambda task: get_task_comments_with_reply_count_queryset(
+            task).values(
+                'id', 'author__id', 'author__username', 
+                'date_created', 'notes', 'replies_count'),
         'files': lambda task:  task.attachments.all()
     }
 
@@ -187,12 +199,16 @@ def get_details(request, id):
     task = get_task_or_404(request, id)
 
     if tab == 'comments':
-        authors_queryset = VolunteerProfile.objects.filter(
-            user_id__in=User.objects.filter(comments__task=task)).all()
+        authors_queryset = get_task_comments_authors_queryset(task).all()
         authors = {authors_queryset[i].user_id: authors_queryset[i]
                    for i in range(0, len(authors_queryset), 1)}
     else:
         authors = None
+
+    if tab == 'process':
+        states_renderer = TaskStateCardRenderer(task, request)
+    else:
+        states_renderer = None
 
     queryset = tabs.get(tab)(task)
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
@@ -204,6 +220,7 @@ def get_details(request, id):
         'authors': authors,
         'selected_tab': tab,
         'task': task,
+        'states_renderer': states_renderer,
         'page': paginator.get_page(request.GET.get('page'))
     })
 
