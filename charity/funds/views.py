@@ -39,8 +39,8 @@ def get_details(request, id):
                                     states_count=models.Count('states', distinct=True))
             .values('id', 'name', 'date_created', 'is_inactive',
                     'states_count', 'active_project_count'),
-        'volunteers': lambda fund:
-            fund.volunteers.all()
+        'volunteers': lambda fund: fund.volunteers.all(),
+        'wards': lambda fund: fund.wards.all()
     }
 
     fund = get_object_or_404(Fund, pk=id)

@@ -1,1 +1,43 @@
 {% load customtags %}
+<div>
+    <a href="{% url 'wards:create' %}" class="btn btn-link" >Add ward</a>
+  </div>
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-table me-1"></i>
+      Wards
+    </div>
+    <div class="card-body">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Ward name</th>
+            <th>Created</th>
+            <th>Is active</th>
+            <th>Used in projects</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ward in page %}
+            <tr>
+              <td>
+                <a href="#">{{ ward.name }}</a>
+              </td>
+              <td>{{ ward.date_created }}</td>
+              {% if ward.is_inactive %}
+              <td> 
+                <input type="checkbox" disabled="disabled">
+              </td>
+              {% else %}
+              <td>
+                <input type="checkbox" disabled="disabled" checked="checked">
+              </td>
+              {% endif %}
+              <td>{{ ward.active_project_count }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
+  </div>

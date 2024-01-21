@@ -100,23 +100,6 @@ class Task(Base):
         return self.is_started and self.end_date is not None and self.end_date < datetime.date.today()
 
 
-"""
-{% if task.is_started and not task.state and task.state.is_review_requested %}
-<span class="badge bg-success">started</span>
-{% elif task.is_started and task.state and task.state.is_review_requested %}
-<span class="badge bg-info text-dark">on review</span>
-{% else %}
-<span class="badge bg-secondary">not started</span> 
-{% endif %}
-{% if task.is_high_priority %}
-<span class="badge bg-warning text-dark">high priority</span>
-{% endif %}
-{% if task.is_expired %}
-<span class="badge bg-danger">expired</span>
-{% endif %}
-"""
-
-
 def project_expired_tasks_count(self):
     return Task.objects.filter(models.Q(project__id=self.id, is_done=False, is_started=True) &
                                models.Q(end_date__isnull=False, end_date__lt=datetime.date.today())) \

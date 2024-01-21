@@ -16,6 +16,8 @@ class CreateContributionForm(
         forms.ModelForm, InitialValidationMixin, FormControlMixin):
     __initial__ = ['fund', 'author']
 
+    field_order = ['contributor']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)

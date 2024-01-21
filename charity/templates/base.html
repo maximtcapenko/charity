@@ -59,8 +59,15 @@
       </ul>
       <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
+          <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ user.volunteer_profile|cover:25 }}</a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+            <li>
+              <a href="{%url 'funds:get_volunteer_details' user.volunteer_profile.id %}" class="dropdown-item">
+                <strong>{{ user.username }}</strong>
+              </a>
+              <hr class="dropdown-divider" />
+            </li>
             <li>
               <a class="dropdown-item" href="#!">Settings</a>
             </li>
@@ -85,31 +92,13 @@
               <div class="sb-sidenav-menu-heading">General</div>
               <a class="nav-link" href="{% url 'funds:get_current_details' %}">
                 <div class="sb-nav-link-icon">
-                  <i class="fas fa-tachometer-alt"></i>
-                </div>Dashboard
-              </a>
-              <a class="nav-link" href="{% url 'wards:get_list' %}">
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-tachometer-alt"></i>
-                </div>Wards
-              </a>
-              <a class="nav-link" href="{% url 'processes:get_list' %}">
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-tachometer-alt"></i>
-                </div>Processes
-              </a>
-            </div>
-            <div class="nav">
-              <div class="sb-sidenav-menu-heading">Finances</div>
-              <a class="nav-link" href="{% url 'budgets:get_list' %}">
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-sack-dollar"></i>
-                </div>Budgets
+                  <i class="fa-solid fa-house"></i>
+                </div>Home
               </a>
             </div>
           </div>
           <div class="sb-sidenav-footer">
-            <div class="small">Logged in as:</div>{{ user.username }}
+            <div class="small">Logged in at:</div>{{ user.last_login }}
           </div>
         </nav>
       </div>
