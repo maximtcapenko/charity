@@ -3,44 +3,65 @@
 <h2 class="mt-4">Income {{ income.date_created }}</h2>
 <ol class="breadcrumb mb-4">
   <li class="breadcrumb-item">
-    <a href="{% url 'budgets:get_details' income.budget_id %}">{{ income.budget.name }}</a>
+    <a href="{% url 'funds:get_details' budget.fund_id %}">{{ budget.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'budgets:get_list'%}">Budgets</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'budgets:get_details' income.budget_id %}?tab=incomes">{{ income.budget.name }}</a>
   </li>
   <li class="breadcrumb-item active">Income Details</li>
 </ol>
 <div class="card mb-4">
   <div class="card-body">
-    <div>
-      <i class="far fa-calendar-alt"></i>
-      Date created: {{ income.date_created }}
-    </div>
-    <div>
-      <i class="fas fa-user"></i>
-      Author: {{ income.author.username }}
-    </div>
-    <div>
-      <i class="fas fa-user"></i>
-      {% if  income.reviewer %}
-        Reviewer: <a href="{% url 'funds:get_volunteer_details' income.reviewer.volunteer_profile.id %}">{{ income.reviewer.username }}</a>
-      {% else%}
-      Reviewer: 
-      {% endif %}
-    </div>
-    <div>
-      <i class="fas fa-sack-dollar"></i>
-      Amount:<a href="#"> {{ income.amount|floatformat:'2g' }} </a>
-    </div>
-    <div>
-      {% include 'partials/li_approvement_part.html' with approvement=income.approvement %}
-    </div>
-    <div>
-      <i class="fa-regular fa-clipboard"></i>
-      Notes: {{ income.notes }}
-    </div>
-    <div>
-      <i class="fa-solid fa-pen-to-square"></i>
-        <a href="{% url 'budgets:edit_income_details' budget.id income.id %}">Edit</a>
-     </div>
-  </div>
+      <div class="row">
+        <div class="col">
+          <div class="bg-light text-dark">
+            <i class="fa-regular fa-clipboard"></i>
+            <strong>Description</strong>: {{ income.notes }}
+          </div>
+        </div>
+        <div class="col">
+          <div class="bg-light text-dark">
+            <div>
+              <strong>Created</strong>: {{ income.date_created }}
+            </div>
+            <div>
+              <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' income.author.volunteer_profile.id %}">{{ income.author.username }}</a>
+            </div>
+            <div>
+              {% if  income.reviewer %}
+              <strong>Reviewer</strong>: <a href="{% url 'funds:get_volunteer_details' income.reviewer.volunteer_profile.id %}">{{ income.reviewer.username }}</a>
+              {% else%}
+              <strong>Reviewer</strong>: 
+              {% endif %}
+            </div>
+            <div>
+              <strong>Amount</strong>: {{ income.amount|floatformat:'2g' }}
+            </div>
+            <div>
+              {% include 'partials/li_approvement_part.html' with approvement=income.approvement %}
+            </div>
+            <div>
+              <strong>Contribution</strong>: <a href="{% url 'funds:get_contribution_details' income.contribution.id %}">{{ income.contribution.contributor.name }} {{income.contribution.amount|floatformat:'2g'}}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="row">
+          <div class="col-1">
+            <i class="fa-solid fa-pen-to-square"></i>
+            {% if not income.approvement.is_rejected %}
+              <a href="{% url 'budgets:edit_income_details' budget.id income.id %}">Edit</a>
+            {% else %}
+              <a href="{% url 'budgets:edit_income_details' budget.id income.id %}">Edit</a>
+            {% endif %}
+          </div>
+       </div>
+      </div>
+   </div>
 </div>
 <div>
   {% if not income.budget.approvement or income.budget.approvement.is_rejected %}

@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 from commons.models import Base, Comment
 from files.models import Attachment
-from funds.models import Approvement
+from funds.models import Approvement, RequestReview
 from budgets.models import Budget
 from processes.models import Process, ProcessState
 from projects.models import Project
@@ -42,6 +42,8 @@ class TaskState(Base):
         User, on_delete=models.PROTECT, null=True, related_name='reviewed_task_states')
     is_done = models.BooleanField(default=False, null=False)
     is_review_requested = models.BooleanField(default=False, null=False)
+    request_review = models.ForeignKey(
+        RequestReview, on_delete=models.SET_NULL, null=True)
     comments = models.ManyToManyField(
         Comment, related_name='commented_task_states')
 
@@ -98,23 +100,6 @@ class Task(Base):
     @property
     def is_expired(self):
         return self.is_started and self.end_date is not None and self.end_date < datetime.date.today()
-
-
-"""
-{% if task.is_started and not task.state and task.state.is_review_requested %}
-<span class="badge bg-success">started</span>
-{% elif task.is_started and task.state and task.state.is_review_requested %}
-<span class="badge bg-info text-dark">on review</span>
-{% else %}
-<span class="badge bg-secondary">not started</span> 
-{% endif %}
-{% if task.is_high_priority %}
-<span class="badge bg-warning text-dark">high priority</span>
-{% endif %}
-{% if task.is_expired %}
-<span class="badge bg-danger">expired</span>
-{% endif %}
-"""
 
 
 def project_expired_tasks_count(self):

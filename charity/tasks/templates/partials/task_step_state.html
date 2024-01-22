@@ -1,9 +1,17 @@
-{% if not task_state.approvement and not task_state.is_review_requested %}
+{% if not task_state.approvement and not task_state.request_review %}
   <span class="badge bg-primary">in progress</span>
 {% elif task_state.is_review_requested %}
+  {% include 'partials/user_image_part.html' with user=task_state.request_review.reviewer %}
   <span class="badge bg-info text-dark">on review</span>
 {% elif task_state.approvement.is_rejected %}
+  {% include 'partials/user_image_part.html' with user=task_state.approvement.author %}
   <a href="{% url 'tasks:get_state_details' task_id task_state.id %}" class="badge bg-danger">rejected</a>
 {% else %}
-{{ task_state.approvement.date_created }} <a href="{% url 'tasks:get_state_details' task_id task_state.id %}" class="badge bg-success">approved</a>
+  <div>
+    {% include 'partials/user_image_part.html' with user=task_state.approvement.author %}
+    <a href="{% url 'tasks:get_state_details' task.id task_state.id %}" class="badge bg-success">approved</a>
+  </div>
+  <div>
+    {{ task_state.approvement.date_created }}
+  </div> 
 {% endif %}

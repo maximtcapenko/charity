@@ -1,0 +1,29 @@
+<div class="col">
+  <div class="card" style="max-width: 18rem;">
+    <div class="card-header">
+      <div class="row">
+        <div class="col">Step #{{ process_state.order_position }}</div>
+        <div class="col d-flex justify-content-end">
+          <div>
+            {% if not state.is_inactive %}
+              <span class="badge bg-primary">active</span>
+            {% else %}
+              <span class="badge bg-secondary">inactive</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">{{ state.name }}</h5>
+      <p class="card-text bg bg-light">{{ state.notes }}</p>
+      <p>
+        <strong>Created</strong>: {{ state.date_created }}
+        {% if state.is_approvement_required %}
+        <strong>Required</strong>: 
+          <span class="badge bg-info">approvement</span>
+        {% endif %}
+      </p>
+    </div>
+  </div>
+</div>

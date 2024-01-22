@@ -181,11 +181,12 @@ def remove_project_reviewer(request, id, reviewer_id):
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET'])
 def get_list(request):
-    projects = Project.objects.filter(
-        fund_id=request.user.volunteer_profile.fund_id).all()
-
+    paginator = Paginator(Project.objects.filter(
+        fund_id=request.user.volunteer_profile.fund_id)
+        .select_related(
+            'leader', 'leader__volunteer_profile'), DEFAULT_PAGE_SIZE)
     return render(request, 'projects_list.html', {
-        'projects': projects
+        'page': paginator.get_page(request.GET.get('page'))
     })
 
 

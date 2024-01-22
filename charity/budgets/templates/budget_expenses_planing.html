@@ -9,12 +9,13 @@
   </ol>
   <div class="card mb-4">
     <div class="card-body">
-      <div>
-        <i class="fas fa-sack-dollar"></i>
-        Available Income: {{ avaliable_income_amount|floatformat:'2g' }}
-      </div>
-      <div>
-        {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
+      <div class="bg-light text-dark">
+        <div>
+          <strong>Available Income</strong>: {{ avaliable_income_amount|floatformat:'2g' }}
+        </div>
+        <div>
+          {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
+        </div>
       </div>
     </div>
   </div>
@@ -35,12 +36,12 @@
   </div>
   <div class="card mb-4">
     <div class="card-header">
-      <i class="fas fa-table me-1"></i>
+      <i class="fa-solid fa-list-check"></i>
       Tasks
     </div>
     <div class="card-body">
-      <table class="table table-bordered">
-        <thead>
+      <table class="table table-striped">
+        <thead class="table table-bordered">
           <tr>
             <th>Task name</th>
             <th>Created</th>

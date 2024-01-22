@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from django.urls import reverse
 
 from commons.models import Notification
+from funds.models import RequestReview
 
 from .models import Task, TaskState
 
@@ -33,10 +34,19 @@ def add_default_subscribers_wheb_task_added(sender, instance, created, **kwargs)
 
 
 @receiver(review_request_created, sender=TaskState)
-def notify_reviewer_when_review_request_created(sender, instance, task, message, **kwargs):
-    Notification.objects.create(
-        receiver=task.reviewer,
+def notify_reviewer_when_review_request_created(sender, instance, fund, task, message, **kwargs):
+    reviewer = instance.reviewer if instance.reviewer else task.reviewer
+    notification = Notification.objects.create(
+        receiver=reviewer,
         title=Task.__name__,
         url=reverse('tasks:get_state_details', args=[task.id, instance.id]),
         short='Task review request',
         message=f'Review task state {instance.state.name} from {task.assignee} details: {message}')
+
+    instance.request_review = RequestReview.objects.create(
+        author=task.assignee,
+        reviewer=reviewer, 
+        fund=fund, 
+        notes=message, 
+        notification=notification)
+    instance.save()

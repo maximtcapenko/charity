@@ -14,7 +14,7 @@
       <h5 class="card-title">{{ process_state.name }}</h5>
       <p class="card-text">
         {% if current_state %}
-          <a href="{% url 'tasks:get_state_details' task_id  current_state.id%}">
+          <a href="{% url 'tasks:get_state_details' task.id  current_state.id%}">
             {{ process_state.notes }}
           </a>
         {% elif not task_states %}
@@ -26,7 +26,7 @@
          {% include 'partials/task_step_state.html' %}
       {% endfor %}
       </p>
-      <a href="{% url 'tasks:move_to_next_state' task_id %}?process_state_id={{process_state.id}}" class="{{btn_class}}">Start</a>
+      <a href="{% url 'tasks:move_to_next_state' task.id %}?process_state_id={{process_state.id}}" class="{{btn_class}}">Start</a>
     </div>
   </div>
 </div>

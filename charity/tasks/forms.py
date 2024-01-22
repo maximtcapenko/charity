@@ -170,7 +170,8 @@ class ActivateTaskStateForm(
     class Meta:
         model = TaskState
         exclude = [
-            'id', 'date_created', 'is_done', 'is_review_requested', 'comments',
+            'id', 'date_created', 'is_done', 'is_review_requested', 
+            'comments', 'request_review',
             'approvement', 'completion_date', 'author', 'approvements']
 
 
@@ -270,6 +271,7 @@ class TaskStateReviewRequestForm(
         review_request_created.send(
             sender=TaskState,
             instance=state,
+            fund=self.initial['fund'],
             task=self.initial['task'],
             message=self.cleaned_data['notes']
         )

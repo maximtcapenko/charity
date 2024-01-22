@@ -97,7 +97,7 @@ class CreateIncomeForm(
                 fund__id=budget.fund_id).annotate(
                 reserved_amount=models.Sum('incomes__amount', default=0))
             .annotate(avaliable_amount=models.ExpressionWrapper(
-                models.F('amount') - models.F('reserved_amount'), 
+                models.F('amount') - models.F('reserved_amount'),
                 output_field=models.DecimalField()))
             .filter(avaliable_amount__gt=0)
             .order_by('contribution_date')
@@ -208,6 +208,15 @@ class BaseApproveForm(
     is_rejected = forms.BooleanField(label='Reject', required=False)
     notes = forms.CharField(widget=forms.Textarea(),
                             label='Notes', required=False)
+
+    def clean(self):
+        target = self.initial['target']
+        if should_be_approved(target):
+            '''TODO: make more complex validation 
+            - if budget amount already used in planing, etc'''
+            raise forms.ValidationError('Item has been already approved')
+        
+        return self.cleaned_data
 
     def save(self):
         target = self.initial['target']

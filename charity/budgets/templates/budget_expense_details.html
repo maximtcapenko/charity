@@ -3,52 +3,68 @@
 <h2 class="mt-4">Expense {{ expense.date_created }}</h2>
 <ol class="breadcrumb mb-4">
   <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_details' budget.fund_id %}">{{ budget.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'budgets:get_list'%}">Budgets</a>
+  </li>
+  <li class="breadcrumb-item">
     <a href="{% url 'budgets:get_details' expense.budget_id %}?tab=expenses">{{ expense.budget.name }}</a>
   </li>
   <li class="breadcrumb-item active">Expense Details</li>
 </ol>
 <div class="card mb-4">
   <div class="card-body">
-    <div>
-      <i class="fa-regular fa-folder"></i>
-      Project: <a href="{% url 'projects:get_details' expense.project.id %}">{{ expense.project.name }} </a>
-    </div>
-    <div>
-      <i class="far fa-calendar-alt"></i>
-      Date created: {{ expense.date_created }}
-    </div>
-    <div>
-      <i class="fas fa-user"></i>
-      Author: {{ expense.author.username }}
-    </div>
-    <div>
-      <i class="fas fa-user"></i>
-      {% if  expense.reviewer %}
-        Reviewer: <a href="{% url 'funds:get_volunteer_details' expense.reviewer.volunteer_profile.id %}">{{ expense.reviewer.username }}</a>
-      {% else%}
-      Reviewer: 
-      {% endif %}
-    </div>
-    <div>
-      <i class="fa-solid fa-list-check"></i>
-      Task: <a href="{% url 'tasks:get_details' expense.task.id %}">{{ expense.task.name }} </a>
-    </div>
-    <div>
-      <i class="fas fa-sack-dollar"></i>
-      Amount: {{ expense.amount|floatformat:'2g' }}
-    </div>
-    <div>
-      {% include 'partials/li_approvement_part.html' with approvement=expense.approvement %}
-    </div>
-    <div>
-      <i class="fa-regular fa-clipboard"></i>
-      Notes: {{ expense.notes }}
-    </div>
-    <div>
-      <i class="fa-solid fa-pen-to-square"></i>
-        <a href="{% url 'budgets:edit_expense_details' budget.id expense.id %}">Edit</a>
-     </div>
-</div>
+      <div class="row">
+        <div class="col">
+          <div class="bg-light text-dark">
+            <i class="fa-regular fa-clipboard"></i>
+            <strong>Description</strong>: {{ expense.notes }}
+          </div>
+        </div>
+        <div class="col">
+          <div class="bg-light text-dark">
+            <div>
+              <strong>Created</strong>: {{ expense.date_created }}
+            </div>
+            <div>
+              <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' expense.author.volunteer_profile.id %}">{{ expense.author.username }}</a>
+            </div>
+            <div>
+              {% if  income.reviewer %}
+              <strong>Reviewer</strong>: <a href="{% url 'funds:get_volunteer_details' expense.reviewer.volunteer_profile.id %}">{{ expense.reviewer.username }}</a>
+              {% else%}
+              <strong>Reviewer</strong>: 
+              {% endif %}
+            </div>
+            <div>
+              <strong>Amount</strong>: {{ expense.amount|floatformat:'2g' }}
+            </div>
+            <div>
+              {% include 'partials/li_approvement_part.html' with approvement=expense.approvement %}
+            </div>
+            <div>
+              <strong>Project</strong>: <a href="{% url 'projects:get_details' expense.project.id %}">{{ expense.project.name }} </a>
+            </div>
+            <div>
+              <strong>Task</strong>: <a href="{% url 'tasks:get_details' expense.task.id %}">{{ expense.task.name }} </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="row">
+          <div class="col-1">
+            <i class="fa-solid fa-pen-to-square"></i>
+            {% if not expense.approvement.is_rejected %}
+              <a href="{% url 'budgets:edit_expense_details' budget.id expense.id %}">Edit</a>
+            {% else %}
+              <a href="{% url 'budgets:edit_expense_details' budget.id expense.id %}">Edit</a>
+            {% endif %}
+          </div>
+       </div>
+      </div>
+   </div>
 </div>
 <div>
 {% if not expense.budget.approvement or expense.budget.approvement.is_rejected %}

@@ -18,7 +18,7 @@ class TaskStateCardRenderer:
         process_states = process.states.all()
         task_states_dict = {}
 
-        task_states_list = self.task.states.select_related('approvement').all()
+        task_states_list = self.task.states.select_related('approvement', 'request_review').all()
         for state in task_states_list:
             states = task_states_dict.get(state.state_id)
             if not states:
@@ -54,7 +54,7 @@ class TaskStateCardRenderer:
             """render card"""
             html += loader.render_to_string(self.state_template_name, {
                 'process_state': process_state,
-                'task_id': self.task.id,
+                'task': self.task,
                 'current_state': current_task_state if current_task_state and \
                       task_states_list and current_task_state in task_states_list else None,
                 'task_states': task_states_list,

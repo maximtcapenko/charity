@@ -4,48 +4,61 @@
 
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
-      <a href="{% url 'funds:get_details' budget.fund_id %}?tab=budgets">{{ budget.fund.name }}</a>
+      <a href="{% url 'funds:get_details' budget.fund_id %}">{{ budget.fund.name }}</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a href="{% url 'budgets:get_list'%}">Budgets</a>
     </li>
     <li class="breadcrumb-item active">Budget Details</li>
   </ol>
   <div class="card mb-4">
     <div class="card-body">
-      <div>
-        <i class="far fa-calendar-alt"></i>
-        Created: {{ budget.date_created }}
-      </div>
-      <div>
-        <i class="fas fa-user"></i>
-        Author: <a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.author.username }}</a>
-      </div>
-      <div>
-        <i class="fa-solid fa-user-tie"></i>
-        Manager: <a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.manager.username }}</a>
-      </div>
-      <div>
-        <i class="fas fa-sack-dollar"></i>
-        Total income amount: {{ total_approved_amount|floatformat:'2g' }}
-      </div>
-      <div>
-        <i class="fas fa-sack-dollar"></i>
-        Total expense amount: {{ total_approved_expenses_amount|floatformat:'2g' }}
-      </div>
-      <div>
-        <i class="fas fa-sack-dollar"></i>
-        Avaliable amount: {{ total_avaliable_amount|floatformat:'2g' }}
-      </div>
-      <div>
-        {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
-      </div>  
-      <div>
-        <i class="fa-regular fa-clipboard"></i>
-        Notes: {{ budget.notes }}
-      </div>
-      <div>
-        <i class="fa-solid fa-pen-to-square"></i>
-          <a href="{% url 'budgets:edit_details' budget.id %}">Edit</a>
-       </div>
-    </div>
+        <div class="row">
+          <div class="col">
+            <div class="bg-light text-dark">
+              <i class="fa-regular fa-clipboard"></i>
+              <strong>Description</strong>: {{ budget.notes }}
+            </div>
+          </div>
+          <div class="col">
+            <div class="bg-light text-dark">
+              <div>
+                <strong>Created</strong>: {{ budget.date_created }}
+              </div>
+              <div>
+                <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.author.username }}</a>
+              </div>
+              <div>
+                <strong>Manager</strong>: <a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.manager.username }}</a>
+              </div>
+              <div>
+                <strong>Total income amount</strong>: {{ total_approved_amount|floatformat:'2g' }}
+              </div>
+              <div>
+                <strong>Total expense amount</strong>: {{ total_approved_expenses_amount|floatformat:'2g' }}
+              </div>
+              <div>
+                <strong>Avaliable amount</strong>: {{ total_avaliable_amount|floatformat:'2g' }}
+              </div>
+              <div>
+                {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
+              </div>  
+            </div>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="row">
+            <div class="col-1">
+              <i class="fa-solid fa-pen-to-square"></i>
+              {% if not budget.approvement.is_rejected %}
+                <a href="{% url 'budgets:edit_details' budget.id %}">Edit</a>
+              {% else %}
+                <a href="{% url 'budgets:edit_details' budget.id %}">Edit</a>
+              {% endif %}
+            </div>
+         </div>
+        </div>
+     </div>
   </div>
   <ul class="nav nav-pills mb-3">
     {% for tab in tabs %}

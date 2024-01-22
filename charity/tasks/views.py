@@ -6,16 +6,18 @@ from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.forms import CreateCommentForm
-from commons.functions import user_should_be_volunteer, render_generic_form
+from commons.functions import user_should_be_volunteer, render_generic_form, \
+    wrap_dicts_page_to_objects_page
 from processes.models import ProcessState
 from projects.models import Project
 
-from .querysets import get_available_task_process_states_queryset,\
-      get_task_comments_authors_queryset, get_task_comments_with_reply_count_queryset
+from .querysets import get_available_task_process_states_queryset, \
+    get_task_comments_with_reply_count_queryset
 from .forms import CreateTaskForm, UpdateTaskForm, \
     ActivateTaskStateForm, ApproveTaskStateForm, \
     TaskCreateAttachmentForm, TaskStateReviewRequestForm
 from .functions import get_task_or_404
+from .models import Comment
 from .renderers import TaskStateCardRenderer
 
 
@@ -187,7 +189,7 @@ def get_details(request, id):
         'process': lambda task: ProcessState.objects.filter(process_id=task.process_id).all(),
         'comments': lambda task: get_task_comments_with_reply_count_queryset(
             task).values(
-                'id', 'author__id', 'author__username', 
+                'id', 'author__id', 'author__username', 'author__volunteer_profile__cover',
                 'date_created', 'notes', 'replies_count'),
         'files': lambda task:  task.attachments.all()
     }
@@ -198,30 +200,28 @@ def get_details(request, id):
         tab = default_tab
     task = get_task_or_404(request, id)
 
-    if tab == 'comments':
-        authors_queryset = get_task_comments_authors_queryset(task).all()
-        authors = {authors_queryset[i].user_id: authors_queryset[i]
-                   for i in range(0, len(authors_queryset), 1)}
-    else:
-        authors = None
-
-    if tab == 'process':
-        states_renderer = TaskStateCardRenderer(task, request)
-    else:
-        states_renderer = None
-
     queryset = tabs.get(tab)(task)
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
+
+    page = None
+    states_renderer = None
+    if tab == 'process':
+        states_renderer = TaskStateCardRenderer(task, request)
+    elif tab == 'comments':
+        page = wrap_dicts_page_to_objects_page(
+            paginator.get_page(request.GET.get('page')), model=Comment)
+    else:
+        states_renderer = None
+        page = paginator.get_page(request.GET.get('page'))
 
     return render(request, 'task_details.html', {
         'title': 'Task',
         'tabs': tabs.keys(),
         'items_count': paginator.count,
-        'authors': authors,
         'selected_tab': tab,
         'task': task,
         'states_renderer': states_renderer,
-        'page': paginator.get_page(request.GET.get('page'))
+        'page': page
     })
 
 

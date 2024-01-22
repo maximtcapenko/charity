@@ -1,68 +1,48 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 class="mt-4">Wards</h2>
-  <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item active">
-      <a href="{% url 'funds:get_current_details' %}"> {{ user.volunteer_profile.fund.name }} </a>
-    </li>
-    <li class="breadcrumb-item active">Wards list</li>
-  </ol>
-  <div class="card mb-4">
-    <div class="card-body">
-      <div>
-        <i class="fa-regular fa-folder"></i>
-        Total wards: {{ total_count }}
-      </div>
-      <div>
-        <i class="fa-solid fa-check"></i>
-         Active wards: {{ total_active_count }}
-      </div>
-      <div>
-        <i class="fa-solid fa-spinner"></i>
-        Wards in work: {{ total_count_in_projects }}
-      </div>
-    </div>
+{% load customtags %}
+{% render_partial 'funds.views.get_get_current_details_partial' title='Wards' %}
+<div>
+  <a href="{% url 'wards:create' %}" class="btn btn-link" >Add ward</a>
+</div>
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="fas fa-table me-1"></i>
+    Wards
   </div>
-  <div>
-    <a href="{% url 'wards:create' %}" class="btn btn-link" >Add ward</a>
-  </div>
-  <div class="card mb-4">
-    <div class="card-header">
-      <i class="fas fa-table me-1"></i>
-      Wards
-    </div>
-    <div class="card-body">
-      <table class="table table-bordered">
-        <thead>
+  <div class="card-body">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Ward name</th>
+          <th>Created</th>
+          <th>Is active</th>
+          <th>Used in projects</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ward in page %}
           <tr>
-            <th>Ward name</th>
-            <th>Created</th>
-            <th>Is active</th>
-            <th>Used in projects</th>
+            <td>
+              {{ ward|cover }}
+              <a href="#">{{ ward.name }}</a>
+            </td>
+            <td>{{ ward.date_created }}</td>
+            {% if ward.is_inactive %}
+            <td> 
+              <input type="checkbox" disabled="disabled">
+            </td>
+            {% else %}
+            <td>
+              <input type="checkbox" disabled="disabled" checked="checked">
+            </td>
+            {% endif %}
+            <td>{{ ward.active_project_count }}</td>
           </tr>
-        </thead>
-        <tbody>
-          {% for ward in wards_page %}
-            <tr>
-              <td>
-                <a href="#">{{ ward.name }}</a>
-              </td>
-              <td>{{ ward.date_created }}</td>
-              {% if ward.is_inactive %}
-              <td> 
-                <input type="checkbox" disabled="disabled">
-              </td>
-              {% else %}
-              <td>
-                <input type="checkbox" disabled="disabled" checked="checked">
-              </td>
-              {% endif %}
-              <td>{{ ward.active_project_count }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% include 'paginator.html' with obj_page=wards_page %}
-    </div>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% include 'paginator.html' with obj_page=page %}
   </div>
+</div>
 {% endblock %}

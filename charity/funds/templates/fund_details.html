@@ -3,45 +3,52 @@
   <h2 class="mt-4">{{ fund.name }}</h2>
 
   <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item">
-      <a href="{% url 'funds:get_list' %}">Funds list</a>
-    </li>
     <li class="breadcrumb-item active">Fund Details</li>
   </ol>
   <div class="card mb-4">
     <div class="card-body">
-      <div>
-        <i class="far fa-calendar-alt"></i>
-        Created: {{ fund.date_created }}
-      </div>
-      <div>
-        <i class="fas fa-sack-dollar"></i>
-        Active Budget: {{ fund.active_budget_amount|floatformat:'2g' }}
-      </div>
-      <div>
-        <i class="fas fa-user-friends"></i>
-        Volunteers: {{ fund.total_volunteers_count }}
+      <div class="row">
+        <div class="col">
+          <div class="bg-light text-dark">
+            <i class="fa-regular fa-clipboard"></i>
+            <strong>Description</strong>: {{ fund.notes }}
+          </div>
+        </div>
+        <div class="col">
+          <div class="bg-light text-dark">
+            <div>
+              <strong>Created</strong>: {{ fund.date_created }}
+            </div>
+            <div>
+              <strong>Budget</strong>: {{ fund.active_budget_amount|floatformat:'2g' }}
+            </div>
+            <div>
+              <strong>Volunteers</strong>: {{ fund.total_volunteers_count }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
   <ul class="nav nav-pills mb-3">
     {% for tab in tabs %}
-    <li class="nav-item" role="presentation">
-      {% if selected_tab == tab %}
-        <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
-          <span class="badge bg-danger rounded-circle">{{ items_count }}</span>
-        </a>
-      {% else %}
-        <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
-      {% endif %}
-    </li>
+      <li class="nav-item" role="presentation">
+        {% if selected_tab == tab %}
+          <a href="?tab={{ tab }}" class="nav-link active">
+            {{ tab|capfirst }}
+            <span class="badge bg-danger rounded-circle">{{ items_count }}</span>
+          </a>
+        {% else %}
+          <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
+        {% endif %}
+      </li>
     {% endfor %}
   </ul>
   <div>
     {% for tab in tabs %}
-    {% if selected_tab == tab %}
-      {% include 'fund_'|add:tab|add:'_list.html' %}
-    {% endif %}
+      {% if selected_tab == tab %}
+        {% include 'fund_'|add:tab|add:'_list.html' %}
+      {% endif %}
     {% endfor %}
   </div>
 {% endblock %}

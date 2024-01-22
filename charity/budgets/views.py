@@ -8,8 +8,8 @@ from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
-from commons.functions import user_should_be_volunteer, render_generic_form,\
-      should_be_approved, wrap_dict_set_to_objects_list
+from commons.functions import user_should_be_volunteer, render_generic_form, \
+    should_be_approved, wrap_dict_set_to_objects_list
 from funds.models import Approvement
 from .models import Budget, Income
 from .forms import CreateBudgetForm, CreateIncomeForm, \
@@ -18,8 +18,8 @@ from .forms import CreateBudgetForm, CreateIncomeForm, \
 from .functions import get_budget_or_404, get_budget_available_income
 
 from projects.models import Project
-from tasks.querysets import get_estimated_and_not_approved_tasks_queryset,\
-      get_project_requested_expenses_queryset
+from tasks.querysets import get_estimated_and_not_approved_tasks_queryset, \
+    get_project_requested_expenses_queryset
 from tasks.models import Task, Expense
 
 
@@ -312,7 +312,9 @@ def get_expense_details(request, id, expense_id):
 @require_http_methods(['GET'])
 def get_list(request):
     paginator = Paginator(Budget.objects.filter(
-        fund_id=request.user.volunteer_profile.fund_id), DEFAULT_PAGE_SIZE)
+        fund_id=request.user.volunteer_profile.fund_id)
+        .select_related(
+            'manager', 'manager__volunteer_profile'), DEFAULT_PAGE_SIZE)
     return render(request, 'budgets_list.html', {
         'page': paginator.get_page(request.GET.get('page'))
     })
@@ -366,14 +368,16 @@ def budget_expenses_planing(request, id):
 
     avaliable_income_amount = get_budget_available_income(budget)
 
-    results = wrap_dict_set_to_objects_list(get_project_requested_expenses_queryset(budget.fund_id))
+    results = wrap_dict_set_to_objects_list(
+        get_project_requested_expenses_queryset(budget.fund_id))
     tasks = []
     selected_project = request.GET.get('project_id')
     if selected_project and len(results) > 0:
         result = next(filter(lambda result: result.project.id == uuid.UUID(
             selected_project), results), None)
         if result:
-            tasks = get_estimated_and_not_approved_tasks_queryset(result.project.id)
+            tasks = get_estimated_and_not_approved_tasks_queryset(
+                result.project.id)
     else:
         selected_project = None
 

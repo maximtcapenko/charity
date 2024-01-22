@@ -8,49 +8,62 @@
     </li>
     <li class="breadcrumb-item active">Volunteer Details</li>
   </ol>
-  <div class="row">
-    <div class="col">
-     <div class="card">
-      <img src="{{ volunteer.cover.url }}" class="img-thumbnail" alt="Upload cover"/>
-      <form method="POST" action="{% url 'funds:add_volunteer_cover' volunteer.id %}" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label class="btn btn-link">
-          <i class="fa-solid fa-cloud-arrow-up"></i>
-         <input class="form-control" type="file" accept=".png, .jepg, .jpg" name="cover" id="cover" onchange="javascrupt:this.form.submit()" style="display:none;" />
-        </label>
-       </form>
-    </div>
-    </div>
-    <div class="col-10">
-      <div class="card">
-        <div class="card-body">
-          <div>
-            <i class="far fa-calendar-alt"></i>
-            Created: {{ volunteer.date_created }}
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-2">
+          <div class="bg-light text-dark">
+            <div class="card">
+              {% if volunteer.cover %}
+                <img src="{{ volunteer.cover.url }}" alt="Upload cover" />
+              {% else %}
+                <img src="..." alt="Upload cover" />
+              {% endif %}
+              <form method="POST" action="{% url 'funds:add_volunteer_cover' volunteer.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label class="btn btn-link">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  <input class="form-control" type="file" accept=".png, .jepg, .jpg" name="cover" id="cover" onchange="javascrupt:this.form.submit()" style="display:none;" />
+                </label>
+              </form>
+            </div>
           </div>
-          <div>
-            <i class="fa-solid fa-user"></i>
-            User name: {{ volunteer.user.username }}
-          </div>
-          <div>
-            <i class="fa-solid fa-id-card"></i>
-            Full name: {{ volunteer.user.first_name }} {{ volunteer.user.last_name }}
-          </div>
-          <div>
-            <i class="fa-solid fa-user-tie"></i>
-            Title: {{ volunteer.title }}
-          </div>
-          <div>
-            <i class="fa-solid fa-mobile-screen-button"></i>
-            Mobile phone: {{ volunteer.mobile_phone }}
-          </div>
-          <div>
-            <i class="fa-solid fa-envelope"></i>
-            Email: {{ volunteer.user.email }}
-          </div>
-          <div>
-            <i class="fa-solid fa-pen-to-square"></i>
-            <a href="{% url 'funds:edit_volunteer_profile' volunteer.id %}">Edit</a>
+        </div>
+        <div class="col">
+          <div class="bg-light text-dark">
+            <div>
+              <strong>Created</strong>: {{ volunteer.date_created }}
+            </div>
+            <div>
+              <strong>User name</strong>: {{ volunteer.user.username }}
+            </div>
+            <div>
+              <strong>Full name</strong>: {{ volunteer.user.first_name }} {{ volunteer.user.last_name }}
+            </div>
+            <div>
+              <strong>Title</strong>: {{ volunteer.title }}
+            </div>
+            <div>
+              <strong>Mobile phone</strong>: {{ volunteer.mobile_phone }}
+            </div>
+            <div>
+              <strong>Email</strong>: {{ volunteer.user.email }}
+            </div>
+            <div>
+              <strong>Last login</strong>: {{ volunteer.user.last_login }}
+            </div>
+            <div>
+              <strong>State</strong>: 
+              {% if volunteer.user.is_active %}
+                <span class="badge bg-primary" >active</span>
+              {% else %}
+              <span>inactive</span>
+              {% endif%}
+            </div>
+            <div>
+              <i class="fa-solid fa-pen-to-square"></i>
+              <a href="{% url 'funds:edit_volunteer_profile' volunteer.id %}">Edit</a>
+            </div>
           </div>
         </div>
       </div>

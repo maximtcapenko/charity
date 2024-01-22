@@ -6,6 +6,9 @@
       <a href="{% url 'funds:get_current_details' %}">{{ task.project.fund.name }}</a>
     </li>
     <li class="breadcrumb-item">
+      <a href="{% url 'projects:get_list' %}">Projects</a>
+    </li>
+    <li class="breadcrumb-item">
       <a href="{% url 'projects:get_details' task.project.id %}">{{ task.project.name }}</a>
     </li>
     <li class="breadcrumb-item active">Task Details</li>

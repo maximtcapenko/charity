@@ -6,7 +6,8 @@ from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
-from commons.functions import user_should_be_volunteer, render_generic_form
+from commons.functions import user_should_be_volunteer, render_generic_form,\
+      wrap_dicts_page_to_objects_page
 from .forms import CreateWardForm
 from .models import Ward
 from projects.models import Project
@@ -39,15 +40,16 @@ def get_list(request):
                                     models.Q(projects__isnull=True) |
                                     models.Q(projects__is_closed=False)) \
         .annotate(active_project_count=models.Count('projects')) \
-        .values('id', 'name', 'date_created', 'is_inactive', 'active_project_count') \
+        .values('id', 'name', 'date_created', 'cover', 'is_inactive', 'active_project_count') \
         .all()
 
     paginator = Paginator(query_set, DEFAULT_PAGE_SIZE)
+
     return render(request, 'wards_list.html', {
         'total_count': total_count,
         'total_active_count': total_active_count,
         'total_count_in_projects': total_count_in_projects,
-        'wards_page': paginator.get_page(request.GET.get('page'))
+        'page': wrap_dicts_page_to_objects_page(paginator.get_page(request.GET.get('page')))
     })
 
 

@@ -4,15 +4,17 @@ from django import template
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
+from .nodes import ViewNode
+
 register = template.Library()
 
 
 @register.filter(is_safe=True)
-def cover(item):
+def cover(item, arg=30):
     if item.cover:
-        result = f'<img src="{ item.cover.url }"  height=33 width=33  class="rounded-circle"/>'
+        result = f'<img src="{ item.cover.url }"  height={arg} width={arg}  class="rounded-circle"/>'
     else:
-        result = f'<img src="..."  height=33 width=33  class="rounded-circle"/>'
+        result = f'<img src="..."  height={arg} width={arg}  class="rounded-circle"/>'
     return mark_safe(result)
 
 
@@ -61,3 +63,37 @@ def active_tasks_list(tasks_queryset):
         result += '<li><a class="dropdown-item" href="#">No assigned tasks</a></li>'
 
     return mark_safe(result)
+
+
+@register.tag
+def render_partial(parser, token):
+    """
+    Inserts the output of a view, using fully qualified view name,
+    or view name from urls.py.
+
+      {% render_partial view_name arg[ arg2] k=v [k2=v2...] %}
+
+    IMPORTANT: the calling template must receive a context variable called
+    'request' containing the original HttpRequest. This means you should be OK
+    with permissions and other session state.
+
+    (Note that every argument will be evaluated against context except for the
+    names of any keyword arguments.)
+    """
+    args = []
+    kwargs = {}
+    tokens = token.split_contents()
+    if len(tokens) < 2:
+        raise template.TemplateSyntaxError(
+            '%r tag requires one or more arguments' %
+            token.contents.split()[0]
+        )
+    tokens.pop(0)  # tag name
+    view_name = tokens.pop(0)
+    for token in tokens:
+        equals = token.find('=')
+        if equals == -1:
+            args.append(token)
+        else:
+            kwargs[str(token[:equals])] = token[equals+1:]
+    return ViewNode(view_name, args, kwargs)

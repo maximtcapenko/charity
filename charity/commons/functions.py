@@ -3,7 +3,7 @@ from django.http import HttpResponseNotAllowed
 from django.shortcuts import redirect, render
 from .exceptions import NullArgumentError
 from .mixins import FileUploadMixin
-from .utils import DictObjectWrapper
+from .utils import DictObjectWrapper, WrappedPage
 
 
 def user_should_be_volunteer(user):
@@ -103,5 +103,12 @@ def should_be_approved(target):
         target.approvement.is_rejected == False
 
 
-def wrap_dict_set_to_objects_list(dicts):
-    return [DictObjectWrapper(dict) for dict in dicts]
+def wrap_dict_set_to_objects_list(dicts, model=None):
+    return [DictObjectWrapper(dict, model=model) for dict in dicts]
+
+
+def wrap_dicts_page_to_objects_page(page, model=None):
+    """
+    Wrapp page with dict items into page with object items
+    """
+    return WrappedPage(page, model=model)
