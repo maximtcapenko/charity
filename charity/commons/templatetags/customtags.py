@@ -80,7 +80,6 @@ def render_partial(parser, token):
     (Note that every argument will be evaluated against context except for the
     names of any keyword arguments.)
     """
-
     args = []
     kwargs = {}
     tokens = token.split_contents()

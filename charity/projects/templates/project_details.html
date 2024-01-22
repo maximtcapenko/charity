@@ -4,7 +4,10 @@
 
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
-      <a href="{% url 'funds:get_details' project.fund_id %}?tab=projects">{{ project.fund.name }}</a>
+      <a href="{% url 'funds:get_details' project.fund_id %}">{{ project.fund.name }}</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a href="{% url 'projects:get_list' %}">Projects</a>
     </li>
     <li class="breadcrumb-item active">Project Details</li>
   </ol>

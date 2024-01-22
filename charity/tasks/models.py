@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 from commons.models import Base, Comment
 from files.models import Attachment
-from funds.models import Approvement
+from funds.models import Approvement, RequestReview
 from budgets.models import Budget
 from processes.models import Process, ProcessState
 from projects.models import Project
@@ -42,6 +42,8 @@ class TaskState(Base):
         User, on_delete=models.PROTECT, null=True, related_name='reviewed_task_states')
     is_done = models.BooleanField(default=False, null=False)
     is_review_requested = models.BooleanField(default=False, null=False)
+    request_review = models.ForeignKey(
+        RequestReview, on_delete=models.SET_NULL, null=True)
     comments = models.ManyToManyField(
         Comment, related_name='commented_task_states')
 

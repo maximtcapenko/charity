@@ -7,6 +7,7 @@ app_name = "funds"
 urlpatterns = [
     path('', views.get_list, name='get_list'),
     path('<uuid:id>/details/', views.get_details, name='get_details'),
+    path('/index/partial', views.get_get_current_details_partial, name='get_get_current_details_partial'),
     path('index/',views.get_current_details, name='get_current_details'),
     path('index/volunteers/<uuid:id>/details/', views.get_volunteer_details, name='get_volunteer_details'),
     path("<uuid:id>/edit/", views.update_details, name="update_details"),

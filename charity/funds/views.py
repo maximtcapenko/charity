@@ -30,17 +30,7 @@ def get_details(request, id):
         .select_related(
             'author', 'author__volunteer_profile', 'contributor'),
         'contributors': lambda fund: fund.contributors.all(),
-        'budgets': lambda fund: fund.budgets.select_related(
-            'manager', 'manager__volunteer_profile'),
-        'projects': lambda fund: fund.active_projects.select_related(
-            'leader', 'leader__volunteer_profile'),
-        'processes': lambda fund:
-            fund.processes.annotate(active_project_count=models.Count('projects', distinct=True),
-                                    states_count=models.Count('states', distinct=True))
-            .values('id', 'name', 'date_created', 'is_inactive',
-                    'states_count', 'active_project_count'),
         'volunteers': lambda fund: fund.volunteers.all(),
-        'wards': lambda fund: fund.wards.all()
     }
 
     fund = get_object_or_404(Fund, pk=id)
@@ -59,6 +49,15 @@ def get_details(request, id):
         'items_count': paginator.count,
         'tabs': tabs.keys(),
         'page': paginator.get_page(request.GET.get('page'))
+    })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET'])
+def get_get_current_details_partial(request,  *args, **kwargs):
+    return render(request, 'partials/fund_details.html', {
+        'title': kwargs.get('title'),
+        'fund': get_object_or_404(Fund, pk=request.user.volunteer_profile.fund_id)
     })
 
 

@@ -1,6 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
 {% load customtags %}
+{% render_partial 'funds.views.get_get_current_details_partial' title='Projects' %}
 <div>
-    <a href="{% url 'projects:create' %}" class="btn btn-link" >Add project</a>
+    <a href="{% url 'projects:create' %}" class="btn btn-link">Add project</a>
   </div>
   <div class="card mb-4">
     <div class="card-header">
@@ -21,11 +24,13 @@
         <tbody>
           {% for project in page %}
             <tr>
-              <td>
+              <td> 
+                <h6>
                 <a href="{% url 'projects:get_details' project.id %}">{{ project.name }}</a>
+                </h6>
               </td>
               <td>{{ project.date_created }}</td>
-              <td><span class="badge bg-primary rounded-circle">{{ project.active_tasks_count }}</span></td>
+              <td>{{ project.active_tasks_count }}</td>
               <td>{{ project.approved_budget|floatformat:'2g' }}</td>
               <td>
                 {% include 'partials/user_image_part.html' with user=project.leader %}
@@ -37,3 +42,4 @@
        {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+  {% endblock %}

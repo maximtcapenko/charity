@@ -15,8 +15,8 @@
       {% endif %}
         <div class="col-2">
             <div>
-              {{ authors|dict_value:comment.author__id|cover }}
-              <a href="{% url 'tasks:get_comment_details' task.id comment.id %}">{{ comment.author__username }}</a>
+              {{ comment.author.volunteer_profile|cover }}
+              <a href="{% url 'tasks:get_comment_details' task.id comment.id %}">{{ comment.author.username }}</a>
               <span class="badge bg-secondary rounded-circle">{{ comment.replies_count }}</span>
             </div>
             {{ comment.date_created }}

@@ -3,6 +3,12 @@
 <h2 class="mt-4">Expense {{ expense.date_created }}</h2>
 <ol class="breadcrumb mb-4">
   <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_details' budget.fund_id %}">{{ budget.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'budgets:get_list'%}">Budgets</a>
+  </li>
+  <li class="breadcrumb-item">
     <a href="{% url 'budgets:get_details' expense.budget_id %}?tab=expenses">{{ expense.budget.name }}</a>
   </li>
   <li class="breadcrumb-item active">Expense Details</li>

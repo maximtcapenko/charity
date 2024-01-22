@@ -1,0 +1,34 @@
+<h2 class="mt-4">{{ fund.name }}</h2>
+
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_current_details' %}">Fund Details</a>
+  </li>
+  <li class="breadcrumb-item active">{{ title }}</li>
+</ol>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row">
+      <div class="col">
+        <div class="bg-light text-dark">
+          <i class="fa-regular fa-clipboard"></i>
+          <strong>Description</strong>: {{ fund.notes }}
+        </div>
+      </div>
+      <div class="col">
+        <div class="bg-light text-dark">
+          <div>
+            <strong>Created</strong>: {{ fund.date_created }}
+          </div>
+          <div>
+            <strong>Budget</strong>: {{ fund.active_budget_amount|floatformat:'2g' }}
+          </div>
+          <div>
+            <strong>Volunteers</strong>: {{ fund.total_volunteers_count }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

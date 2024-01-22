@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from commons.models import Base
+from commons.models import Base, Notification
 
 
 class Fund(Base):
@@ -57,6 +57,20 @@ class Contribution(Base):
         User, on_delete=models.PROTECT)
     contributor = models.ForeignKey(
         Contributor, on_delete=models.PROTECT, related_name='contributions')
+
+
+class RequestReview(Base):
+    author = models.ForeignKey(
+        User, on_delete=models.PROTECT, related_name='author_request_reviews')
+    reviewer = models.ForeignKey(
+        User, on_delete=models.PROTECT, related_name='reviewer_request_reviews')
+    fund = models.ForeignKey(Fund, on_delete=models.PROTECT)
+    notes = models.TextField(blank=True, null=True)
+    notification = models.ForeignKey(
+        Notification, on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        ordering = ['date_created']
 
 
 def fund_total_contributors_count(self):

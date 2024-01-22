@@ -4,6 +4,12 @@
 
 <ol class="breadcrumb mb-4">
   <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_details' budget.fund_id %}">{{ budget.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'budgets:get_list'%}">Budgets</a>
+  </li>
+  <li class="breadcrumb-item">
     <a href="{% url 'budgets:get_details' budget.id %}?tab=reviewers">{{ budget.name }}</a>
   </li>
   <li class="breadcrumb-item active">Reviewer Details</li>
