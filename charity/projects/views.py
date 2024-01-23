@@ -110,7 +110,7 @@ def remove_project_process(request, id, process_id):
     project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=processes'
 
-    if project.tasks.filter(state__state__process__id=process_id).exists():
+    if project.tasks.filter(process__id=process_id).exists():
         raise ApplicationError(
             'Process can not be removed from project because it is used by tasks', return_url)
 

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'budgets.apps.BudgetsConfig',
     'commons.apps.CommonsConfig',
+    'customfields.apps.CustomfieldsConfig',
     'files.apps.FilesConfig',
     'funds.apps.FundsConfig',
     'processes.apps.ProcessesConfig',

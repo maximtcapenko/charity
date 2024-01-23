@@ -96,6 +96,10 @@
                   <i class="fa-solid fa-house"></i>
                 </div>Home
               </a>
+              <a class="nav-link" href="{% url 'wards:get_list' %}">
+                <div class="sb-nav-link-icon">
+                </div>Adoptees
+              </a>
               <a class="nav-link" href="{% url 'budgets:get_list' %}">
                 <div class="sb-nav-link-icon">
                 </div>Budgets
@@ -107,10 +111,6 @@
               <a class="nav-link" href="{% url 'projects:get_list' %}">
                 <div class="sb-nav-link-icon">
                 </div>Projects
-              </a>
-              <a class="nav-link" href="{% url 'wards:get_list' %}">
-                <div class="sb-nav-link-icon">
-                </div>Wards
               </a>
             </div>
           </div>

@@ -8,20 +8,13 @@
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Process name</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
         <tbody>
           {% for process in page %}
             <tr>
               <td>
-                <a href="{% url 'processes:get_details' process.id %}">{{ process.name }}</a>
-              </td>
-              <td> 
+                <h6>
+                  <a href="{% url 'processes:get_details' process.id %}">{{ process.name }}</a>
+                </h6>
                 {% if not process.is_inactive %}
                  <span class="badge bg-primary">active</span>
                 {% else %}

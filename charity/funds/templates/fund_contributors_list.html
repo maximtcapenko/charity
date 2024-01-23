@@ -1,3 +1,4 @@
+{% load customtags %}
 <div>
     <a href="{% url 'funds:add_contributor' %}" class="btn btn-link">Add contributor</a>
   </div>
@@ -8,28 +9,42 @@
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Notes</th>
-            <th>Date created</th>
-            <th>Type</th>
-          </tr>
-        </thead>
         <tbody>
           {% for contributor in page %}
             <tr>
-              <td>
-                <a href="{% url 'funds:get_contributor_details' contributor.id %}">{{ contributor.name }}</a>
-              </td>
-              <td>{{ contributor.notes }}</td>
-              <td>{{ contributor.date_created }}</td>
-              <td>
+              <td class="col-3">
+                <h6>
+                  {{ contributor|thumbnail:50 }}
+                  <a href="{% url 'funds:get_contributor_details' contributor.id %}">
+                    {{ contributor.name }}</a>
+                </h6>
                 {% if contributor.is_company %}
-                  <span class="badge bg-primary">company</span>
+                <span class="badge bg-primary">business</span>
                 {% else %}
                   <span class="badge bg-primary">person</span>
                 {% endif %}
+              </td>
+              <td>
+                <ul>
+                  {% if contributor.email %}
+                  <li class="list-group-item">
+                    <i class="fa-regular fa-envelope"></i>
+                    <a href="mailto:{{ contributor.email }}">{{ contributor.email }}</a>
+                  </li>
+                {% endif %}
+                {% if contributor.mobile_phone %}
+                <li class="list-group-item">
+                  <i class="fa-solid fa-phone"></i>
+                  {{ contributor.mobile_phone|phone_number }}
+                </li>
+                {% endif %}
+                {% if contributor.website %}
+                <li class="list-group-item">
+                  <i class="fa-solid fa-link"></i>
+                   <a href="{{ contributor.website }}">{{ contributor.website }}</a>
+                </li>
+                {% endif %}
+                </ul>
               </td>
             </tr>
           {% endfor %}

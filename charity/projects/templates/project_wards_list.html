@@ -1,40 +1,35 @@
+{% load customtags %}
 <div>
-    <a href="{% url 'projects:add_ward_to_project' project.id %}" class="btn btn-link" >Add ward</a>
+    <a href="{% url 'projects:add_ward_to_project' project.id %}" class="btn btn-link" >Add adoptee</a>
 </div>
-  <div class="card mb-4">
-    <div class="card-header">
-      <i class="fas fa-table me-1"></i>
-      Wards
-    </div>
-    <div class="card-body">
-      <table class="table table-striped">
-        <thead>
+
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="fa-solid fa-leaf"></i>
+    Adoptees
+  </div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <tbody>
+        {% for ward in page %}
           <tr>
-            <th>Ward name</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for ward in page %}
-            <tr>
-              <td>
-                <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
-              </td>
-              <td> 
-                {% if not ward.is_inactive %}
-                <span class="badge bg-primary">active</span>
-               {% else %}
+            <td>
+              <div>
+                <h6>
+                  {{ ward|thumbnail:50 }}
+                  <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
+                </h6>
+              {% if ward.is_inactive %}
                 <span class="badge bg-secondary">inactive</span>
-               {% endif %}
-              </td>
-              <td>
-                <a href="{% url 'projects:remove_project_ward' project.id ward.id %}">Remove</a>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% include 'paginator.html' with obj_page=page %}
-    </div>
+              {% else %}
+                <span class="badge bg-primary">active</span>
+              {% endif %}
+              </div>
+              {{ ward.date_created }}
+            </td>           
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% include 'paginator.html' with obj_page=page %}
   </div>

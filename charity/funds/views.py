@@ -214,15 +214,3 @@ def add_contributor(request):
             }
         }
     )
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def update_details(request, id):
-    if request.method == 'POST':
-        pass
-    else:
-        pass
-    return render(request, 'fund_details.html', {
-        'fund': Fund.objects.get(pk=id)
-    })

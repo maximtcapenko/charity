@@ -67,10 +67,10 @@
    </div>
 </div>
 <div>
-{% if not expense.budget.approvement or expense.budget.approvement.is_rejected %}
-    <a href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-link">Add review</a>
+{% if expense.budget.approvement and not expense.budget.approvement.is_rejected %}
+    <a href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-link disabled">Add review</a>
 {% else %}
-  <a href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-link disabled">Add review</a> 
+  <a href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-link">Add review</a> 
 {% endif %}
 </div>
 {% include "approvements_list.html" %}

@@ -1,26 +1,63 @@
 {% extends 'base.html' %}
 {% block content %}
   <h2 class="mt-4">{{ ward.name }}</h2>
-
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
-      <a href="{% url 'funds:get_current_details' %}?tab=projects">{{ ward.fund.name }}</a>
+      <a href="{% url 'funds:get_current_details' %}">{{ ward.fund.name }}</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a href="{% url 'wards:get_list' %}">Adoptees</a>
     </li>
     <li class="breadcrumb-item active">Details</li>
   </ol>
+
   <div class="card mb-4">
     <div class="card-body">
-      <div>
-        <i class="far fa-calendar-alt"></i>
-        Created: {{ ward.date_created }}
-      </div>
-      <div>
-        <i class="fa-regular fa-clipboard"></i>
-        Notes: {{ ward.notes }}
-      </div>
-      <div>
-        <i class="fa-solid fa-pen-to-square"></i>
-        <a href="#">Edit</a>
+      <div class="row">
+        <div class="col-2">
+          <div class="bg-light text-dark">
+            <div class="card">
+              {% if ward.cover %}
+                <img src="{{ ward.cover.url }}" alt="Upload cover" />
+              {% else %}
+                <img src="..." alt="Upload cover" />
+              {% endif %}
+              <form method="POST" action="{% url 'wards:add_ward_cover' ward.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label class="btn btn-link">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  <input class="form-control" type="file" accept=".png, .jepg, .jpg" name="cover" id="cover" onchange="javascrupt:this.form.submit()" style="display:none;" />
+                </label>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="bg-light text-dark">
+            <div>
+              <strong>Created</strong>: {{ ward.date_created }}
+            </div>
+            <div>
+              <strong>Name</strong>: {{ ward.name }}
+            </div>
+            <div>
+              <strong>Description</strong>: {{ ward.notres }}
+            </div>
+           
+            <div>
+              <strong>State</strong>: 
+              {% if not ward.is_inactive %}
+                <span class="badge bg-primary" >active</span>
+              {% else %}
+              <span>inactive</span>
+              {% endif%}
+            </div>
+            <div>
+              <i class="fa-solid fa-pen-to-square"></i>
+              <a href="#">Edit</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

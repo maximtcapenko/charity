@@ -3,7 +3,8 @@ from django.db.models import Count, Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
 from commons.mixins import InitialValidationMixin, FormControlMixin
-from commons.functions import validate_modelform_field
+from commons.forms import CustomLabeledModelChoiceField
+from commons.functions import validate_modelform_field, get_reviewer_label
 
 from .models import Project
 from processes.models import Process, ProcessState
@@ -14,17 +15,22 @@ class CreateProjectForm(
         forms.ModelForm, InitialValidationMixin, FormControlMixin):
     __initial__ = ['fund']
 
+    field_order = ['name', 'leader']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
-        FormControlMixin.__init__(self)
 
         fund = self.initial['fund']
 
         self.fields['fund'].widget = forms.HiddenInput()
-        self.fields['leader'].queryset = User.objects \
-            .filter(volunteer_profile__fund_id=fund.id) \
-            .only('id', 'username')
+        self.fields['leader'] = CustomLabeledModelChoiceField(
+            lable_func=get_reviewer_label,
+            queryset=User.objects
+            .filter(volunteer_profile__fund_id=fund.id),
+            label='Reviewer', required=True)
+
+        FormControlMixin.__init__(self)
 
     class Meta:
         model = Project
@@ -81,7 +87,7 @@ class AddProcessToProjectForm(
 
         def label_from_instance(self, obj):
             states_count = obj['states_count']
-            name =  obj['name']
+            name = obj['name']
             return '%s (%s %s)' % (name, states_count, 'states' if states_count > 1 else 'state')
 
     __initial__ = ['project']
@@ -93,12 +99,12 @@ class AddProcessToProjectForm(
         project = self.initial['project']
         self.fields['process'] = AddProcessToProjectForm.ProcessModelChoiceField(
             queryset=Process.objects.filter(
-            Exists(ProcessState.objects.filter(process=OuterRef('pk'))) &
-            Q(is_inactive=False, fund__id=project.fund_id) &
-            ~Q(projects__in=[project]))
+                Exists(ProcessState.objects.filter(process=OuterRef('pk'))) &
+                Q(is_inactive=False, fund__id=project.fund_id) &
+                ~Q(projects__in=[project]))
             .annotate(states_count=Count('states', distinct=True))
             .values('id', 'name', 'states_count'), label='Process')
-        
+
         FormControlMixin.__init__(self)
 
     process = forms.ModelChoiceField(
@@ -107,8 +113,9 @@ class AddProcessToProjectForm(
     def clean_process(self):
         process = self.cleaned_data['process']
         if process.states.count() == 0:
-            raise forms.ValidationError('Process with 0 states can not be added to project')
-        
+            raise forms.ValidationError(
+                'Process with 0 states can not be added to project')
+
         return process
 
     def save(self):
@@ -127,17 +134,18 @@ class AddProjectReviewerForm(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
-        FormControlMixin.__init__(self)
 
         project = self.initial['project']
 
         self.fields['project'].widget = forms.HiddenInput()
-        self.fields['reviewer'].queryset = User.objects.filter(
-            Q(volunteer_profile__fund__id=project.fund_id) &
-            ~Q(id__in=project.reviewers.values('id')))
+        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+            lable_func=get_reviewer_label,
+            queryset=User.objects.filter(
+                Q(volunteer_profile__fund__id=project.fund_id) &
+                ~Q(id__in=project.reviewers.values('id'))), label='Reviewer', required=True)
 
-    reviewer = forms.ModelChoiceField(
-        User.objects, label='Reviewer', required=True)
+        FormControlMixin.__init__(self)
+
     project = forms.ModelChoiceField(Project.objects, required=True)
 
     def clean(self):

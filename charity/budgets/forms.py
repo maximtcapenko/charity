@@ -1,10 +1,11 @@
-from typing import Any
 from django import forms
 from django.contrib.auth.models import User
 from django.db import models
 
 from commons.mixins import InitialValidationMixin, FormControlMixin
-from commons.functions import validate_modelform_field, should_be_approved
+from commons.functions import validate_modelform_field, should_be_approved, \
+    get_reviewer_label
+from commons.forms import CustomLabeledModelChoiceField
 
 from funds.models import Approvement
 from tasks.models import Expense, Task
@@ -17,18 +18,22 @@ from .signals import exprense_created, budget_intem_reviewer_assigned
 class CreateBudgetForm(
         forms.ModelForm, InitialValidationMixin, FormControlMixin):
     __initial__ = ['fund', 'author']
+    field_order = ['name', 'manager']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self, *args, **kwargs)
-        FormControlMixin.__init__(self, *args, **kwargs)
 
         fund = self.initial['fund']
 
         self.fields['fund'].widget = forms.HiddenInput()
-        self.fields['manager'].queryset = User.objects \
-            .filter(volunteer_profile__fund_id=fund.id) \
-            .only('id', 'username')
+        self.fields['manager'] = CustomLabeledModelChoiceField(
+            lable_func=get_reviewer_label,
+            queryset=User.objects
+            .filter(volunteer_profile__fund_id=fund.id)
+            .only('id', 'username'), label='Reviewer', required=True)
+
+        FormControlMixin.__init__(self, *args, **kwargs)
 
     def clean(self):
         validate_modelform_field('fund', self.initial, self.cleaned_data)
@@ -83,8 +88,9 @@ class CreateIncomeForm(
 
         def label_from_instance(self, obj):
             amount = obj['amount'] - obj['reserved_amount']
-            return '%s (%s)' % (
-                obj['contribution_date'].strftime('%b. %d, %Y, %-I:%M %p'), "{:2,}".format(amount))
+            return '%s - %s (%s)' % (
+                obj['contribution_date'].strftime('%b. %d, %Y'),
+                obj['contributor__name'], "{:2,}".format(amount))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -102,13 +108,15 @@ class CreateIncomeForm(
             .filter(avaliable_amount__gt=0)
             .order_by('contribution_date')
             .values(
-                'id', 'contribution_date',
+                'id', 'contributor__name', 'contribution_date',
                     'amount', 'reserved_amount'), label='Contribution')
 
-        FormControlMixin.__init__(self)
-
         self.fields['budget'].widget = forms.HiddenInput()
-        self.fields['reviewer'].queryset = budget.reviewers
+        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+            lable_func=get_reviewer_label,
+            queryset=budget.reviewers, label='Reviewer', required=True)
+
+        FormControlMixin.__init__(self)
 
     def save(self):
         self.instance.author = self.initial['author']
@@ -147,13 +155,16 @@ class CreateExpenseForm(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
-        FormControlMixin.__init__(self)
 
         self.fields['budget'].widget = forms.HiddenInput()
         self.fields['project'].widget = forms.HiddenInput()
         self.fields['amount'].initial = self.initial['task'].estimated_expense_amount
         self.fields['amount'].disabled = True
-        self.fields['reviewer'].queryset = self.initial['budget'].reviewers
+        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+            lable_func=get_reviewer_label,
+            queryset=self.initial['budget'].reviewers, label='Reviewer', required=True)
+
+        FormControlMixin.__init__(self)
 
     task = forms.ModelChoiceField(Task.objects, disabled=True, label='Task')
 
@@ -215,7 +226,7 @@ class BaseApproveForm(
             '''TODO: make more complex validation 
             - if budget amount already used in planing, etc'''
             raise forms.ValidationError('Item has been already approved')
-        
+
         return self.cleaned_data
 
     def save(self):
@@ -298,8 +309,9 @@ class AddBudgetReviewerForm(
             models.Q(volunteer_profile__fund__id=budget.fund_id) &
             ~models.Q(id__in=budget.reviewers.values('id')))
 
-    reviewer = forms.ModelChoiceField(
-        User.objects, label='Reviewer', required=True)
+    reviewer = CustomLabeledModelChoiceField(
+        lable_func=get_reviewer_label,
+        queryset=User.objects, label='Reviewer', required=True)
     budget = forms.ModelChoiceField(Budget.objects, required=True)
 
     def clean(self):
@@ -325,11 +337,14 @@ class EditBudgetItemForm(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
-        FormControlMixin.__init__(self)
 
-        self.fields['reviewer'].initial = self.initial['target'].reviewer
         self.fields['notes'].initial = self.initial['target'].notes
-        self.fields['reviewer'].queryset = self.initial['budget'].reviewers
+        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+            lable_func=get_reviewer_label,
+            queryset=self.initial['budget'].reviewers, label='Reviewer',
+            required=True, initial=self.initial['target'].reviewer)
+
+        FormControlMixin.__init__(self)
 
     reviewer = forms.ModelChoiceField(
         User.objects, label='Reviewer', required=False)

@@ -9,18 +9,15 @@
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Reviewer</th>
-            <th></th>
-          </tr>
-        </thead>
         <tbody>
           {% for reviewer in page %}
             <tr>
               <td>
-                {{ reviewer.volunteer_profile|cover }}
-                <a href="{% url 'budgets:get_reviewer_details' budget.id reviewer.id %}">{{ reviewer.username }}</a>
+                <h6>
+                  {{ reviewer.volunteer_profile|cover }}
+                  <a href="{% url 'budgets:get_reviewer_details' budget.id reviewer.id %}">{{ reviewer.username }}</a>
+                </h6>
+                {{ reviewer.volunteer_profile.title }}
               </td>
                 <td>
                   <a href="{% url 'budgets:remove_budget_reviewer' budget.id reviewer.id %}">Remove</a>

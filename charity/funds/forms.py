@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 
-from commons.mixins import FormControlMixin, InitialValidationMixin
+from commons.mixins import FormControlMixin, InitialValidationMixin, FileUploadMixin
 from commons.functions import validate_modelform_field
 from .models import Fund, Contribution, Contributor, VolunteerProfile
 
@@ -66,7 +66,7 @@ class CreateVolunteerForm(
 
 
 class CreateContributorForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+        forms.ModelForm, InitialValidationMixin, FormControlMixin, FileUploadMixin):
     __initial__ = ['fund']
 
     def __init__(self, *args, **kwargs):
