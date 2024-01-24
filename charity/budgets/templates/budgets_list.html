@@ -7,36 +7,34 @@
 </div>
   <div class="card mb-4">
   <div class="card-header">
-    <i class="fa-solid fa-money-bill-transfer"></i>
+    <i class="fas fa-sack-dollar"></i>
     Budgets
   </div>
   <div class="card-body">
     <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Budget name</th>
-          <th>Created</th>
-          <th>Avaliable</th>
-          <th>Spent</th>
-          <th>State</th>
-          <th>Manager</th>
-        </tr>
-      </thead>
       <tbody>
         {% for budget in page %}
           <tr>
-            <td>
+            <td class="col-3 align-middle">
               <h6>
                 <a href="{% url 'budgets:get_details' budget.id %}">{{ budget.name }}</a>
               </h6>
+              {{ budget.date_created }}
             </td>
-            <td>{{ budget.date_created }}</td>
-            <td>{{ budget.avaliable_income_amount|floatformat:'2g' }}</td>
-            <td>0</td>
-            <td>
+            <td class="col-2 align-middle">
+              <i class="fa-solid fa-arrow-down"></i>
+              <i class="fa-solid fa-dollar-sign fa-xs"></i>
+              {{ budget.avaliable_income_amount|floatformat:'2g' }}
+            </td>
+            <td class="col-2 align-middle">
+              <i class="fa-solid fa-arrow-up"></i>
+              <i class="fa-solid fa-dollar-sign fa-xs"></i>
+              {{ budget.avaliable_expense_amount|floatformat:'2g'}}
+            </td>
+            <td class="col-1 align-middle">
               {% include 'partials/td_approvement_part.html' with approvement=budget.approvement %}
             </td>
-            <td>
+            <td class="align-middle">
               {% include 'partials/user_image_part.html' with user=budget.manager %}
             </td>
           </tr>

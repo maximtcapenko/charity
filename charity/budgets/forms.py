@@ -263,6 +263,14 @@ class BudgetItemApproveForm(BaseApproveForm):
         if should_be_approved(target.budget):
             raise forms.ValidationError(
                 'Item can not be approved because budget is approved')
+        """
+            avaliable_income_amount = get_budget_available_income(budget)
+            if avaliable_income_amount - income.amount <= 0:
+                raise ApplicationError(
+                    'Income can not be removed becasue amount of income \
+                    is aready used in expense planing',
+                    return_url)
+        """
 
 
 class ApproveBudgetForm(BaseApproveForm):

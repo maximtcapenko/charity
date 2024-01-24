@@ -17,7 +17,8 @@
             <tr>
               <td class="col-2 align-middle">
                 <h6>
-                <a href="{% url 'budgets:get_income_details' budget.id income.id %}">{{ income.amount|floatformat:'2g' }}</a>
+                  <i class="fa-solid fa-dollar-sign fa-sm"></i>
+                  <a href="{% url 'budgets:get_income_details' budget.id income.id %}">{{ income.amount|floatformat:'2g' }}</a>
                 </h6>
                 {{ income.date_created }}
               </td>

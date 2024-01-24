@@ -7,38 +7,28 @@
   </div>
   <div class="card mb-4">
     <div class="card-header">
-      <i class="fas fa-table me-1"></i>
+      <i class="fa-solid fa-gears"></i>
       Processes
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Process name</th>
-            <th>Created</th>
-            <th>Status</th>
-            <th>States</th>
-            <th>Projects usage</th>
-          </tr>
-        </thead>
         <tbody>
           {% for process in page %}
             <tr>
-              <td>
+              <td class="col-3">
                 <h6>
                   <a href="{% url 'processes:get_details' process.id %}">{{ process.name }}</a>
                 </h6>
+                {{ process.date_created }}
               </td>
-              <td>{{ process.date_created }}</td>
-              <td>
+              <td class="col-2 align-middle">
                 {% if not process.is_inactive %}
                   <span class="badge bg-primary">active</span>
                 {% else %}
                   <span class="badge bg-secondary">inactive</span>
                 {% endif %}
               </td>
-              <td>{{ process.states_count }}</td>
-              <td>{{ process.active_project_count }}</td>
+              <td class="align-middle">{{ process.states_count }}</td>
             </tr>
           {% endfor %}
         </tbody>

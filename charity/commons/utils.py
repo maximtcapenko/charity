@@ -40,6 +40,7 @@ class DictObjectWrapper(object):
 
     def __getattr__(self, name):
         value = self.dict.get(name)
+
         if isinstance(value, dict):
             model = None
             if self.model:

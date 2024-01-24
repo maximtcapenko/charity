@@ -4,9 +4,12 @@ from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
+
 from commons import DEFAULT_PAGE_SIZE
 from commons.functions import user_should_be_volunteer, user_should_be_superuser, \
-    render_generic_form
+    render_generic_form, wrap_dicts_page_to_objects_page
+
+from budgets.models import Income
 from .models import Contribution, Contributor, Fund, VolunteerProfile
 from .forms import CreateContributionForm, CreateVolunteerForm, \
     CreateContributorForm, UpdateVolunteerProfile
@@ -74,14 +77,17 @@ def get_contribution_details(request, id):
         Contribution.objects.filter(
             fund_id=request.user.volunteer_profile.fund_id),
         pk=id)
-    query_set = contribution.incomes.values('budget__id', 'budget__name').annotate(
+    queryset = contribution.incomes.filter(approvement__is_rejected=False).values('budget__date_created',
+        'budget__id', 'budget__name', 'budget__approvement__id', 
+        'budget__approvement__is_rejected').annotate(
         budget_amount=models.Sum('amount', default=0))
 
-    paginator = Paginator(query_set, DEFAULT_PAGE_SIZE)
+    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
+    page = wrap_dicts_page_to_objects_page(paginator.get_page(request.GET.get('page')), model=Income)
     return render(request, 'fund_contribution_details.html', {
         'title': 'Contribution',
         'contribution': contribution,
-        'page': paginator.get_page(request.GET.get('page'))
+        'page': page
     })
 
 

@@ -1,4 +1,4 @@
-{% if not approvement %}
+{% if not approvement.id %}
   <span class="badge bg-info text-dark">pending</span>
 {% elif approvement.is_rejected %}
   <span class="badge bg-danger">rejected</span>

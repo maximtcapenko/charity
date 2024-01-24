@@ -19,7 +19,7 @@ def create(request):
         request=request, form_class=CreateProcessForm,
         context={
             'title': 'Add process',
-            'return_url': f'{reverse("funds:get_details")}?tab=processes',
+            'return_url': f'{reverse("processes:get_list")}',
             'initial': {
                 'fund': request.user.volunteer_profile.fund
             }
@@ -65,10 +65,8 @@ def get_list(request):
         models.Q(fund_id=request.user.volunteer_profile.fund_id),
         models.Q(projects__isnull=True) |
         models.Q(projects__is_closed=False)) \
-        .annotate(active_project_count=models.Count('projects', distinct=True),
-                  states_count=models.Count('states', distinct=True)) \
-        .values('id', 'name', 'date_created', 'is_inactive',
-                'states_count', 'active_project_count') \
+        .annotate(states_count=models.Count('states', distinct=True)) \
+        .values('id', 'name', 'date_created', 'is_inactive', 'states_count') \
         .all()
 
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)

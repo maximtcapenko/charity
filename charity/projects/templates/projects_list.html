@@ -12,27 +12,28 @@
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Project name</th>
-            <th>Created</th>
-            <th>Active tasks</th>
-            <th>Budget</th>
-            <th>Leader</th>
-          </tr>
-        </thead>
         <tbody>
           {% for project in page %}
             <tr>
-              <td> 
+              <td class="col-3"> 
                 <h6>
                 <a href="{% url 'projects:get_details' project.id %}">{{ project.name }}</a>
                 </h6>
+                {{ project.date_created }}
               </td>
-              <td>{{ project.date_created }}</td>
-              <td>{{ project.active_tasks_count }}</td>
-              <td>{{ project.approved_budget|floatformat:'2g' }}</td>
-              <td>
+              <td class="align-middle">
+                <i class="fa-solid fa-dollar-sign fa-xs"></i>
+                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Budget">
+                  {{ project.approved_budget|floatformat:'2g' }}
+                </span>
+              </td>
+              <td class="align-middle">
+                <i class="fa-solid fa-list-check fa-xs"></i>
+                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Active tasks">
+                  {{ project.active_tasks_count }}
+                </span>
+              </td>
+              <td class="align-middle">
                 {% include 'partials/user_image_part.html' with user=project.leader %}
               </td>
             </tr>
