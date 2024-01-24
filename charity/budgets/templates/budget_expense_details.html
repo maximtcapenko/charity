@@ -31,7 +31,7 @@
               <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' expense.author.volunteer_profile.id %}">{{ expense.author.username }}</a>
             </div>
             <div>
-              {% if  income.reviewer %}
+              {% if  expense.reviewer %}
               <strong>Reviewer</strong>: <a href="{% url 'funds:get_volunteer_details' expense.reviewer.volunteer_profile.id %}">{{ expense.reviewer.username }}</a>
               {% else%}
               <strong>Reviewer</strong>: 

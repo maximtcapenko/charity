@@ -21,8 +21,10 @@
                  <span class="badge bg-secondary">inactive</span>
                 {% endif %}
               </td>
-              <td>
-                <a href="{% url 'projects:remove_project_process'  project.id process.id %}">Remove</a>
+              <td class="align-middle">
+                <a href="{% url 'projects:remove_project_process' project.id process.id %}" class="post-request">
+                  Remove
+                </a>
               </td>
             </tr>
           {% endfor %}
@@ -31,3 +33,4 @@
       {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+  {% include 'partials/js.html' %}

@@ -19,9 +19,11 @@
                 </h6>
                 {{ reviewer.volunteer_profile.title }}
               </td>
-                <td>
-                  <a href="{% url 'budgets:remove_budget_reviewer' budget.id reviewer.id %}">Remove</a>
-               </td>
+              <td class="align-middle">
+                <a href="{% url 'budgets:remove_budget_reviewer' budget.id reviewer.id %}" class="post-request">
+                  Remove
+                </a>
+              </td>
              </tr>
           {% endfor %}
         </tbody>
@@ -29,3 +31,4 @@
       {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+  {% include 'partials/js.html' %}

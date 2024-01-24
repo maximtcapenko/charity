@@ -105,7 +105,7 @@ def add_project_reviewer(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_http_methods(['POST'])
 def remove_project_process(request, id, process_id):
     project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=processes'
@@ -121,7 +121,7 @@ def remove_project_process(request, id, process_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_http_methods(['POST'])
 def remove_project_task(request, id, task_id):
     project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=tasks'
@@ -139,7 +139,7 @@ def remove_project_task(request, id, task_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_http_methods(['POST'])
 def remove_project_ward(request, id, ward_id):
     project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=wards'
@@ -157,7 +157,7 @@ def remove_project_ward(request, id, ward_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_http_methods(['POST'])
 def remove_project_reviewer(request, id, reviewer_id):
     project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=reviewers'

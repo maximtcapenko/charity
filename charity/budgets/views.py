@@ -197,7 +197,7 @@ def edit_expense_details(request, id, expense_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_http_methods(['POST'])
 def remove_budget_income(request, id, income_id):
     budget = get_budget_or_404(request, id)
     return_url = f'{reverse("budgets:get_details", args=[id])}?tab=incomes'
@@ -223,7 +223,7 @@ def remove_budget_income(request, id, income_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_http_methods(['POST'])
 def remove_budget_expense(request, id, expense_id):
     budget = get_budget_or_404(request, id)
     return_url = f'{reverse("budgets:get_details", args=[id])}?tab=expenses'
@@ -245,7 +245,7 @@ def remove_budget_expense(request, id, expense_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_http_methods(['POST'])
 def remove_budget_reviewer(request, id, reviewer_id):
     budget = get_budget_or_404(request, id)
     return_url = f'{reverse("budgets:get_details", args=[id])}?tab=reviewers'
@@ -262,11 +262,11 @@ def remove_budget_reviewer(request, id, reviewer_id):
         raise ApplicationError(
             'Reviewer can not be removed from budget because of reviewed approvements of budget',
             return_url)
-    elif budget.incomes.filter(approvement__author__id=reviewer_id).exists():
+    elif budget.incomes.filter(Q(reviewer_id=reviewer_id) | Q(approvement__author__id=reviewer_id)).exists():
         raise ApplicationError(
             'Reviewer can not be removed from budget because of reviewed incomes in budget',
             return_url)
-    elif budget.expenses.filter(approvement__author__id=reviewer_id).exists():
+    elif budget.expenses.filter(Q(reviewer_id=reviewer_id) | Q(approvement__author__id=reviewer_id)).exists():
         raise ApplicationError(
             'Reviewer can not be removed from budget because of reviewed expenses in budget',
             return_url)
