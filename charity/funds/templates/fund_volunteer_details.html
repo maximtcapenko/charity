@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load customtags %}
   <h2 class="mt-4">{{ volunteer.user.username }}</h2>
 
   <ol class="breadcrumb mb-4">
@@ -44,10 +45,13 @@
               <strong>Title</strong>: {{ volunteer.title }}
             </div>
             <div>
-              <strong>Mobile phone</strong>: {{ volunteer.mobile_phone }}
+              <strong>Mobile phone</strong>: {{ volunteer.mobile_phone|phone_number }}
             </div>
             <div>
-              <strong>Email</strong>: {{ volunteer.user.email }}
+              <strong>Email</strong>:
+              {% if volunteer.user.email  %}
+                <a href="mailto:{{ volunteer.user.email }}">{{ volunteer.user.email }}</a>
+              {% endif %}
             </div>
             <div>
               <strong>Last login</strong>: {{ volunteer.user.last_login }}

@@ -42,6 +42,10 @@ class Contributor(Base):
         Fund, on_delete=models.PROTECT, related_name='contributors')
     notes = models.TextField(blank=True, null=True)
     is_company = models.BooleanField()
+    mobile_phone = models.CharField(max_length=12, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    website = models.URLField(null=True, blank=True)
+    cover = models.ImageField(upload_to='covers', null=True)
 
     def __str__(self):
         return self.name

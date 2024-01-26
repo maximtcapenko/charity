@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load customtags %}
 <h2 class="mt-4">{{ contributor.name }}</h2>
-
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
       <a href="{% url 'funds:get_current_details' %}?tab=contributors">{{ contributor.fund.name}}</a>
@@ -10,54 +10,82 @@
   </ol>
   <div class="card mb-4">
     <div class="card-body">
-      <div>
-        <i class="far fa-calendar-alt"></i>
-        Created: {{ contributor.date_created }}
-      </div>
-      <div>
-        <i class="fa-solid fa-circle-info"></i>
-        Type: 
-        {% if contributor.is_company %}
-        <span class="badge bg-primary">company</span>
-      {% else %}
-        <span class="badge bg-primary">person</span>
-      {% endif %}
-      </div>
-      <div>
-        <i class="fa-regular fa-clipboard"></i>
-        Notes: {{ contributor.notes }}
-      </div>
-      <div>
-        <i class="fa-solid fa-pen-to-square"></i>
-        <a href="{% url 'funds:edit_contributor_details' contributor.id %}">Edit</a>
+      <div class="row">
+        <div class="col-2">
+          <div class="bg-light text-dark">
+            <div class="card">
+              {% if contributor.cover %}
+                <img src="{{ contributor.cover.url }}" alt="Upload cover" />
+              {% else %}
+                <img src="..." alt="Upload cover" />
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="bg-light text-dark">
+            <div>
+              <strong>Created</strong>: {{ contributor.date_created }}
+            </div>
+            <div>
+              <strong>Web site</strong>: 
+              <a href="{{ contributor.website }}">{{ contributor.website }}</a>
+            </div>
+            <div>
+              <strong>Mobile phone</strong>: {{ contributor.mobile_phone|phone_number }}
+            </div>
+            <div>
+              <strong>Email</strong>:
+              {% if contributor.email  %}
+                <a href="mailto:{{ contributor.email }}">{{ contributor.email }}</a>
+              {% endif %}
+            </div>
+           
+            <div>
+              <strong>Type</strong>: 
+              {% if contributor.is_company %}
+                <span class="badge bg-primary">company</span>
+              {% else %}
+                <span class="badge bg-primary">person</span>
+              {% endif %}
+            </div>
+            <div>
+              <i class="fa-solid fa-pen-to-square"></i>
+              <a href="{% url 'funds:edit_contributor_details' contributor.id %}">Edit</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </div>  
   <div class="card mb-4">
     <div class="card-header">
-      <i class="fas fa-table me-1"></i>
+      <i class="fas fa-sack-dollar"></i>
       Budgets
     </div>
-  <div class="card-body">
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>Budget</th>
-          <th>Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for budget in page %}
-          <tr>
-            <td>
-              <a href="{% url 'budgets:get_details' budget.incomes__budget__id %}">{{ budget.incomes__budget__name }}</a>
-            </td>
-            <td>{{ budget.budget_amount|floatformat:'2g' }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% include 'paginator.html' with obj_page=page %}
-  </div>
+    <div class="card-body">
+      <table class="table table-striped">
+        <tbody>
+          {% for budget in page %}
+            <tr>
+              <td class="col-3">
+                <h6>
+                  <a href="{% url 'budgets:get_details' budget.budget.id %}">{{ budget.budget.name }}</a>
+                </h6>
+                {{ budget.budget.date_created }}
+              </td>
+              <td class="col-2 align-middle">
+                <i class="fa-solid fa-dollar-sign fa-xs"></i>
+                {{ budget.budget_amount|floatformat:'2g' }}
+              </td>
+              <td class="align-middle">
+                {% include 'partials/td_approvement_part.html' with approvement=budget.budget.approvement %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
   </div>
 {% endblock %}

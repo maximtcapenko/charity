@@ -1,0 +1,34 @@
+<div class="modal fade" id="errorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Something went wrong</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-dismissible fade show alert-danger" role="alert">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span class="eror-message">
+                    Error
+                </span>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script type="text/javascript">
+    window.onload = () => {
+      const errorParam = new URLSearchParams(window.location.search);
+      if(errorParam.has('message')) {
+        error = errorParam.get('message')
+        const errorModal = new bootstrap.Modal('#errorModal');
+        var modalBody = document.querySelector('#errorModal .eror-message');
+        modalBody.innerHTML = decodeURIComponent(escape(atob(error)));
+        errorModal.show();
+      }
+    }
+</script>

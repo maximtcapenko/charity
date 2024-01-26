@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import redirect
+from django.utils import http
 
 from .exceptions import ApplicationError
 
@@ -12,8 +13,13 @@ class BadRequestMiddleware:
 
     def process_exception(self, request, exception):
         if isinstance(exception, ApplicationError):
-            return render(request, '400.html', {
-                'error_message': exception.error_message,
-                'return_url': exception.return_url
-            })
+            message = http.urlsafe_base64_encode(
+                exception.error_message.encode('utf-8'))
+            parse_result = http.urlparse(exception.return_url)
+            if parse_result.query:
+                url = f'{exception.return_url}&message={message}'
+            else:
+                url = f'{exception.return_url}?message={message}'
+            return redirect(url)
+
         return None

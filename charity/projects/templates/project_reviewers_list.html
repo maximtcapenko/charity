@@ -1,7 +1,13 @@
-<div>
-    <a href="{% url 'projects:add_project_reviewer' project.id %}" class="btn btn-link" >Add reviewer</a>
-</div>
 {% load customtags %}
+{% load projectfilters %}
+<div>
+    <a {% if project|validate_pre_requirements:user %}
+          href="{% url 'projects:add_project_reviewer' project.id %}" 
+          class="btn btn-link"
+        {% else %}
+          href="" class="btn btn-link disabled"
+        {% endif %}>Add reviewer</a>
+</div>
 <div class="card mb-4">
     <div class="card-header">
       <i class="fas fa-table me-1"></i>
@@ -9,22 +15,24 @@
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Reviewer</th>
-            <th></th>
-          </tr>
-        </thead>
         <tbody>
           {% for reviewer in page %}
             <tr>
               <td>
-                {{ reviewer.volunteer_profile|cover }}
-                <a href="{% url 'projects:get_reviewer_details' project.id reviewer.id %}">{{ reviewer.username }}</a>
+                <h6>
+                  {{ reviewer.volunteer_profile|cover }}
+                  <a href="{% url 'projects:get_reviewer_details' project.id reviewer.id %}">{{ reviewer.username }}</a>
+                </h6>
+                {{ reviewer.volunteer_profile.title }}
               </td>
-                <td>
-                  <a href="{% url 'projects:remove_project_reviewer' project.id reviewer.id%}">Remove</a>
-               </td>
+                <td class="align-middle">
+                  <a {% if project|validate_pre_requirements:user %}
+                        href="{% url 'projects:remove_project_reviewer' project.id reviewer.id %}" 
+                        class="post-request"
+                      {% else %}
+                        href="" class="link-disabled"
+                      {% endif %}>Remove</a>
+                </td>
              </tr>
           {% endfor %}
         </tbody>
@@ -32,3 +40,5 @@
       {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+  {% include 'generic_errormodal.html' %}
+  {% include 'partials/js.html' %}

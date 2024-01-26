@@ -10,7 +10,7 @@ from .models import Task
 
 
 def get_estimated_and_not_approved_tasks_queryset(project_id):
-    return Task.objects.filter(project_id=project_id, expense__isnull=True)
+    return Task.objects.filter(project_id=project_id, expense__isnull=True).select_related('ward')
 
 
 def get_project_requested_expenses_queryset(fund_id):
@@ -21,6 +21,16 @@ def get_project_requested_expenses_queryset(fund_id):
     return Task.objects.filter(project__fund_id=fund_id, expense__isnull=True).values('project_id') \
         .annotate(requested_budget=Sum('estimated_expense_amount', default=0)) \
         .filter(requested_budget__gt=0).values('project__id', 'project__name', 'requested_budget')
+
+
+def get_task_state_review_count_queryset(task):
+    """
+    Returns queryset with structure:
+    `{'id', 'reviews_count'}`
+    """
+    return task.states \
+        .annotate(reviews_count=Count('approvements')) \
+        .values('id', 'reviews_count')
 
 
 def get_project_tasks_comments_count_queryset(project):

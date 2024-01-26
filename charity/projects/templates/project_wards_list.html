@@ -1,40 +1,50 @@
+{% load customtags %}
+{% load projectfilters %}
 <div>
-    <a href="{% url 'projects:add_ward_to_project' project.id %}" class="btn btn-link" >Add ward</a>
+    <a  {% if project|validate_pre_requirements:user %}
+          href="{% url 'projects:add_ward_to_project' project.id %}" 
+          class="btn btn-link"
+        {% else %}
+          href=""  class="btn btn-link disabled"
+        {% endif %}>Add adoptee</a>
 </div>
-  <div class="card mb-4">
-    <div class="card-header">
-      <i class="fas fa-table me-1"></i>
-      Wards
-    </div>
-    <div class="card-body">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Ward name</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for ward in page %}
-            <tr>
-              <td>
-                <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
-              </td>
-              <td> 
-                {% if not ward.is_inactive %}
-                <span class="badge bg-primary">active</span>
-               {% else %}
-                <span class="badge bg-secondary">inactive</span>
-               {% endif %}
-              </td>
-              <td>
-                <a href="{% url 'projects:remove_project_ward' project.id ward.id %}">Remove</a>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% include 'paginator.html' with obj_page=page %}
-    </div>
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="fa-solid fa-leaf"></i>
+    Adoptees
   </div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <tbody>
+        {% for ward in page %}
+          <tr>
+            <td>
+              <div>
+                <h6>
+                  {{ ward|thumbnail:50 }}
+                  <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
+                </h6>
+              {% if ward.is_inactive %}
+                <span class="badge bg-secondary">inactive</span>
+              {% else %}
+                <span class="badge bg-primary">active</span>
+              {% endif %}
+              </div>
+              {{ ward.date_created }}
+            </td>
+            <td class="align-middle">
+              <a {% if project|validate_pre_requirements:user %}
+                   href="{% url 'projects:remove_project_ward' project.id ward.id%}"
+                   class="post-request"
+                 {% else %}
+                   href="" class="link-disabled"
+                 {% endif %}>Remove</a>
+           </td>           
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% include 'paginator.html' with obj_page=page %}
+  </div>
+  {% include 'generic_errormodal.html' %}
+  {% include 'partials/js.html' %}

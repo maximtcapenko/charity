@@ -14,6 +14,7 @@
       {% endif %}
     </title>
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/fixed-styles.css' %}">
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
   </head>
   <body class="sb-nav-fixed">
@@ -96,6 +97,10 @@
                   <i class="fa-solid fa-house"></i>
                 </div>Home
               </a>
+              <a class="nav-link" href="{% url 'wards:get_list' %}">
+                <div class="sb-nav-link-icon">
+                </div>Adoptees
+              </a>
               <a class="nav-link" href="{% url 'budgets:get_list' %}">
                 <div class="sb-nav-link-icon">
                 </div>Budgets
@@ -107,10 +112,6 @@
               <a class="nav-link" href="{% url 'projects:get_list' %}">
                 <div class="sb-nav-link-icon">
                 </div>Projects
-              </a>
-              <a class="nav-link" href="{% url 'wards:get_list' %}">
-                <div class="sb-nav-link-icon">
-                </div>Wards
               </a>
             </div>
           </div>
@@ -139,5 +140,14 @@
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script>
+      window.addEventListener('DOMContentLoaded', event => {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        console.log(tooltipTriggerList);
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+      });
+    </script>
   </body>
 </html>

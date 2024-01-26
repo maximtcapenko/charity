@@ -1,5 +1,12 @@
-<div>
-    <a href="{% url 'projects:add_process_to_project' project.id %}" class="btn btn-link" >Add process</a>
+{% load projectfilters %}
+  <div>
+      <a {% if project|validate_pre_requirements:user %}
+            href="{% url 'projects:add_process_to_project' project.id %}" 
+            class="btn btn-link"
+          {% else %}
+            href="" 
+            class="btn btn-link disabled"
+          {% endif %}>Add process</a>
   </div>
   <div class="card mb-4">
     <div class="card-header">
@@ -8,28 +15,27 @@
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Process name</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
         <tbody>
           {% for process in page %}
             <tr>
               <td>
-                <a href="{% url 'processes:get_details' process.id %}">{{ process.name }}</a>
-              </td>
-              <td> 
+                <h6>
+                  <a href="{% url 'processes:get_details' process.id %}">{{ process.name }}</a>
+                </h6>
                 {% if not process.is_inactive %}
                  <span class="badge bg-primary">active</span>
                 {% else %}
                  <span class="badge bg-secondary">inactive</span>
                 {% endif %}
               </td>
-              <td>
-                <a href="{% url 'projects:remove_project_process'  project.id process.id %}">Remove</a>
+              <td class="align-middle">
+                <a {% if project|validate_pre_requirements:user %}
+                      href="{% url 'projects:remove_project_process' project.id process.id %}" 
+                      class="post-request"
+                    {% else %}
+                      href="" class="link-disabled"
+                    {% endif %}>Remove
+                </a>
               </td>
             </tr>
           {% endfor %}
@@ -38,3 +44,5 @@
       {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+  {% include 'generic_errormodal.html' %}
+  {% include 'partials/js.html' %}

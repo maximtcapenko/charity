@@ -1,0 +1,18 @@
+<script>
+    var csrf_token = '{% csrf_token %}'
+    var links = document.querySelectorAll('.post-request');
+ 
+for(var l = 0; l < links.length; l++) {
+  links[l].addEventListener('click', function(e) {
+    e.preventDefault();
+    var url = this.href.split('?');
+    var form = document.createElement('form');
+    
+    form.setAttribute('method','post');
+    form.setAttribute('action', url[0]);
+    form.innerHTML = csrf_token;
+    document.getElementsByTagName('body')[0].appendChild(form);
+    form.submit();
+  });
+}
+</script>

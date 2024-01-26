@@ -112,3 +112,7 @@ def wrap_dicts_page_to_objects_page(page, model=None):
     Wrapp page with dict items into page with object items
     """
     return WrappedPage(page, model=model)
+
+
+def get_reviewer_label(user):
+    return f'{user.username} ({user.volunteer_profile.title})'

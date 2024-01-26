@@ -31,7 +31,7 @@
               <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' expense.author.volunteer_profile.id %}">{{ expense.author.username }}</a>
             </div>
             <div>
-              {% if  income.reviewer %}
+              {% if  expense.reviewer %}
               <strong>Reviewer</strong>: <a href="{% url 'funds:get_volunteer_details' expense.reviewer.volunteer_profile.id %}">{{ expense.reviewer.username }}</a>
               {% else%}
               <strong>Reviewer</strong>: 
@@ -67,10 +67,10 @@
    </div>
 </div>
 <div>
-{% if not expense.budget.approvement or expense.budget.approvement.is_rejected %}
-    <a href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-link">Add review</a>
+{% if expense.budget.approvement and not expense.budget.approvement.is_rejected %}
+    <a href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-link disabled">Add review</a>
 {% else %}
-  <a href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-link disabled">Add review</a> 
+  <a href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-link">Add review</a> 
 {% endif %}
 </div>
 {% include "approvements_list.html" %}

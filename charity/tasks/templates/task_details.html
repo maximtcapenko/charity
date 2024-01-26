@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load customtags %}
   <h2 class="mt-4">{{ task.name }}</h2>
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
@@ -25,7 +26,8 @@
               <div class="col">
                 <div class="bg-light text-dark">
                   <div>
-                    <strong>Ward</strong>: <a  href="{% url 'wards:get_details' task.ward_id %}"> {{ task.ward.name }} </a>
+                    {{ task.ward|thumbnail:50 }}
+                    <a href="{% url 'wards:get_details' task.ward_id %}"> {{ task.ward.name }} </a>
                   </div>
                   <div>
                     <strong>Period</strong>: {{ task.start_date }} - {{ task.end_date }}

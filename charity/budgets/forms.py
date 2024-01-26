@@ -1,15 +1,17 @@
-from typing import Any
 from django import forms
 from django.contrib.auth.models import User
 from django.db import models
 
 from commons.mixins import InitialValidationMixin, FormControlMixin
-from commons.functions import validate_modelform_field, should_be_approved
+from commons.functions import validate_modelform_field, should_be_approved, \
+    get_reviewer_label
+from commons.forms import CustomLabeledModelChoiceField
 
 from funds.models import Approvement
 from tasks.models import Expense, Task
 
 from .functions import get_budget_available_income
+from .messages import Warnings
 from .models import Budget, Income, Contribution
 from .signals import exprense_created, budget_intem_reviewer_assigned
 
@@ -17,18 +19,22 @@ from .signals import exprense_created, budget_intem_reviewer_assigned
 class CreateBudgetForm(
         forms.ModelForm, InitialValidationMixin, FormControlMixin):
     __initial__ = ['fund', 'author']
+    field_order = ['name', 'manager']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self, *args, **kwargs)
-        FormControlMixin.__init__(self, *args, **kwargs)
 
         fund = self.initial['fund']
 
         self.fields['fund'].widget = forms.HiddenInput()
-        self.fields['manager'].queryset = User.objects \
-            .filter(volunteer_profile__fund_id=fund.id) \
-            .only('id', 'username')
+        self.fields['manager'] = CustomLabeledModelChoiceField(
+            lable_func=get_reviewer_label,
+            queryset=User.objects
+            .filter(volunteer_profile__fund_id=fund.id)
+            .only('id', 'username'), label='Reviewer', required=True)
+
+        FormControlMixin.__init__(self, *args, **kwargs)
 
     def clean(self):
         validate_modelform_field('fund', self.initial, self.cleaned_data)
@@ -49,11 +55,11 @@ class UpdateBudgetForm(CreateBudgetForm):
     def clean(self):
         if self.instance.is_closed:
             raise forms.ValidationError(
-                'Budget is closed and can not be edited')
+                Warnings.BUDGET_CANNOT_BE_CHANGED_IT_HAS_BEEN_CLOSED)
 
         if should_be_approved(self.instance):
             raise forms.ValidationError(
-                'Budget is approved and can not be edited')
+                Warnings.BUDGET_CANNOT_BE_CHANGED_IT_HAS_BEEN_APPROVED)
 
         validate_modelform_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
@@ -62,7 +68,7 @@ class UpdateBudgetForm(CreateBudgetForm):
         manager = self.cleaned_data['manager']
         if manager is None and self.instance.manager:
             raise forms.ValidationError(
-                'Manager is already assigned and can not be empty')
+                Warnings.BUDGET_MANAGER_CANNOT_BE_UNDEFINED)
         return manager
 
 
@@ -83,8 +89,9 @@ class CreateIncomeForm(
 
         def label_from_instance(self, obj):
             amount = obj['amount'] - obj['reserved_amount']
-            return '%s (%s)' % (
-                obj['contribution_date'].strftime('%b. %d, %Y, %-I:%M %p'), "{:2,}".format(amount))
+            return '%s - %s (%s)' % (
+                obj['contribution_date'].strftime('%b. %d, %Y'),
+                obj['contributor__name'], "{:2,}".format(amount))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -102,13 +109,15 @@ class CreateIncomeForm(
             .filter(avaliable_amount__gt=0)
             .order_by('contribution_date')
             .values(
-                'id', 'contribution_date',
+                'id', 'contributor__name', 'contribution_date',
                     'amount', 'reserved_amount'), label='Contribution')
 
-        FormControlMixin.__init__(self)
-
         self.fields['budget'].widget = forms.HiddenInput()
-        self.fields['reviewer'].queryset = budget.reviewers
+        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+            lable_func=get_reviewer_label,
+            queryset=budget.reviewers, label='Reviewer', required=True)
+
+        FormControlMixin.__init__(self)
 
     def save(self):
         self.instance.author = self.initial['author']
@@ -117,7 +126,7 @@ class CreateIncomeForm(
     def clean(self):
         if should_be_approved(self.initial['budget']):
             forms.ValidationError(
-                'Can not add new income record, current budget is approved')
+                Warnings.INCOME_CANNOT_BE_ADDED_BUDGET_HAS_BEEN_APPROVED)
 
         contribution = self.cleaned_data['contribution']
         amount = self.cleaned_data['amount']
@@ -125,9 +134,9 @@ class CreateIncomeForm(
             total=models.Sum('amount', default=0))['total']
 
         if (contribution.amount - reserved_amount) < amount:
-            raise forms.ValidationError('No avaliable contribution amount')
+            raise forms.ValidationError(Warnings.NO_CONTIBUTION)
         elif amount <= 0:
-            raise forms.ValidationError('Income can not be empty or negative')
+            raise forms.ValidationError(Warnings.INCOME_SHOULD_BE_POSITIVE)
 
         return self.cleaned_data
 
@@ -147,13 +156,16 @@ class CreateExpenseForm(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
-        FormControlMixin.__init__(self)
 
         self.fields['budget'].widget = forms.HiddenInput()
         self.fields['project'].widget = forms.HiddenInput()
         self.fields['amount'].initial = self.initial['task'].estimated_expense_amount
         self.fields['amount'].disabled = True
-        self.fields['reviewer'].queryset = self.initial['budget'].reviewers
+        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+            lable_func=get_reviewer_label,
+            queryset=self.initial['budget'].reviewers, label='Reviewer', required=True)
+
+        FormControlMixin.__init__(self)
 
     task = forms.ModelChoiceField(Task.objects, disabled=True, label='Task')
 
@@ -172,7 +184,7 @@ class CreateExpenseForm(
         budget = self.initial['budget']
         if budget.approvement_id:
             forms.ValidationError(
-                'Can not add new income record, current budget is approved')
+                Warnings.EXPENSE_CANNOT_BE_ADDED_BUDGET_HAS_BEEN_APPROVED)
 
         validate_modelform_field('task', self.initial, self.cleaned_data)
 
@@ -185,7 +197,7 @@ class CreateExpenseForm(
                 Can not crate expense with amount {task.estimated_expense_amount:,.2f}')
 
         elif task.estimated_expense_amount <= 0:
-            raise forms.ValidationError('Expense can not be empty or negative')
+            raise forms.ValidationError(Warnings.EXPENSE_SHOULD_BE_POSITIVE)
 
         return self.cleaned_data
 
@@ -214,8 +226,9 @@ class BaseApproveForm(
         if should_be_approved(target):
             '''TODO: make more complex validation 
             - if budget amount already used in planing, etc'''
-            raise forms.ValidationError('Item has been already approved')
-        
+            raise forms.ValidationError(
+                Warnings.BUDGET_ITEM_HAS_BEEN_ALREADY_APPROVED)
+
         return self.cleaned_data
 
     def save(self):
@@ -239,19 +252,16 @@ class BudgetItemApproveForm(BaseApproveForm):
 
         """Validate user access"""
         if not target.reviewer_id:
-            raise forms.ValidationError('Reviewer is not assigned')
+            raise forms.ValidationError(Warnings.BUDGET_REVIEWER_NOT_ASSIGNED)
 
-        if target.reviewer != self.initial['author']:
+        if target.reviewer == self.initial['author'] and \
+                not target.budget.reviewers.filter(id=self.initial['author'].id).exists():
             raise forms.ValidationError(
-                'Current user is not budget item reviewer')
-
-        if not target.budget.reviewers.filter(id=self.initial['author'].id).exists():
-            raise forms.ValidationError(
-                'Current user is not budget reviewer, only reviewers can approve budget items')
+                Warnings.CURRENT_USER_IS_NOT_BUDGET_ITEM_REVIEWER)
 
         if should_be_approved(target.budget):
             raise forms.ValidationError(
-                'Item can not be approved because budget is approved')
+                Warnings.BUDGET_CANNOT_BE_CHANGED_IT_HAS_BEEN_APPROVED)
 
 
 class ApproveBudgetForm(BaseApproveForm):
@@ -261,14 +271,14 @@ class ApproveBudgetForm(BaseApproveForm):
         """Validate user access"""
         if not budget.reviewers.filter(id=self.initial['author'].id).exists():
             raise forms.ValidationError(
-                'Current user is not budget reviewer, only reviewers can approve budget')
+                Warnings.CURRENT_USER_IS_NOT_BUDGET_REVIEWER)
 
         incomes = budget.incomes.exists()
         expenses = budget.expenses.exists()
 
         if incomes == False or expenses == False:
             raise forms.ValidationError(
-                'Budget can not be approved, no incomes or expenses')
+                Warnings.BUDGET_CANNOT_BE_APPROVED_NO_BUDGET_ITEMS)
 
         unapproved_incomes = budget.incomes.filter(
             approvement_id__isnull=True).exists()
@@ -278,7 +288,7 @@ class ApproveBudgetForm(BaseApproveForm):
 
         if unapproved_incomes or unapproved_expenses:
             raise forms.ValidationError(
-                'Budget can not be approved, there are not approved items')
+                Warnings.BUDGET_CANNOT_BE_APPROVED_NO_APPROVED_BUDGET_ITEMS)
 
         return self.cleaned_data
 
@@ -298,8 +308,9 @@ class AddBudgetReviewerForm(
             models.Q(volunteer_profile__fund__id=budget.fund_id) &
             ~models.Q(id__in=budget.reviewers.values('id')))
 
-    reviewer = forms.ModelChoiceField(
-        User.objects, label='Reviewer', required=True)
+    reviewer = CustomLabeledModelChoiceField(
+        lable_func=get_reviewer_label,
+        queryset=User.objects, label='Reviewer', required=True)
     budget = forms.ModelChoiceField(Budget.objects, required=True)
 
     def clean(self):
@@ -307,7 +318,7 @@ class AddBudgetReviewerForm(
 
         if should_be_approved(self.cleaned_data['budget']):
             raise forms.ValidationError(
-                'Reviewer can not be added because budget is approved')
+                Warnings.BUDGET_CANNOT_BE_CHANGED_IT_HAS_BEEN_APPROVED)
 
         return self.cleaned_data
 
@@ -325,11 +336,14 @@ class EditBudgetItemForm(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
-        FormControlMixin.__init__(self)
 
-        self.fields['reviewer'].initial = self.initial['target'].reviewer
         self.fields['notes'].initial = self.initial['target'].notes
-        self.fields['reviewer'].queryset = self.initial['budget'].reviewers
+        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+            lable_func=get_reviewer_label,
+            queryset=self.initial['budget'].reviewers, label='Reviewer',
+            required=True, initial=self.initial['target'].reviewer)
+
+        FormControlMixin.__init__(self)
 
     reviewer = forms.ModelChoiceField(
         User.objects, label='Reviewer', required=False)
@@ -342,11 +356,11 @@ class EditBudgetItemForm(
 
         if should_be_approved(target):
             raise forms.ValidationError(
-                'Can not edit item because it is approved')
+                Warning.BUDGET_ITEM_CANNOT_BE_CHANGED_IT_HAS_BEEN_APPROVED)
 
         if reviewer and not self.initial['budget'].reviewers.contains(reviewer):
             raise forms.ValidationError(
-                'Assigned reviewer must be in list of budget reviewers')
+                Warnings.CURRENT_USER_IS_NOT_BUDGET_REVIEWER)
 
         return self.cleaned_data
 

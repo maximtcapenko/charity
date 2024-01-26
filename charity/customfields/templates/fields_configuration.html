@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2 class="mt-4">Configure custom fields for {{ fund.name }}</h2>
+  <ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item">
+      <a href="{% url 'funds:get_current_details' %}">{{ fund.name }}</a>
+    </li>
+    <li class="breadcrumb-item active">Configuration</li>
+  </ol>
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="bg-light text-dark">
+      </div>
+    </div>
+  </div>
+  <div class="col-4">
+  <form class="form-inline" action="" method="get">
+    <label for="id_type">Entity:</label>
+    <select class="form-select" name="type_id" required="true" id="id_type" onchange="javascript:this.form.submit()">
+      <option value="">Select Entity</option>
+      {% for type in types %}
+       {% if selected_type == type.model %}
+          <option selected="true" value="{{ type.model }}">{{ type.model }}</option>
+        {% else %}
+          <option value="{{ type.model }}">{{ type.model }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+  </form>
+  </div>
+  <div class="card mb-4">
+    <div class="card-body">
+      
+    </div>
+  </div>
+{% endblock %}

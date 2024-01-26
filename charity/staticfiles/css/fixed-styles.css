@@ -1,0 +1,8 @@
+
+.link-disabled {
+    pointer-events: none;
+    opacity: .65;
+    cursor: default;
+    color:#6c757d;
+}
+

@@ -12,32 +12,38 @@
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Amount</th>
-            <th>Created</th>
-            <th>Projet</th>
-            <th>Reviewer</th>
-            <th>Status</th>
-            <th>Author</th>
-            <th></th>
-          </tr>
-        </thead>
         <tbody>
           {% for expense in page %}
             <tr>
-              <td>
-                <a href="{% url 'budgets:get_expense_details' budget.id expense.id %}">{{ expense.amount|floatformat:'2g' }}</a>
+              <td class="col-2 align-middle">
+                <h6>
+                  <i class="fa-solid fa-dollar-sign fa-sm"></i>
+                  <a href="{% url 'budgets:get_expense_details' budget.id expense.id %}">{{ expense.amount|floatformat:'2g' }}</a>
+                </h6>
+                {{ expense.date_created }}
               </td>
-              <td>{{ expense.date_created }}</td>
-              <td><a href="{% url 'projects:get_details' expense.project.id %}">{{ expense.project.name }}</a></td>
-              <td><a href="{% url 'funds:get_volunteer_details' expense.reviewer.volunteer_profile.id %}">{{ expense.reviewer.username }}</a>
-              <td>
-              {% include 'partials/td_approvement_part.html' with approvement=expense.approvement %}
+              <td class="col-1 align-middle text-center"> 
+                {% include 'partials/td_approvement_part.html' with approvement=expense.approvement %}
               </td>
-              <td><a href="{% url 'funds:get_volunteer_details' expense.author.volunteer_profile.id %}">{{ expense.author.username }}</a>
-              <td>
-                <a href="{% url 'budgets:remove_budget_expense' budget.id expense.id%}">Remove</a>
+              <td class="align-middle">
+                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Reviewer">
+                  {% include 'partials/user_image_part.html' with user=expense.reviewer %}
+                </span>
+              </td>
+              <td class="align-middle"> 
+                {{ expense.notes }}
+              </td>
+              <td class="align-middle">
+                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Project">
+                  <a href="{% url 'projects:get_details' expense.project.id %}">{{ expense.project.name }}</a>
+                </span>
+              </td>
+              <td class="align-middle">
+                {% if  expense.approvement.is_rejected == False %} 
+                  <a href="#" class="link-disabled">Remove</a>
+                {% else %}
+                  <a href="{% url 'budgets:remove_budget_expense' budget.id expense.id %}" class="post-request">Remove</a>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}
@@ -46,3 +52,5 @@
       {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+{% include 'generic_errormodal.html' %}
+{% include 'partials/js.html' %}

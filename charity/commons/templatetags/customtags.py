@@ -9,12 +9,34 @@ from .nodes import ViewNode
 register = template.Library()
 
 
+@register.filter
+def phone_number(number):
+    if not number or len(number) != 12:
+        return number
+    '''TODO: make it more cleverer'''
+    country_code = number[0:3]
+    network_code = number[3:5]
+    second = number[5:8]
+    third = number[8:]
+
+    return f'+({country_code}) {network_code} {second}-{third}'
+
+
 @register.filter(is_safe=True)
-def cover(item, arg=30):
+def cover(item, arg=33):
     if item.cover:
         result = f'<img src="{ item.cover.url }"  height={arg} width={arg}  class="rounded-circle"/>'
     else:
         result = f'<img src="..."  height={arg} width={arg}  class="rounded-circle"/>'
+    return mark_safe(result)
+
+
+@register.filter(is_safe=True)
+def thumbnail(item, arg=30):
+    if item.cover:
+        result = f'<img src="{ item.cover.url }"  height={arg} width={arg}  class="rounded"/>'
+    else:
+        result = f'<img src="..."  height={arg} width={arg}  class="rounded"/>'
     return mark_safe(result)
 
 

@@ -1,30 +1,41 @@
+{% load customtags %}
 <div>
     <a href="{% url 'funds:add_contribution' %}" class="btn btn-link" >Add contribution</a>
   </div>
   <div class="card mb-4">
     <div class="card-header">
-      <i class="fa-solid fa-hand-holding-dollar"></i>
+      <i class="fa-solid fa-money-bills"></i>
       Contributions
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Contributor</th>
-            <th>Contribution date</th>
-            <th>Amount</th>
-            <th>Author</th>
-          </tr>
-        </thead>
         <tbody>
           {% for contribution in page %}
             <tr>
-              <td>
-                <a href="{% url 'funds:get_contribution_details' contribution.id %}">{{ contribution.contributor.name }}</a>
+              <td class="col-3">
+                <h6>
+                  {{ contribution.contributor|thumbnail:50 }}
+                  <a href="{% url 'funds:get_contribution_details' contribution.id %}">{{ contribution.contributor.name }}</a>
+                </h6>
+                {{ contribution.contribution_date }}
               </td>
-              <td>{{ contribution.contribution_date }}</td>
-              <td>{{ contribution.amount|floatformat:'2g' }}</td>
-              <td><a href="{% url 'funds:get_volunteer_details' contribution.author.volunteer_profile.id %}">{{ contribution.author.username }}</a>
+              <td class="align-middle">
+                <i class="fa-solid fa-dollar-sign fa-xs"></i>
+                {{ contribution.amount|floatformat:'2g' }}
+              </td>
+              <td class="align-middle">{{ contribution.notes }}</td>
+              <td class="align-middle">
+                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Author">
+                  {% include 'partials/user_image_part.html' with user=contribution.author %}
+                </span>
+              </td>
+              <td class="align-middle">
+                {% if contribution.incomes_exist  %}
+                  <a href="#" class="link-disabled">Remove</a>
+                {% else %}
+                  <a href="#">Remove</a>
+                {% endif %}
+              </td>
               </tr>
           {% endfor %}
         </tbody>

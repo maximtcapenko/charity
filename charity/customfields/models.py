@@ -1,3 +1,4 @@
+from django.forms import fields, widgets, Form
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 
@@ -10,22 +11,39 @@ class CustomField(Base):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     fund = models.ForeignKey(Fund, on_delete=models.PROTECT)
 
-"""
-    public enum CustomFieldControlType
-    {
-        [Description("Checkbox")]
-        CheckBox = 1,
 
-        [Description("Text Field")]
-        TextBox,
-
-        [Description("Text Area")]
-        TextArea,
-
-        [Description("Select List")]
-        SelectList,
-
-        [Description("Datepicker")]
-        DatePicker
+form_fields = {
+    'TextBox': {
+        'field': fields.CharField
+    },
+    'CheckBox': {
+        'field': fields.BooleanField
+    },
+    'TextArea': {
+        'field': fields.CharField,
+        'widget': widgets.Textarea
+    },
+    'Number': {
+        'field': fields.IntegerField
+    },
+    'Decimal': {
+        'field': fields.DecimalField
+    },
+    'DatePicker': {
+        'field': fields.DateField
+    },
+    'Choices': {
+        'field': fields.ChoiceField,
+        'choices': []
     }
-"""
+}
+
+
+class DynamicFormBuilder(type):
+    def __new__(cls, name, bases, attrs, **kwargs):
+        super_new = super().__new__
+
+
+class DynamicForm(Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(self, *args, **kwargs)

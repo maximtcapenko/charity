@@ -4,7 +4,8 @@ from django import forms
 from django.db.models import Max
 from django.contrib.auth.models import User
 
-from commons.functions import should_be_approved
+from commons.forms import CustomLabeledModelChoiceField
+from commons.functions import should_be_approved, get_reviewer_label
 from commons.mixins import FormControlMixin, InitialValidationMixin
 from files.forms import CreateAttachmentForm
 from funds.models import Approvement
@@ -19,27 +20,33 @@ from .signals import review_request_created
 class CreateTaskForm(
         forms.ModelForm, InitialValidationMixin, FormControlMixin):
     __initial__ = ['project', 'author']
-    field_order = ['ward']
+    field_order = ['ward', 'name', 'process']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
-        FormControlMixin.__init__(self)
 
         self.fields['project'].widget = forms.HiddenInput()
 
         project = self.initial['project']
-        self.fields['assignee'].queryset = User.objects \
-            .filter(volunteer_profile__fund_id=project.fund_id) \
-            .only('id', 'username')
+        self.fields['assignee'] = CustomLabeledModelChoiceField(
+            lable_func=get_reviewer_label,
+            queryset=User.objects
+            .filter(volunteer_profile__fund_id=project.fund_id),
+            label='Assignee', required=True)
 
-        self.fields['reviewer'].queryset = project.reviewers
+        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+            lable_func=get_reviewer_label,
+            queryset=project.reviewers, label='Reviewer', required=True)
+
         self.fields['ward'].queryset = get_available_project_wards_queryset(
             project).only('id', 'name')
 
         self.fields['process'].queryset = Process.objects \
             .filter(projects__in=[project]) \
             .only('id', 'name')
+
+        FormControlMixin.__init__(self)
 
     def clean(self):
         start_date = self.cleaned_data['start_date']
@@ -170,7 +177,7 @@ class ActivateTaskStateForm(
     class Meta:
         model = TaskState
         exclude = [
-            'id', 'date_created', 'is_done', 'is_review_requested', 
+            'id', 'date_created', 'is_done', 'is_review_requested',
             'comments', 'request_review',
             'approvement', 'completion_date', 'author', 'approvements']
 

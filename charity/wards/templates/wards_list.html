@@ -1,43 +1,39 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-{% render_partial 'funds.views.get_get_current_details_partial' title='Wards' %}
+{% render_partial 'funds.views.get_get_current_details_partial' title='Adoptees' %}
 <div>
-  <a href="{% url 'wards:create' %}" class="btn btn-link" >Add ward</a>
+  <a href="{% url 'wards:create' %}" class="btn btn-link" >Add adoptee</a>
 </div>
 <div class="card mb-4">
   <div class="card-header">
-    <i class="fas fa-table me-1"></i>
-    Wards
+    <i class="fa-solid fa-leaf"></i>
+    Adoptees
   </div>
   <div class="card-body">
     <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Ward name</th>
-          <th>Created</th>
-          <th>Is active</th>
-          <th>Used in projects</th>
-        </tr>
-      </thead>
       <tbody>
         {% for ward in page %}
           <tr>
             <td>
-              {{ ward|cover }}
-              <a href="#">{{ ward.name }}</a>
-            </td>
-            <td>{{ ward.date_created }}</td>
-            {% if ward.is_inactive %}
-            <td> 
-              <input type="checkbox" disabled="disabled">
-            </td>
-            {% else %}
-            <td>
-              <input type="checkbox" disabled="disabled" checked="checked">
-            </td>
-            {% endif %}
-            <td>{{ ward.active_project_count }}</td>
+              <div>
+                <h6>
+                  {{ ward|thumbnail:50 }}
+                  <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
+                </h6>
+              {{ ward.date_created }}
+              {% if ward.is_inactive %}
+                <span class="badge bg-secondary">inactive</span>
+              {% else %}
+                <span class="badge bg-primary">active</span>
+              {% endif %}
+              </div>
+              {% with ward.projects.all|first as project %}
+                {% if project %}
+                  <a href="{% url 'projects:get_details' project.id %}">{{project.name}}</a>
+                {% endif %}
+              {% endwith %}
+            </td>           
           </tr>
         {% endfor %}
       </tbody>

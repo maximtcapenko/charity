@@ -1,5 +1,6 @@
-from commons.models import Base
 from django.db import models
+
+from commons.models import Base
 from funds.models import Fund
 
 

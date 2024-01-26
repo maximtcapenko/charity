@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load customtags %}
   <h2 class="mt-4">Add expense to {{ budget.name }}</h2>
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
@@ -22,7 +23,7 @@
   <div class="col-4">
   <form class="form-inline" action="" method="get">
     <label for="id_project">Project:</label>
-    <select class="form-control" name="project_id" required="true" id="id_project" onchange="javascript:this.form.submit()">
+    <select class="form-select" name="project_id" required="true" id="id_project" onchange="javascript:this.form.submit()">
       <option value="">Select Project</option>
       {% for project in projects %}
        {% if selected_project == project.project.id|stringformat:"s" %}
@@ -41,9 +42,10 @@
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead class="table table-bordered">
+        <thead>
           <tr>
             <th>Task name</th>
+            <th>Adoptee</th>
             <th>Created</th>
             <th>State</th>
             <th>Estimated expenses</th>
@@ -54,7 +56,13 @@
           {% for task in tasks %}
             <tr>
               <td>
-                <a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a>
+                <h6>
+                  <a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a>
+                </h6>
+              </td>
+              <td>
+                {{ task.ward|cover }}
+                {{ task.ward.name }}
               </td>
               <td>{{ task.date_created }}</td>
               <td>

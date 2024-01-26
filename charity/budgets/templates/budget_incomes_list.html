@@ -12,31 +12,33 @@
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Amount</th>
-            <th>Created</th>
-            <th>Reviewer</th>
-            <th>Status</th>
-            <th>Author</th>
-            <th></th>
-          </tr>
-        </thead>
         <tbody>
           {% for income in page %}
             <tr>
-              <td>
-                <a href="{% url 'budgets:get_income_details' budget.id income.id %}">{{ income.amount|floatformat:'2g' }}</a>
+              <td class="col-2 align-middle">
+                <h6>
+                  <i class="fa-solid fa-dollar-sign fa-sm"></i>
+                  <a href="{% url 'budgets:get_income_details' budget.id income.id %}">{{ income.amount|floatformat:'2g' }}</a>
+                </h6>
+                {{ income.date_created }}
               </td>
-              <td>{{ income.date_created }}</td>
-              <td><a href="{% url 'funds:get_volunteer_details' income.reviewer.volunteer_profile.id %}">{{ income.reviewer.username }}</a>
-              <td>
-              {% include 'partials/td_approvement_part.html' with approvement=income.approvement %}
+              <td class="col-1 align-middle text-center"> 
+                {% include 'partials/td_approvement_part.html' with approvement=income.approvement %}
               </td>
-              <td><a href="{% url 'funds:get_volunteer_details' income.author.volunteer_profile.id %}">{{ income.author.username }}</a>
+              <td class="align-middle">
+                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Reviewer">
+                  {% include 'partials/user_image_part.html' with user=income.reviewer %}
+                </span>
               </td>
-              <td>
-                <a href="{% url 'budgets:remove_budget_income' budget.id income.id %}">Remove</a>
+              <td class="align-middle"> 
+                {{ income.notes }}
+              </td>
+              <td class="align-middle">
+                {% if  income.approvement.is_rejected == False %}
+                  <a href="#" class="link-disabled">Remove</a>
+                {% else  %}
+                  <a href="{% url 'budgets:remove_budget_income' budget.id income.id %}" class="post-request">Remove</a>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}
@@ -45,3 +47,5 @@
       {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+  {% include 'generic_errormodal.html' %}
+  {% include 'partials/js.html' %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load customtags %}
 <h2 class="mt-4">Contribution {{ contribution.date_created }}</h2>
-
   <h2 class="mt-4">{{ process.name }}</h2>
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item active">
@@ -11,33 +11,37 @@
   </ol>
   <div class="card mb-4">
     <div class="card-body">
-      <div>
-        <i class="far fa-calendar-alt"></i>
-        Created: {{ contribution.date_created }}
+        <div class="row">
+            <div class="col">
+              <div class="bg-light text-dark">
+                 <i class="fa-regular fa-clipboard"></i>
+                 <strong>Description</strong>: {{ contribution.notes }}
+              </div>
+            </div>
+            <div class="col">
+              <div class="bg-light text-dark">
+                <div>
+                  {{ contribution.contributor|thumbnail:50 }}
+                  <a href="{% url 'funds:get_contributor_details' contribution.contributor_id %}"> {{ contribution.contributor.name }} </a>
+                </div>
+                <div>
+                  <strong>Contribution date</strong>: {{ contribution.contribution_date }}
+                </div>
+                <div>
+                  <strong>Created</strong>: {{ contribution.date_created}}
+                </div>
+                <div>
+                  <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' contribution.author.volunteer_profile.id %}">{{ contribution.author.username }}</a>
+                </div>
+               
+                <div>
+                  <strong>Amount</strong>: {{ contribution.amount|floatformat:'2g' }}
+                </div>
+              </div>  
+            </div>
+        </div>
       </div>
-      <div>
-        <i class="fas fa-user"></i>
-        Author: <a href="{% url 'funds:get_volunteer_details' contribution.author.volunteer_profile.id %}">{{ contribution.author.username }}</a>
-      </div>
-      <div>
-        <i class="far fa-calendar-alt"></i>
-        Contribution date: {{ contribution.contribution_date }}
-      </div>
-      <div>
-        <i class="fa-solid fa-hand-holding-dollar"></i>
-        From: <a href="{% url 'funds:get_contributor_details' contribution.contributor.id %}">{{ contribution.contributor.name }}</a>
-      </div>
-      <div>
-        <i class="fas fa-sack-dollar"></i>
-        Amount: {{ contribution.amount|floatformat:'2g' }}
-      </div>
-      <div>
-        <i class="fa-regular fa-clipboard"></i>
-        Notes: {{ contribution.notes }}
-      </div>
-    </div>
   </div>
-  
   <div class="card mb-4">
     <div class="card-header">
       <i class="fas fa-sack-dollar"></i>
@@ -45,19 +49,22 @@
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead class="table table-bordered">
-          <tr>
-            <th>Budget</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
         <tbody>
           {% for budget in page %}
             <tr>
-              <td>
-                <a href="{% url 'budgets:get_details' budget.budget__id %}">{{ budget.budget__name }}</a>
+              <td class="col-3">
+                <h6>
+                  <a href="{% url 'budgets:get_details' budget.budget.id %}">{{ budget.budget.name }}</a>
+                </h6>
+                {{ budget.budget.date_created }}
               </td>
-              <td>{{ budget.budget_amount|floatformat:'2g' }}</td>
+              <td class="col-2 align-middle">
+                <i class="fa-solid fa-dollar-sign fa-xs"></i>
+                {{ budget.budget_amount|floatformat:'2g' }}
+              </td>
+              <td class="align-middle">
+                {% include 'partials/td_approvement_part.html' with approvement=budget.budget.approvement %}
+              </td>
             </tr>
           {% endfor %}
         </tbody>

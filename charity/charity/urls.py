@@ -27,6 +27,7 @@ urlpatterns = [
     path("accounts/logout/", auth_views.LogoutView.as_view()),
     path('admin/', admin.site.urls),
     path('funds/', include('funds.urls')),
+    path('customfields/', include('customfields.urls')),
     path('notifications/<uuid:id>/details/', common_views.view_notification_details, name='view_notification_details'),
     path('projects/', include('projects.urls')),
     path('tasks/', include('tasks.urls')),
