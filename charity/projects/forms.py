@@ -6,14 +6,16 @@ from commons.mixins import InitialValidationMixin, FormControlMixin
 from commons.forms import CustomLabeledModelChoiceField
 from commons.functions import validate_modelform_field, get_reviewer_label
 
-from .models import Project
 from processes.models import Process, ProcessState
 from wards.models import Ward
+
+from .messages import Warnings
+from .models import Project
 
 
 class CreateProjectForm(
         forms.ModelForm, InitialValidationMixin, FormControlMixin):
-    __initial__ = ['fund']
+    __initial__ = ['fund', 'author']
 
     field_order = ['name', 'leader']
 
@@ -23,6 +25,7 @@ class CreateProjectForm(
 
         fund = self.initial['fund']
 
+        self.fields['author'].widget = forms.HiddenInput()
         self.fields['fund'].widget = forms.HiddenInput()
         self.fields['leader'] = CustomLabeledModelChoiceField(
             lable_func=get_reviewer_label,
@@ -34,16 +37,18 @@ class CreateProjectForm(
 
     class Meta:
         model = Project
-        exclude = ['date_created', 'id', 'wards', 'closed_date',
+        exclude = ['date_created', 'id', 'wards', 'closed_date', 
                    'is_closed', 'cover', 'budget', 'processes', 'reviewers']
 
 
 class UpdateProjectForm(CreateProjectForm):
+    __initial__ = ['fund']
+
     def clean_leader(self):
         leader = self.cleaned_data.get('leader')
         if leader is None and self.instance.leader:
             raise forms.ValidationError(
-                'Leader is already assigned and can not be empty')
+                Warnings.PROJECT_LEADER_CANNOT_BE_UNDEFINED)
         return leader
 
 
@@ -114,7 +119,7 @@ class AddProcessToProjectForm(
         process = self.cleaned_data['process']
         if process.states.count() == 0:
             raise forms.ValidationError(
-                'Process with 0 states can not be added to project')
+                Warnings.EMPTY_PROCESS_CANNOT_BE_ADDED)
 
         return process
 

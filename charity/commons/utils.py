@@ -2,7 +2,11 @@ from django.core.paginator import Page
 from django.db.models import fields
 
 
-class DictObjectWrapper(object):
+class DictObjectWrapper:
+    class Meta:
+        def __init__(self, model):
+            self.model = model
+
     class DynamicObject:
         pass
 
@@ -27,7 +31,7 @@ class DictObjectWrapper(object):
     """
 
     def __init__(self, dict, is_init=False, model=None):
-        self.model = model
+        self._meta = self.Meta(model=model)
         if is_init:
             self.dict = dict
         else:
@@ -43,16 +47,16 @@ class DictObjectWrapper(object):
 
         if isinstance(value, dict):
             model = None
-            if self.model:
-                field = self.model._meta.get_field(name)
+            if self._meta.model:
+                field = self._meta.model._meta.get_field(name)
                 if field.is_relation:
                     model = field.related_model
 
             return DictObjectWrapper(value, is_init=True, model=model)
         else:
-            if self.model:
+            if self._meta.model:
                 try:
-                    field = self.model._meta.get_field(name)
+                    field = self._meta.model._meta.get_field(name)
                     if field:
                         for getter in DictObjectWrapper.field_value_getters:
                             instance = getter(field, value)

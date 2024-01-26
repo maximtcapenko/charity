@@ -12,6 +12,8 @@ class Project(Base):
     name = models.CharField(max_length=256, blank=False,
                             unique=True, null=False)
     notes = models.TextField(blank=True, null=True)
+    author = models.ForeignKey(
+        User, on_delete=models.PROTECT, related_name='created_projects')
     fund = models.ForeignKey(
         Fund, on_delete=models.PROTECT, related_name='projects')
     cover = models.ImageField(upload_to='covers', null=True)

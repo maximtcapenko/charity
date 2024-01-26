@@ -1,7 +1,6 @@
-from django.db import models
-from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
@@ -10,6 +9,9 @@ from commons.functions import user_should_be_volunteer, user_should_be_superuser
     render_generic_form, wrap_dicts_page_to_objects_page
 
 from budgets.models import Income
+
+from .querysets import get_contributor_budgets_queryset, get_contributions_queryset,\
+      get_contribution_details_queryset
 from .models import Contribution, Contributor, Fund, VolunteerProfile
 from .forms import CreateContributionForm, CreateVolunteerForm, \
     CreateContributorForm, UpdateVolunteerProfile
@@ -29,9 +31,7 @@ def get_list(request):
 def get_details(request, id):
     default_tab = 'contributions'
     tabs = {
-        'contributions': lambda fund: fund.contributions
-        .select_related(
-            'author', 'author__volunteer_profile', 'contributor'),
+        'contributions': lambda fund: get_contributions_queryset(fund),
         'contributors': lambda fund: fund.contributors.all(),
         'volunteers': lambda fund: fund.volunteers.all(),
     }
@@ -45,13 +45,19 @@ def get_details(request, id):
     queryset = tabs.get(tab)(fund)
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
+    if tab == 'contributions':
+        page = wrap_dicts_page_to_objects_page(
+            paginator.get_page(request.GET.get('page')), model=Contribution)
+    else:
+        page = paginator.get_page(request.GET.get('page'))
+
     return render(request, 'fund_details.html', {
         'title': 'Fund',
         'fund': fund,
         'selected_tab': tab,
         'items_count': paginator.count,
         'tabs': tabs.keys(),
-        'page': paginator.get_page(request.GET.get('page'))
+        'page': page
     })
 
 
@@ -77,13 +83,11 @@ def get_contribution_details(request, id):
         Contribution.objects.filter(
             fund_id=request.user.volunteer_profile.fund_id),
         pk=id)
-    queryset = contribution.incomes.filter(approvement__is_rejected=False).values('budget__date_created',
-        'budget__id', 'budget__name', 'budget__approvement__id', 
-        'budget__approvement__is_rejected').annotate(
-        budget_amount=models.Sum('amount', default=0))
+    queryset = get_contribution_details_queryset(contribution)
 
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
-    page = wrap_dicts_page_to_objects_page(paginator.get_page(request.GET.get('page')), model=Income)
+    page = wrap_dicts_page_to_objects_page(
+        paginator.get_page(request.GET.get('page')), model=Income)
     return render(request, 'fund_contribution_details.html', {
         'title': 'Contribution',
         'contribution': contribution,
@@ -99,15 +103,15 @@ def get_contributor_details(request, id):
             fund_id=request.user.volunteer_profile.fund_id),
         pk=id)
 
-    query_set = contributor.contributions.filter(incomes__isnull=False) \
-        .select_related('incomes') \
-        .values('incomes__budget__id', 'incomes__budget__name') \
-        .annotate(budget_amount=models.Sum('incomes__amount', default=0))
+    queryset = get_contributor_budgets_queryset(contributor)
 
-    paginator = Paginator(query_set, DEFAULT_PAGE_SIZE)
+    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
+    page = wrap_dicts_page_to_objects_page(
+        paginator.get_page(request.GET.get('page')))
+
     return render(request, 'fund_contributor_details.html', {
         'contributor': contributor,
-        'page': paginator.get_page(request.GET.get('page'))
+        'page': page
     })
 
 

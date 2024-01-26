@@ -8,60 +8,63 @@ from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
-from commons.functions import render_generic_form, user_should_be_volunteer
+from commons.functions import render_generic_form, user_should_be_volunteer, \
+    wrap_dicts_page_to_objects_page
 from funds.models import Approvement
 from tasks.models import Task, TaskState
 
 from .forms import CreateProjectForm, AddWardToProjectForm, \
     AddProcessToProjectForm, UpdateProjectForm, AddProjectReviewerForm
-from .functions import get_project_or_404
+from .functions import get_project_or_404, validate_pre_requirements
+from .querysets import get_projects_with_tasks_queryset
+from .messages import Warnings
 from .models import Project
+from .requirements import project_should_not_contain_any_tasks
 from .renderers import TasksBoardRenderer
 
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
-def add_ward_to_project(request, id):
-    project = get_project_or_404(request=request, project_id=id)
-    return_url = reverse('projects:get_details', args=[
-        project.id]) + '?tab=wards'
-
+def add_project(request):
     return render_generic_form(
-        request=request, form_class=AddWardToProjectForm,
+        request=request, form_class=CreateProjectForm,
         context={
-            'return_url': return_url,
-            'title': 'Include ward to project',
+            'return_url': reverse('projects:get_list'),
+            'title': 'Add project',
             'initial': {
-                'project': project
+                'author': request.user,
+                'fund': request.user.volunteer_profile.fund
             }
         })
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def add_process_to_project(request, id):
-    project = get_project_or_404(request=request, project_id=id)
-    return_url = reverse('projects:get_details', args=[
-        project.id]) + '?tab=processes'
+@require_http_methods(['POST'])
+def remove_project(request, id):
+    project = get_project_or_404(request, id)
+    return_url = reverse('projects:get_list')
 
-    return render_generic_form(
-        request=request, form_class=AddProcessToProjectForm,
-        context={
-            'return_url': return_url,
-            'title': 'Include process to project',
-            'initial': {
-                'project': project
-            }
-        })
+    validate_pre_requirements(request, project, return_url)
+
+    if not project_should_not_contain_any_tasks(project):
+        raise ApplicationError(Warnings.PROJECT_TASKS_EXIST, return_url)
+    
+    project.delete()
+
+    return redirect(return_url)
 
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
-def edit_details(request, id):
+def edit_project_details(request, id):
     project = get_project_or_404(request=request, project_id=id)
+    return_url = reverse('projects:get_details', args=[project.id])
+
+    validate_pre_requirements(request, project, return_url)
+
     return render_generic_form(
         request=request, form_class=UpdateProjectForm, context={
-            'return_url': reverse('projects:get_details', args=[project.id]),
+            'return_url': return_url,
             'title': 'Update project',
             'initial': {
                 'fund': request.user.volunteer_profile.fund
@@ -79,27 +82,20 @@ def close(request, id):
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
-def create(request):
+def add_project_process(request, id):
+    project = get_project_or_404(request=request, project_id=id)
+    return_url = reverse('projects:get_details', args=[
+        project.id]) + '?tab=processes'
+
+    validate_pre_requirements(request, project, return_url)
+
     return render_generic_form(
-        request=request, form_class=CreateProjectForm,
+        request=request, form_class=AddProcessToProjectForm,
         context={
-            'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=projects'),
-            'title': 'Add project',
+            'return_url': return_url,
+            'title': 'Include process to project',
             'initial': {
-                'fund': request.user.volunteer_profile.fund
-            }
-        })
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def add_project_reviewer(request, id):
-    return render_generic_form(
-        request=request, form_class=AddProjectReviewerForm, context={
-            'return_url': f'{reverse("projects:get_details", args=[id])}?tab=reviewers',
-            'title': 'Add project reviewer',
-            'initial': {
-                'project': get_project_or_404(request, id)
+                'project': project
             }
         })
 
@@ -110,12 +106,100 @@ def remove_project_process(request, id, process_id):
     project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=processes'
 
+    validate_pre_requirements(request, project, return_url)
+
     if project.tasks.filter(process__id=process_id).exists():
         raise ApplicationError(
-            'Process can not be removed from project because it is used by tasks', return_url)
+            Warnings.PROJECT_PROCESS_TASKS_EXIST, return_url)
 
     process = get_object_or_404(project.processes, pk=process_id)
     project.processes.remove(process)
+
+    return redirect(return_url)
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET', 'POST'])
+def add_project_ward(request, id):
+    project = get_project_or_404(request=request, project_id=id)
+    return_url = reverse('projects:get_details', args=[
+        project.id]) + '?tab=wards'
+
+    validate_pre_requirements(request, project, return_url)
+
+    return render_generic_form(
+        request=request, form_class=AddWardToProjectForm,
+        context={
+            'return_url': return_url,
+            'title': 'Include ward to project',
+            'initial': {
+                'project': project
+            }
+        })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['POST'])
+def remove_project_ward(request, id, ward_id):
+    project = get_project_or_404(request, id)
+    return_url = f'{reverse("projects:get_details", args=[id])}?tab=wards'
+
+    validate_pre_requirements(request, project, return_url)
+
+    if request.user.id not in [project.leader_id, project.author_id]:
+        raise ApplicationError(
+            Warnings.CURRENT_USER_IS_NOT_PERMITTED, return_url)
+
+    if project.wards.filter(
+            Q(id=ward_id) &
+            Exists(Task.objects.filter(project=project, ward=OuterRef('pk')))).exists():
+        raise ApplicationError(
+            Warnings.ASSET_CANNOT_BE_REMOVED_TASKS_EXIST, return_url)
+
+    ward = get_object_or_404(project.wards, pk=ward_id)
+    project.wards.remove(ward)
+
+    return redirect(return_url)
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET', 'POST'])
+def add_project_reviewer(request, id):
+    project = get_project_or_404(request, id)
+    return_url = f'{reverse("projects:get_details", args=[id])}?tab=reviewers'
+
+    validate_pre_requirements(request, project, return_url)
+
+    return render_generic_form(
+        request=request, form_class=AddProjectReviewerForm, context={
+            'return_url': return_url,
+            'title': 'Add project reviewer',
+            'initial': {
+                'project': project
+            }
+        })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['POST'])
+def remove_project_reviewer(request, id, reviewer_id):
+    project = get_project_or_404(request, id)
+    return_url = f'{reverse("projects:get_details", args=[id])}?tab=reviewers'
+
+    validate_pre_requirements(request, project, return_url)
+
+    if project.tasks.filter(Q(state__approvement__author__id=reviewer_id) |
+                            Q(reviewer__id=reviewer_id)).exists():
+        raise ApplicationError(
+            Warnings.PROJECT_REVIEWER_TASKS_EXIST, return_url)
+
+    if project.reviewers.count() == 1:
+        """redirect to error page with return url"""
+        raise ApplicationError(
+            Warnings.PROJECT_REVIEWER_MUST_EXISTS, return_url)
+
+    reviewer = get_object_or_404(project.reviewers, pk=reviewer_id)
+    project.reviewers.remove(reviewer)
 
     return redirect(return_url)
 
@@ -126,11 +210,13 @@ def remove_project_task(request, id, task_id):
     project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=tasks'
 
+    validate_pre_requirements(request, project, return_url)
+
     if project.tasks.filter(Q(id=task_id) &
                             Q(Q(expense__id__isnull=False) |
                               Q(state__id__isnull=False))).exists():
         raise ApplicationError(
-            'Task can not be removed from project because task is started or has expense', return_url)
+            Warnings.PROJECT_TASK_ISRUNNING, return_url)
 
     task = get_object_or_404(project.tasks, pk=task_id)
     task.delete()
@@ -139,54 +225,15 @@ def remove_project_task(request, id, task_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
-def remove_project_ward(request, id, ward_id):
-    project = get_project_or_404(request, id)
-    return_url = f'{reverse("projects:get_details", args=[id])}?tab=wards'
-
-    if project.wards.filter(
-            Q(id=ward_id) &
-            Exists(Task.objects.filter(project=project, ward=OuterRef('pk')))).exists():
-        raise ApplicationError(
-            'Ward can not be removed from project because of usage in tasks', return_url)
-
-    ward = get_object_or_404(project.wards, pk=ward_id)
-    project.wards.remove(ward)
-
-    return redirect(return_url)
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
-def remove_project_reviewer(request, id, reviewer_id):
-    project = get_project_or_404(request, id)
-    return_url = f'{reverse("projects:get_details", args=[id])}?tab=reviewers'
-
-    if project.tasks.filter(Q(state__approvement__author__id=reviewer_id) |
-                            Q(reviewer__id=reviewer_id)).exists():
-        raise ApplicationError(
-            'Reviewer can not be removed from project because of reviewed tasks in project', return_url)
-
-    if project.reviewers.count() == 1:
-        """redirect to error page with return url"""
-        raise ApplicationError(
-            'Project must have at least one reviewer', return_url)
-
-    reviewer = get_object_or_404(project.reviewers, pk=reviewer_id)
-    project.reviewers.remove(reviewer)
-
-    return redirect(return_url)
-
-
-@user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET'])
 def get_list(request):
-    paginator = Paginator(Project.objects.filter(
-        fund_id=request.user.volunteer_profile.fund_id)
-        .select_related(
-            'leader', 'leader__volunteer_profile'), DEFAULT_PAGE_SIZE)
+    queryset = get_projects_with_tasks_queryset(
+        request.user.volunteer_profile.fund)
+    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
+    page = wrap_dicts_page_to_objects_page(
+        paginator.get_page(request.GET.get('page')), model=Project)
     return render(request, 'projects_list.html', {
-        'page': paginator.get_page(request.GET.get('page'))
+        'page': page
     })
 
 

@@ -1,5 +1,12 @@
-<div>
-    <a href="{% url 'projects:add_process_to_project' project.id %}" class="btn btn-link" >Add process</a>
+{% load projectfilters %}
+  <div>
+      <a {% if project|validate_pre_requirements:user %}
+            href="{% url 'projects:add_process_to_project' project.id %}" 
+            class="btn btn-link"
+          {% else %}
+            href="" 
+            class="btn btn-link disabled"
+          {% endif %}>Add process</a>
   </div>
   <div class="card mb-4">
     <div class="card-header">
@@ -22,8 +29,12 @@
                 {% endif %}
               </td>
               <td class="align-middle">
-                <a href="{% url 'projects:remove_project_process' project.id process.id %}" class="post-request">
-                  Remove
+                <a {% if project|validate_pre_requirements:user %}
+                      href="{% url 'projects:remove_project_process' project.id process.id %}" 
+                      class="post-request"
+                    {% else %}
+                      href="" class="link-disabled"
+                    {% endif %}>Remove
                 </a>
               </td>
             </tr>
@@ -33,4 +44,5 @@
       {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+  {% include 'generic_errormodal.html' %}
   {% include 'partials/js.html' %}

@@ -1,8 +1,13 @@
 {% load customtags %}
+{% load projectfilters %}
 <div>
-    <a href="{% url 'projects:add_ward_to_project' project.id %}" class="btn btn-link" >Add adoptee</a>
+    <a  {% if project|validate_pre_requirements:user %}
+          href="{% url 'projects:add_ward_to_project' project.id %}" 
+          class="btn btn-link"
+        {% else %}
+          href=""  class="btn btn-link disabled"
+        {% endif %}>Add adoptee</a>
 </div>
-
 <div class="card mb-4">
   <div class="card-header">
     <i class="fa-solid fa-leaf"></i>
@@ -28,9 +33,12 @@
               {{ ward.date_created }}
             </td>
             <td class="align-middle">
-              <a href="{% url 'projects:remove_project_ward' project.id ward.id%}" class="post-request">
-                Remove
-              </a>
+              <a {% if project|validate_pre_requirements:user %}
+                   href="{% url 'projects:remove_project_ward' project.id ward.id%}"
+                   class="post-request"
+                 {% else %}
+                   href="" class="link-disabled"
+                 {% endif %}>Remove</a>
            </td>           
           </tr>
         {% endfor %}
@@ -38,4 +46,5 @@
     </table>
     {% include 'paginator.html' with obj_page=page %}
   </div>
+  {% include 'generic_errormodal.html' %}
   {% include 'partials/js.html' %}

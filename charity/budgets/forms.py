@@ -11,6 +11,7 @@ from funds.models import Approvement
 from tasks.models import Expense, Task
 
 from .functions import get_budget_available_income
+from .messages import Warnings
 from .models import Budget, Income, Contribution
 from .signals import exprense_created, budget_intem_reviewer_assigned
 
@@ -54,11 +55,11 @@ class UpdateBudgetForm(CreateBudgetForm):
     def clean(self):
         if self.instance.is_closed:
             raise forms.ValidationError(
-                'Budget is closed and can not be edited')
+                Warnings.BUDGET_CANNOT_BE_CHANGED_IT_HAS_BEEN_CLOSED)
 
         if should_be_approved(self.instance):
             raise forms.ValidationError(
-                'Budget is approved and can not be edited')
+                Warnings.BUDGET_CANNOT_BE_CHANGED_IT_HAS_BEEN_APPROVED)
 
         validate_modelform_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
@@ -67,7 +68,7 @@ class UpdateBudgetForm(CreateBudgetForm):
         manager = self.cleaned_data['manager']
         if manager is None and self.instance.manager:
             raise forms.ValidationError(
-                'Manager is already assigned and can not be empty')
+                Warnings.BUDGET_MANAGER_CANNOT_BE_UNDEFINED)
         return manager
 
 
@@ -125,7 +126,7 @@ class CreateIncomeForm(
     def clean(self):
         if should_be_approved(self.initial['budget']):
             forms.ValidationError(
-                'Can not add new income record, current budget is approved')
+                Warnings.INCOME_CANNOT_BE_ADDED_BUDGET_HAS_BEEN_APPROVED)
 
         contribution = self.cleaned_data['contribution']
         amount = self.cleaned_data['amount']
@@ -133,9 +134,9 @@ class CreateIncomeForm(
             total=models.Sum('amount', default=0))['total']
 
         if (contribution.amount - reserved_amount) < amount:
-            raise forms.ValidationError('No avaliable contribution amount')
+            raise forms.ValidationError(Warnings.NO_CONTIBUTION)
         elif amount <= 0:
-            raise forms.ValidationError('Income can not be empty or negative')
+            raise forms.ValidationError(Warnings.INCOME_SHOULD_BE_POSITIVE)
 
         return self.cleaned_data
 
@@ -183,7 +184,7 @@ class CreateExpenseForm(
         budget = self.initial['budget']
         if budget.approvement_id:
             forms.ValidationError(
-                'Can not add new income record, current budget is approved')
+                Warnings.EXPENSE_CANNOT_BE_ADDED_BUDGET_HAS_BEEN_APPROVED)
 
         validate_modelform_field('task', self.initial, self.cleaned_data)
 
@@ -196,7 +197,7 @@ class CreateExpenseForm(
                 Can not crate expense with amount {task.estimated_expense_amount:,.2f}')
 
         elif task.estimated_expense_amount <= 0:
-            raise forms.ValidationError('Expense can not be empty or negative')
+            raise forms.ValidationError(Warnings.EXPENSE_SHOULD_BE_POSITIVE)
 
         return self.cleaned_data
 
@@ -225,7 +226,8 @@ class BaseApproveForm(
         if should_be_approved(target):
             '''TODO: make more complex validation 
             - if budget amount already used in planing, etc'''
-            raise forms.ValidationError('Item has been already approved')
+            raise forms.ValidationError(
+                Warnings.BUDGET_ITEM_HAS_BEEN_ALREADY_APPROVED)
 
         return self.cleaned_data
 
@@ -250,27 +252,16 @@ class BudgetItemApproveForm(BaseApproveForm):
 
         """Validate user access"""
         if not target.reviewer_id:
-            raise forms.ValidationError('Reviewer is not assigned')
+            raise forms.ValidationError(Warnings.BUDGET_REVIEWER_NOT_ASSIGNED)
 
-        if target.reviewer != self.initial['author']:
+        if target.reviewer == self.initial['author'] and \
+                not target.budget.reviewers.filter(id=self.initial['author'].id).exists():
             raise forms.ValidationError(
-                'Current user is not budget item reviewer')
-
-        if not target.budget.reviewers.filter(id=self.initial['author'].id).exists():
-            raise forms.ValidationError(
-                'Current user is not budget reviewer, only reviewers can approve budget items')
+                Warnings.CURRENT_USER_IS_NOT_BUDGET_ITEM_REVIEWER)
 
         if should_be_approved(target.budget):
             raise forms.ValidationError(
-                'Item can not be approved because budget is approved')
-        """
-            avaliable_income_amount = get_budget_available_income(budget)
-            if avaliable_income_amount - income.amount <= 0:
-                raise ApplicationError(
-                    'Income can not be removed becasue amount of income \
-                    is aready used in expense planing',
-                    return_url)
-        """
+                Warnings.BUDGET_CANNOT_BE_CHANGED_IT_HAS_BEEN_APPROVED)
 
 
 class ApproveBudgetForm(BaseApproveForm):
@@ -280,14 +271,14 @@ class ApproveBudgetForm(BaseApproveForm):
         """Validate user access"""
         if not budget.reviewers.filter(id=self.initial['author'].id).exists():
             raise forms.ValidationError(
-                'Current user is not budget reviewer, only reviewers can approve budget')
+                Warnings.CURRENT_USER_IS_NOT_BUDGET_REVIEWER)
 
         incomes = budget.incomes.exists()
         expenses = budget.expenses.exists()
 
         if incomes == False or expenses == False:
             raise forms.ValidationError(
-                'Budget can not be approved, no incomes or expenses')
+                Warnings.BUDGET_CANNOT_BE_APPROVED_NO_BUDGET_ITEMS)
 
         unapproved_incomes = budget.incomes.filter(
             approvement_id__isnull=True).exists()
@@ -297,7 +288,7 @@ class ApproveBudgetForm(BaseApproveForm):
 
         if unapproved_incomes or unapproved_expenses:
             raise forms.ValidationError(
-                'Budget can not be approved, there are not approved items')
+                Warnings.BUDGET_CANNOT_BE_APPROVED_NO_APPROVED_BUDGET_ITEMS)
 
         return self.cleaned_data
 
@@ -327,7 +318,7 @@ class AddBudgetReviewerForm(
 
         if should_be_approved(self.cleaned_data['budget']):
             raise forms.ValidationError(
-                'Reviewer can not be added because budget is approved')
+                Warnings.BUDGET_CANNOT_BE_CHANGED_IT_HAS_BEEN_APPROVED)
 
         return self.cleaned_data
 
@@ -365,11 +356,11 @@ class EditBudgetItemForm(
 
         if should_be_approved(target):
             raise forms.ValidationError(
-                'Can not edit item because it is approved')
+                Warning.BUDGET_ITEM_CANNOT_BE_CHANGED_IT_HAS_BEEN_APPROVED)
 
         if reviewer and not self.initial['budget'].reviewers.contains(reviewer):
             raise forms.ValidationError(
-                'Assigned reviewer must be in list of budget reviewers')
+                Warnings.CURRENT_USER_IS_NOT_BUDGET_REVIEWER)
 
         return self.cleaned_data
 

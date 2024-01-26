@@ -15,6 +15,7 @@ from funds.models import Approvement
 from .forms import CreateBudgetForm, CreateIncomeForm, \
     BudgetItemApproveForm, ApproveBudgetForm, UpdateBudgetForm, \
     AddBudgetReviewerForm, CreateExpenseForm, EditBudgetItemForm
+from .messages import Warnings
 from .models import Budget, Income
 from .querysets import get_budget_with_avaliable_amounts_queryset
 from .functions import get_budget_or_404, get_budget_available_income
@@ -31,7 +32,7 @@ def create(request):
     return render_generic_form(
         request=request, form_class=CreateBudgetForm,
         context={
-            'return_url': f'{reverse("funds:get_current_details")}?tab=budgets',
+            'return_url': reverse("budgets:get_list"),
             'title': 'Add budget',
             'initial': {
                 'fund': request.user.volunteer_profile.fund,
@@ -206,12 +207,12 @@ def remove_budget_income(request, id, income_id):
 
     if should_be_approved(budget):
         raise ApplicationError(
-            'Income can not be removed, budget is approved', return_url)
+            Warnings.INCOME_CANNOT_BE_DELETED_BUDGET_APPROVED, return_url)
 
     income = get_object_or_404(budget.incomes, pk=income_id)
     if should_be_approved(income):
         raise ApplicationError(
-            'Income can not be removed it has approvement', return_url)
+            Warnings.INCOME_CANNOT_BE_DELETED_IT_HAS_BEEN_APPROVED, return_url)
 
     income.delete()
     return redirect(return_url)
@@ -225,12 +226,13 @@ def remove_budget_expense(request, id, expense_id):
 
     if should_be_approved(budget):
         raise ApplicationError(
-            'Expense can not be removed, budget is approved', return_url)
+            Warnings.EXPENSE_CANNOT_BE_DELETED_BUDGET_APPROVED, return_url)
 
     expense = get_object_or_404(budget.expenses, pk=expense_id)
     if should_be_approved(expense):
         raise ApplicationError(
-            'Expense can not be removed it has approvement', return_url)
+            Warnings.EXPENSE_CANNOT_BE_DELETED_IT_HAS_BEEN_APPROVED, return_url)
+    
     task = expense.task
     task.expense = None
     task.save()
@@ -248,23 +250,19 @@ def remove_budget_reviewer(request, id, reviewer_id):
     if budget.reviewers.count() == 1:
         """redirect to error page with return url"""
         raise ApplicationError(
-            'Budget must have at least one reviewer', return_url)
+            Warnings.BUDGET_REVIEWER_MUST_EXISTS, return_url)
     elif budget.manager_id == reviewer_id:
         raise ApplicationError(
-            'Reviewer can not be removed from budget because reviewer is a manager',
-            return_url)
+            Warnings.BUDGET_REVIEWER_IS_A_MANAGER, return_url)
     elif budget.approvements.filter(author__id=reviewer_id).exists():
         raise ApplicationError(
-            'Reviewer can not be removed from budget because of reviewed approvements of budget',
-            return_url)
+            Warnings.BUDGET_REVIEWER_CANNOT_BE_REMOVED_REVIEWS_EXISTS, return_url)
     elif budget.incomes.filter(Q(reviewer_id=reviewer_id) | Q(approvement__author__id=reviewer_id)).exists():
         raise ApplicationError(
-            'Reviewer can not be removed from budget because of reviewed incomes in budget',
-            return_url)
+            Warnings.BUDGET_REVIEWER_CANNOT_BE_REMOVED_INCOMES_REVIEWS_EXISTS, return_url)
     elif budget.expenses.filter(Q(reviewer_id=reviewer_id) | Q(approvement__author__id=reviewer_id)).exists():
         raise ApplicationError(
-            'Reviewer can not be removed from budget because of reviewed expenses in budget',
-            return_url)
+            Warnings.BUDGET_REVIEWER_CANNOT_BE_REMOVED_EXPENSES_REVIEWS_EXISTS, return_url)
 
     reviewer = get_object_or_404(budget.reviewers, pk=reviewer_id)
     budget.reviewers.remove(reviewer)
@@ -393,16 +391,13 @@ def budget_expenses_planing(request, id):
 @require_http_methods(['GET'])
 def get_reviewer_details(request, id, reviewer_id):
     default_tab = 'incomes'
+    approvements_queryset = Exists(Approvement.objects.filter(approved_incomes=OuterRef('pk'), author=reviewer))
     tabs = {
         'incomes': lambda budget, reviewer:
-            Income.objects.filter(
-                Q(budget=budget) &
-                Exists(Approvement.objects.filter(approved_incomes=OuterRef('pk'), author=reviewer)))
+            Income.objects.filter(Q(budget=budget) & approvements_queryset)
         .prefetch_related('approvements'),
         'expenses': lambda budget, reviewer:
-            Expense.objects.filter(
-                Q(budget=budget) &
-                Exists(Approvement.objects.filter(approved_expenses=OuterRef('pk'), author=reviewer)))
+            Expense.objects.filter(Q(budget=budget) & approvements_queryset)
         .prefetch_related('approvements'),
     }
 

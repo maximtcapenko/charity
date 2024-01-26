@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.utils import http
 
 from .exceptions import ApplicationError
@@ -17,9 +17,9 @@ class BadRequestMiddleware:
                 exception.error_message.encode('utf-8'))
             parse_result = http.urlparse(exception.return_url)
             if parse_result.query:
-                url = f'{exception.return_url}&error={message}'
+                url = f'{exception.return_url}&message={message}'
             else:
-                url = f'{exception.return_url}?error={message}'
+                url = f'{exception.return_url}?message={message}'
             return redirect(url)
 
         return None

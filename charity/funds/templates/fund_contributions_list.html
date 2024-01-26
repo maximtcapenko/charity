@@ -24,10 +24,17 @@
                 {{ contribution.amount|floatformat:'2g' }}
               </td>
               <td class="align-middle">{{ contribution.notes }}</td>
-              <td class="align-middle text-center">
-                <a href="{% url 'funds:get_volunteer_details' contribution.author.volunteer_profile.id %}">
-                  {{ contribution.author.username }}
-                </a>
+              <td class="align-middle">
+                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Author">
+                  {% include 'partials/user_image_part.html' with user=contribution.author %}
+                </span>
+              </td>
+              <td class="align-middle">
+                {% if contribution.incomes_exist  %}
+                  <a href="#" class="link-disabled">Remove</a>
+                {% else %}
+                  <a href="#">Remove</a>
+                {% endif %}
               </td>
               </tr>
           {% endfor %}

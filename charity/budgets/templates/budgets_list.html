@@ -22,20 +22,33 @@
               {{ budget.date_created }}
             </td>
             <td class="col-2 align-middle">
-              <i class="fa-solid fa-arrow-down"></i>
-              <i class="fa-solid fa-dollar-sign fa-xs"></i>
-              {{ budget.avaliable_income_amount|floatformat:'2g' }}
+              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Income">
+                <i class="fa-solid fa-arrow-down"></i>
+                <i class="fa-solid fa-dollar-sign fa-xs"></i>
+                {{ budget.avaliable_income_amount|floatformat:'2g' }}
+              </span>
             </td>
             <td class="col-2 align-middle">
-              <i class="fa-solid fa-arrow-up"></i>
-              <i class="fa-solid fa-dollar-sign fa-xs"></i>
-              {{ budget.avaliable_expense_amount|floatformat:'2g'}}
+              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Expense">
+                <i class="fa-solid fa-arrow-up"></i>
+                <i class="fa-solid fa-dollar-sign fa-xs"></i>
+                {{ budget.avaliable_expense_amount|floatformat:'2g'}}
+              </span>
             </td>
             <td class="col-1 align-middle">
               {% include 'partials/td_approvement_part.html' with approvement=budget.approvement %}
             </td>
             <td class="align-middle">
-              {% include 'partials/user_image_part.html' with user=budget.manager %}
+              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Manager">
+                {% include 'partials/user_image_part.html' with user=budget.manager %}
+              </span>
+            </td>
+            <td class="align-middle">
+              {% if budget.is_incomes_exists %}
+                <a href="#" class="link-disabled">Remove</a>
+              {% else %}
+                <a href="#">Remove</a>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}

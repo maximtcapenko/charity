@@ -23,8 +23,8 @@
 <script type="text/javascript">
     window.onload = () => {
       const errorParam = new URLSearchParams(window.location.search);
-      if(errorParam.has('error')) {
-        error = errorParam.get('error')
+      if(errorParam.has('message')) {
+        error = errorParam.get('message')
         const errorModal = new bootstrap.Modal('#errorModal');
         var modalBody = document.querySelector('#errorModal .eror-message');
         modalBody.innerHTML = decodeURIComponent(escape(atob(error)));

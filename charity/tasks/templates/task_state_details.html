@@ -48,11 +48,8 @@
                     <a href="{% url 'funds:get_volunteer_details' task.reviewer.volunteer_profile.id %}">{{ task.reviewer.username }} </a>
                     {% endif %}
                   </div>
-                  {% if state.state.is_approvement_required %} 
-                  <strong>Approvement requirement</strong>: <span class="badge bg-primary">yes</span>
-                  {% else %}
-                  <strong>Approvement requirement</strong>: <span class="badge bg-primary">no</span>
-                  {% endif %}
+                  <strong>Approvement requirement</strong>: <span class="badge bg-primary">
+                    {% if state.state.is_approvement_required %} yes {% else %} no {% endif %}</span>
                  </div>
                  <div>
                   <strong>Status</strong>:

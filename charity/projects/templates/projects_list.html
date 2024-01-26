@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
+{% load projectfilters %}
 {% render_partial 'funds.views.get_get_current_details_partial' title='Projects' %}
 <div>
     <a href="{% url 'projects:create' %}" class="btn btn-link">Add project</a>
@@ -22,19 +23,36 @@
                 {{ project.date_created }}
               </td>
               <td class="align-middle">
-                <i class="fa-solid fa-dollar-sign fa-xs"></i>
                 <span data-bs-toggle="tooltip" data-bs-placement="top" title="Budget">
+                  <i class="fa-solid fa-dollar-sign fa-xs"></i>
                   {{ project.approved_budget|floatformat:'2g' }}
                 </span>
               </td>
-              <td class="align-middle">
-                <i class="fa-solid fa-list-check fa-xs"></i>
+              <td class="col-2 align-middle">
                 <span data-bs-toggle="tooltip" data-bs-placement="top" title="Active tasks">
+                  <i class="fa-solid fa-list-check fa-xs"></i>
                   {{ project.active_tasks_count }}
                 </span>
               </td>
+              <td class="col-1 align-middle">
+                {% if project.is_closed %}
+                  <span class="badge bg-secondary">closed</span>
+                {% else %}
+                  <span class="badge bg-primary">active</span>
+                {% endif %}
+              </td>
               <td class="align-middle">
-                {% include 'partials/user_image_part.html' with user=project.leader %}
+                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Leader">
+                  {% include 'partials/user_image_part.html' with user=project.leader %}
+                </span>
+              </td>
+              <td class="align-middle">
+                <a {% if project|validate_pre_requirements:user and project|project_should_not_contain_any_tasks %}
+                  href="{% url 'projects:remove_project' project.id %}" 
+                  class="post-request"
+                {% else %}
+                  href="#" class="link-disabled"
+                {% endif %}>Remove</a>               
               </td>
             </tr>
           {% endfor %}
@@ -43,4 +61,6 @@
        {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+  {% include 'generic_errormodal.html' %}
+  {% include 'partials/js.html' %}
   {% endblock %}
