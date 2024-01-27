@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load budgetfilters %}
 <h2 class="mt-4">Expense {{ expense.date_created }}</h2>
 <ol class="breadcrumb mb-4">
   <li class="breadcrumb-item">
@@ -56,22 +57,24 @@
         <div class="row">
           <div class="col-1">
             <i class="fa-solid fa-pen-to-square"></i>
-            {% if not expense.approvement.is_rejected %}
-              <a href="{% url 'budgets:edit_expense_details' budget.id expense.id %}">Edit</a>
-            {% else %}
-              <a href="{% url 'budgets:edit_expense_details' budget.id expense.id %}">Edit</a>
-            {% endif %}
+            <a  {% if expense|budget_item_can_be_edited:user %}
+                  href="{% url 'budgets:edit_expense_details' budget.id expense.id %}"
+                {% else %}
+                  href="" class="link-disabled"
+                {% endif %}>Edit</a>
           </div>
        </div>
       </div>
    </div>
 </div>
 <div>
-{% if expense.budget.approvement and not expense.budget.approvement.is_rejected %}
-    <a href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-link disabled">Add review</a>
-{% else %}
-  <a href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-link">Add review</a> 
-{% endif %}
+  <a  {% if expense|budget_item_can_be_reviewed:user %}
+        href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" 
+        class="btn btn-link"
+      {% else %}
+        class="btn btn-link disabled"
+      {% endif %}>Add review</a>
 </div>
 {% include "approvements_list.html" %}
+{% include 'generic_errormodal.html' %}
 {% endblock %}

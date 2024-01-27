@@ -1,9 +1,10 @@
+{% load budgetfilters %}
 <div>
-  {% if not budget.approvement or budget.approvement.is_rejected %}
-    <a href="{% url 'budgets:expenses_planing' budget.id %}" class="btn btn-link" >Add expense</a>
-  {% else %}
-    <a href="{% url 'budgets:expenses_planing' budget.id %}" class="btn btn-link disabled" >Add expense</a>
-  {% endif %}
+  <a  {% if budget|budget_item_can_be_added:user %}
+        href="{% url 'budgets:expenses_planing' budget.id %}" class="btn btn-link" 
+      {% else %}
+        class="btn btn-link disabled" href=""
+      {% endif %}>Add expense</a>
 </div>
 <div class="card mb-4">
     <div class="card-header">
@@ -39,11 +40,12 @@
                 </span>
               </td>
               <td class="align-middle">
-                {% if  expense.approvement.is_rejected == False %} 
-                  <a href="#" class="link-disabled">Remove</a>
-                {% else %}
-                  <a href="{% url 'budgets:remove_budget_expense' budget.id expense.id %}" class="post-request">Remove</a>
-                {% endif %}
+                <a {% if expense|budget_item_is_ready_to_be_removed:user %}
+                      href="{% url 'budgets:remove_budget_expense' budget.id expense.id %}" 
+                      class="post-request"
+                    {% else %}
+                      href="#" class="link-disabled"
+                   {% endif %}>Remove</a>
               </td>
             </tr>
           {% endfor %}

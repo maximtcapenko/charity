@@ -1,4 +1,10 @@
+{% load budgetfilters %}
 <div>
-    <a href="{% url 'budgets:approve_budget' budget.id %}" class="btn btn-link">Add review</a>
+    <a  {% if budget|budget_can_be_edited:user %}
+            href="{% url 'budgets:approve_budget' budget.id %}" 
+            class="btn btn-link"
+        {% else %}
+            class="btn btn-link disabled"
+        {% endif %}>Add review</a>
 </div>
 {% include "approvements_list.html" %}

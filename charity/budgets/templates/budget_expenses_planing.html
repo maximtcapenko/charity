@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
+{% load budgetfilters %}
   <h2 class="mt-4">Add expense to {{ budget.name }}</h2>
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
@@ -45,7 +46,7 @@
         <thead>
           <tr>
             <th>Task name</th>
-            <th>Adoptee</th>
+            <th>Ward</th>
             <th>Created</th>
             <th>State</th>
             <th>Estimated expenses</th>
@@ -74,7 +75,11 @@
               </td>
               <td>{{ task.estimated_expense_amount|floatformat:'2g' }}</td>
               <td>
-                <a href="{% url 'budgets:add_expenses' budget.id %}?task_id={{ task.id }}&project_id={{ selected_project}}" >Add expense</a>
+                <a  {% if budget|budget_item_can_be_added:user %}
+                      href="{% url 'budgets:add_expenses' budget.id %}?task_id={{task.id}}&project_id={{selected_project}}"
+                    {% else %}
+                      class="link-disabled"
+                    {% endif %}>Add expense</a>
               </td>
             </tr>
           {% endfor %}
@@ -82,4 +87,5 @@
       </table>
     </div>
   </div>
+  {% include 'generic_errormodal.html' %}
 {% endblock %}

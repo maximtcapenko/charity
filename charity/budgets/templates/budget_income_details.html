@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load budgetfilters %}
 <h2 class="mt-4">Income {{ income.date_created }}</h2>
 <ol class="breadcrumb mb-4">
   <li class="breadcrumb-item">
@@ -32,7 +33,8 @@
             </div>
             <div>
               {% if  income.reviewer %}
-              <strong>Reviewer</strong>: <a href="{% url 'funds:get_volunteer_details' income.reviewer.volunteer_profile.id %}">{{ income.reviewer.username }}</a>
+              <strong>Reviewer</strong>: 
+              <a href="{% url 'funds:get_volunteer_details' income.reviewer.volunteer_profile.id %}">{{ income.reviewer.username }}</a>
               {% else%}
               <strong>Reviewer</strong>: 
               {% endif %}
@@ -53,22 +55,24 @@
         <div class="row">
           <div class="col-1">
             <i class="fa-solid fa-pen-to-square"></i>
-            {% if not income.approvement.is_rejected %}
-              <a href="{% url 'budgets:edit_income_details' budget.id income.id %}">Edit</a>
-            {% else %}
-              <a href="{% url 'budgets:edit_income_details' budget.id income.id %}">Edit</a>
-            {% endif %}
+            <a  {% if income|budget_item_can_be_edited:user %}
+                  href="{% url 'budgets:edit_income_details' budget.id income.id %}"
+                {% else %}
+                  href="" class="link-disabled"
+                {% endif %}>Edit</a>
           </div>
        </div>
       </div>
    </div>
 </div>
 <div>
-  {% if income.budget.approvement and not income.budget.approvement.is_rejected %}
-    <a href="{% url 'budgets:approve_budget_income' budget.id income.id %}" class="btn btn-link disabled">Add review</a>
-  {% else %}
-    <a href="{% url 'budgets:approve_budget_income' budget.id income.id %}" class="btn btn-link">Add review</a>
-  {% endif %}
+  <a  {% if income|budget_item_can_be_reviewed:user %}
+          href="{% url 'budgets:approve_budget_income' budget.id income.id %}" 
+          class="btn btn-link"
+      {% else %}
+          class="btn btn-link disabled"
+      {% endif %}>Add review</a>
 </div>
 {% include "approvements_list.html" %}
+{% include 'generic_errormodal.html' %}
 {% endblock %}

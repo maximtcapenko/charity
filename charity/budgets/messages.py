@@ -1,8 +1,10 @@
 class Warnings:
+    CURRENT_USER_IS_NOT_PERMITTED = 'The current user cannot perform operation because they are not the author or manager of the budget.'
     INCOME_CANNOT_BE_DELETED_BUDGET_APPROVED = 'Income cannot be deleted because the budget has been approved'
     INCOME_CANNOT_BE_DELETED_IT_HAS_BEEN_APPROVED = 'Income cannot be deleted because it has approvement'
     EXPENSE_CANNOT_BE_DELETED_BUDGET_APPROVED = 'Expense cannot be deleted because the budget has been approved'
     EXPENSE_CANNOT_BE_DELETED_IT_HAS_BEEN_APPROVED = 'Expense cannot be deleted because it has approvement'
+    BUDGET_CANNOT_BE_DELETED_IT_HAS_INCOMES = 'The budget cannot be removed because it has incomes or expenses.'
     BUDGET_REVIEWER_MUST_EXISTS = 'The budget must have at least one reviewer.'
     BUDGET_REVIEWER_IS_A_MANAGER = 'The reviewer cannot be removed from the budget because the reviewer is a manager.'
     BUDGET_REVIEWER_CANNOT_BE_REMOVED_REVIEWS_EXISTS = 'A reviewer cannot be removed from the budget because of budget approved reviews.'
