@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Exists, Q, OuterRef
 from django.http import HttpResponseNotAllowed
@@ -9,17 +10,24 @@ from django.urls import reverse
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
 from commons.functions import render_generic_form, user_should_be_volunteer, \
-    wrap_dicts_page_to_objects_page
+    wrap_dicts_page_to_objects_page, get_wrapped_page, get_page
+
 from funds.models import Approvement
+from processes.models import Process
 from tasks.models import Task, TaskState
+from wards.models import Ward
 
 from .forms import CreateProjectForm, AddWardToProjectForm, \
     AddProcessToProjectForm, UpdateProjectForm, AddProjectReviewerForm
 from .functions import get_project_or_404, validate_pre_requirements
-from .querysets import get_projects_with_tasks_queryset
+from .querysets import get_project_processes_with_tasks_queryset, \
+    get_project_wards_with_tasks_queryset, get_projects_with_tasks_queryset, \
+    get_project_rewiewers_with_tasks_queryset
 from .messages import Warnings
 from .models import Project
-from .requirements import project_should_not_contain_any_tasks
+from .requirements import process_should_not_be_used_by_any_tasks, \
+    project_should_not_contain_any_tasks, reviewer_should_not_be_used_by_any_tasks, \
+    ward_should_not_be_used_by_any_tasks
 from .renderers import TasksBoardRenderer
 
 
@@ -48,7 +56,7 @@ def remove_project(request, id):
 
     if not project_should_not_contain_any_tasks(project):
         raise ApplicationError(Warnings.PROJECT_TASKS_EXIST, return_url)
-    
+
     project.delete()
 
     return redirect(return_url)
@@ -108,11 +116,12 @@ def remove_project_process(request, id, process_id):
 
     validate_pre_requirements(request, project, return_url)
 
-    if project.tasks.filter(process__id=process_id).exists():
+    process = get_object_or_404(project.processes, pk=process_id)
+
+    if not process_should_not_be_used_by_any_tasks(process, project):
         raise ApplicationError(
             Warnings.PROJECT_PROCESS_TASKS_EXIST, return_url)
 
-    process = get_object_or_404(project.processes, pk=process_id)
     project.processes.remove(process)
 
     return redirect(return_url)
@@ -146,17 +155,12 @@ def remove_project_ward(request, id, ward_id):
 
     validate_pre_requirements(request, project, return_url)
 
-    if request.user.id not in [project.leader_id, project.author_id]:
-        raise ApplicationError(
-            Warnings.CURRENT_USER_IS_NOT_PERMITTED, return_url)
+    ward = get_object_or_404(project.wards, pk=ward_id)
 
-    if project.wards.filter(
-            Q(id=ward_id) &
-            Exists(Task.objects.filter(project=project, ward=OuterRef('pk')))).exists():
+    if not ward_should_not_be_used_by_any_tasks(ward, project):
         raise ApplicationError(
             Warnings.ASSET_CANNOT_BE_REMOVED_TASKS_EXIST, return_url)
 
-    ward = get_object_or_404(project.wards, pk=ward_id)
     project.wards.remove(ward)
 
     return redirect(return_url)
@@ -188,17 +192,21 @@ def remove_project_reviewer(request, id, reviewer_id):
 
     validate_pre_requirements(request, project, return_url)
 
-    if project.tasks.filter(Q(state__approvement__author__id=reviewer_id) |
-                            Q(reviewer__id=reviewer_id)).exists():
+    reviewer = get_object_or_404(project.reviewers, pk=reviewer_id)
+
+    if not reviewer_should_not_be_used_by_any_tasks(reviewer, project):
         raise ApplicationError(
             Warnings.PROJECT_REVIEWER_TASKS_EXIST, return_url)
+
+    if project.leader == reviewer:
+        raise ApplicationError(
+            Warnings.LEADER_CANNOT_BE_REMOVED_FROM_PROJECT_REVIEWERS, return_url)
 
     if project.reviewers.count() == 1:
         """redirect to error page with return url"""
         raise ApplicationError(
             Warnings.PROJECT_REVIEWER_MUST_EXISTS, return_url)
 
-    reviewer = get_object_or_404(project.reviewers, pk=reviewer_id)
     project.reviewers.remove(reviewer)
 
     return redirect(return_url)
@@ -241,17 +249,21 @@ def get_list(request):
 @require_http_methods(['GET'])
 def get_details(request, id):
     default_tab = 'tasks'
+    page_number = request.GET.get('page')
     tabs = {
-        'tasks': lambda project: project.tasks.
-        select_related(
-            'assignee', 'expense',
-            'expense__approvement',
-            'assignee__volunteer_profile')
-        .order_by('order_position'),
-        'processes': lambda project: project.processes.all(),
-        'wards': lambda project: project.wards.all(),
-        'reviewers': lambda project: project.reviewers.select_related('volunteer_profile')
-
+        'tasks': lambda project: get_page(
+            project.tasks.
+            select_related(
+                'assignee', 'expense',
+                'expense__approvement',
+                'assignee__volunteer_profile')
+            .order_by('order_position'), page_number),
+        'processes': lambda project: get_wrapped_page(
+            Process, get_project_processes_with_tasks_queryset(project), page_number),
+        'wards': lambda project: get_wrapped_page(
+            Ward, get_project_wards_with_tasks_queryset(project), page_number),
+        'reviewers': lambda project: get_wrapped_page(
+            User, get_project_rewiewers_with_tasks_queryset(project), page_number)
     }
 
     tab = request.GET.get('tab', default_tab)
@@ -262,10 +274,8 @@ def get_details(request, id):
     project = get_object_or_404(Project.objects.filter(
         fund_id=request.user.volunteer_profile.fund_id), pk=id)
 
-    queryset = tabs.get(tab)(project)
-    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
+    page, count = tabs.get(tab)(project)
 
-    page = paginator.get_page(request.GET.get('page'))
     tasks_renderer = None
     if tab == 'tasks':
         tasks_renderer = TasksBoardRenderer(project, page, request)
@@ -273,7 +283,7 @@ def get_details(request, id):
     return render(request, 'project_details.html', {
         'title': 'Project',
         'tabs': tabs.keys(),
-        'items_count': paginator.count,
+        'items_count': count,
         'project': project,
         'selected_tab': tab,
         'tasks_renderer': tasks_renderer,

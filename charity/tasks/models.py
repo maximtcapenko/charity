@@ -67,7 +67,7 @@ class Task(Base):
     estimated_expense_amount = models.DecimalField(
         max_digits=10, decimal_places=2)
     process = models.ForeignKey(
-        Process, on_delete=models.PROTECT)
+        Process, on_delete=models.PROTECT, related_name='tasks')
     project = models.ForeignKey(
         Project, on_delete=models.PROTECT, related_name='tasks')
     author = models.ForeignKey(

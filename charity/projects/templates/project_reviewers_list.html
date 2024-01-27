@@ -26,7 +26,7 @@
                 {{ reviewer.volunteer_profile.title }}
               </td>
                 <td class="align-middle">
-                  <a {% if project|validate_pre_requirements:user %}
+                  <a {% if project|validate_pre_requirements:user and reviewer|reviewer_should_not_be_used_by_any_tasks:project %}
                         href="{% url 'projects:remove_project_reviewer' project.id reviewer.id %}" 
                         class="post-request"
                       {% else %}

@@ -29,7 +29,7 @@
                 {% endif %}
               </td>
               <td class="align-middle">
-                <a {% if project|validate_pre_requirements:user %}
+                <a {% if project|validate_pre_requirements:user and process|process_should_bot_be_used_by_any_tasks:project %}
                       href="{% url 'projects:remove_project_process' project.id process.id %}" 
                       class="post-request"
                     {% else %}
