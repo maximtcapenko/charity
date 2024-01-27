@@ -11,19 +11,19 @@ from commons.exceptions import ApplicationError
 from commons.functions import user_should_be_volunteer, render_generic_form, \
     should_be_approved, wrap_dict_set_to_objects_list, wrap_dicts_page_to_objects_page
 from funds.models import Approvement
-
-from .forms import CreateBudgetForm, CreateIncomeForm, \
-    BudgetItemApproveForm, ApproveBudgetForm, UpdateBudgetForm, \
-    AddBudgetReviewerForm, CreateExpenseForm, EditBudgetItemForm
-from .messages import Warnings
-from .models import Budget, Income
-from .querysets import get_budget_with_avaliable_amounts_queryset
-from .functions import get_budget_or_404, get_budget_available_income
-
 from projects.models import Project
 from tasks.querysets import get_estimated_and_not_approved_tasks_queryset, \
     get_project_requested_expenses_queryset
 from tasks.models import Task, Expense
+
+from .forms import CreateBudgetForm, CreateIncomeForm, \
+    BudgetItemApproveForm, ApproveBudgetForm, UpdateBudgetForm, \
+    AddBudgetReviewerForm, CreateExpenseForm, EditBudgetItemForm
+
+from .querysets import get_budget_with_avaliable_amounts_queryset
+from .functions import get_budget_or_404, get_budget_available_income, validate_pre_requirements
+from .messages import Warnings
+from .models import Budget, Income
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -44,32 +44,145 @@ def create(request):
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
 def edit_details(request, id):
+    budget = get_budget_or_404(request, id)
+    return_url = reverse('budgets:get_details', args=[id])
+
+    validate_pre_requirements(request, budget, return_url)
+
     return render_generic_form(
         request=request, form_class=UpdateBudgetForm,
         context={
-            'return_url': reverse('budgets:get_details', args=[id]),
+            'return_url': return_url,
             'title': 'Edit budget',
             'initial': {
                 'fund': request.user.volunteer_profile.fund,
                 'author': request.user,
             },
-            'instance': get_budget_or_404(request, id)
+            'instance': budget
         })
 
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
+def approve_budget(request, id):
+    budget = get_budget_or_404(request, id)
+    return_url = f'{reverse("budgets:get_details", args=[id])}?tab=approvements'
+
+    validate_pre_requirements(request, budget, return_url)
+
+    return render_generic_form(
+        request=request,
+        form_class=ApproveBudgetForm, context={
+            'return_url': return_url,
+            'title': 'Add approvement',
+            'initial': {
+                'author': request.user,
+                'fund': request.user.volunteer_profile.fund,
+                'target': budget
+            },
+        })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['POST'])
+def remove_budget(request, id):
+    budget = get_budget_or_404(request, id)
+    return_url = reverse("budgets:get_list")
+
+    validate_pre_requirements(request, budget, return_url)
+    if budget.incomes.exists():
+        raise ApplicationError(
+            Warnings.BUDGET_CANNOT_BE_DELETED_IT_HAS_INCOMES, return_url)
+
+    budget.delete()
+    return redirect(return_url)
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET', 'POST'])
 def add_budget_income(request, id):
+    return_url = reverse('budgets:get_details', args=[id])
+    budget = get_budget_or_404(request, id)
+
+    validate_pre_requirements(request, budget, return_url)
+
     return render_generic_form(
         request=request, form_class=CreateIncomeForm,
         context={
-            'return_url': reverse('budgets:get_details', args=[id]),
+            'return_url': return_url,
             'title': 'Add income',
             'initial': {
                 'author': request.user,
-                'budget': get_budget_or_404(request, id)
+                'budget': budget
             }
         })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET', 'POST'])
+def edit_budget_income_details(request, id, income_id):
+    budget = get_budget_or_404(request, id)
+    income = get_object_or_404(budget.incomes, pk=income_id)
+    return_url = reverse('budgets:get_income_details',
+                         args=[budget.id, income_id])
+
+    validate_pre_requirements(request, income, return_url)
+
+    return render_generic_form(
+        request=request, form_class=EditBudgetItemForm, context={
+            'return_url': return_url,
+            'title': 'Edit budget income',
+            'initial': {
+                'budget': budget,
+                'target': income
+            }
+        }
+    )
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET', 'POST'])
+def approve_budget_income(request, id, income_id):
+    budget = get_budget_or_404(request, id)
+    income = get_object_or_404(budget.incomes, pk=income_id)
+    return_url = reverse('budgets:get_income_details',
+                         args=[budget.id, income_id])
+
+    validate_pre_requirements(request, income, return_url, action='approve')
+
+    return render_generic_form(
+        request=request,
+        form_class=BudgetItemApproveForm, context={
+            'return_url': return_url,
+            'title': 'Add approvement',
+            'initial': {
+                'author': request.user,
+                'fund': request.user.volunteer_profile.fund,
+                'target': income
+            },
+        })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['POST'])
+def remove_budget_income(request, id, income_id):
+    budget = get_budget_or_404(request, id)
+    return_url = f'{reverse("budgets:get_details", args=[id])}?tab=incomes'
+
+    validate_pre_requirements(request, budget, return_url)
+
+    if should_be_approved(budget):
+        raise ApplicationError(
+            Warnings.INCOME_CANNOT_BE_DELETED_BUDGET_APPROVED, return_url)
+
+    income = get_object_or_404(budget.incomes, pk=income_id)
+
+    if should_be_approved(income):
+        raise ApplicationError(
+            Warnings.INCOME_CANNOT_BE_DELETED_IT_HAS_BEEN_APPROVED, return_url)
+
+    income.delete()
+    return redirect(return_url)
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -80,6 +193,9 @@ def add_budget_expense(request, id):
     task_id = request.GET.get('task_id')
     return_url = '%s?%s=%s' % (reverse('budgets:expenses_planing', args=[
                                budget.id]), 'project_id', project_id)
+
+    validate_pre_requirements(request, budget, return_url)
+
     project = get_object_or_404(
         Project.objects.filter(
             fund_id=request.user.volunteer_profile.fund_id,
@@ -104,92 +220,17 @@ def add_budget_expense(request, id):
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
-def approve_budget(request, id):
-    return render_generic_form(
-        request=request,
-        form_class=ApproveBudgetForm, context={
-            'return_url': f'{reverse("budgets:get_details", args=[id])}?tab=approvements',
-            'title': 'Add approvement',
-            'initial': {
-                'author': request.user,
-                'fund': request.user.volunteer_profile.fund,
-                'target': get_budget_or_404(request, id)
-            },
-        })
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def approve_budget_income(request, id, income_id):
-    budget = get_budget_or_404(request, id)
-    return render_generic_form(
-        request=request,
-        form_class=BudgetItemApproveForm, context={
-            'return_url': reverse('budgets:get_income_details', args=[budget.id, income_id]),
-            'title': 'Add approvement',
-            'initial': {
-                'author': request.user,
-                'fund': request.user.volunteer_profile.fund,
-                'target': get_object_or_404(budget.incomes, pk=income_id)
-            },
-        })
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def approve_budget_expense(request, id, expense_id):
-    budget = get_budget_or_404(request, id)
-    return render_generic_form(
-        request=request,
-        form_class=BudgetItemApproveForm, context={
-            'return_url': reverse('budgets:get_expense_details', args=[budget.id, expense_id]),
-            'title': 'Add approvement',
-            'initial': {
-                'author': request.user,
-                'fund': request.user.volunteer_profile.fund,
-                'target': get_object_or_404(budget.expenses, pk=expense_id)
-            },
-        })
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def add_budget_reviewer(request, id):
-    return render_generic_form(
-        request=request, form_class=AddBudgetReviewerForm, context={
-            'return_url': f'{reverse("budgets:get_details", args=[id])}?tab=reviewers',
-            'title': 'Add budget reviewer',
-            'initial': {
-                'budget': get_budget_or_404(request, id)
-            }
-        })
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def edit_income_details(request, id, income_id):
-    budget = get_budget_or_404(request, id)
-    income = get_object_or_404(budget.incomes, pk=income_id)
-    return render_generic_form(
-        request=request, form_class=EditBudgetItemForm, context={
-            'return_url': reverse('budgets:get_income_details', args=[budget.id, income_id]),
-            'title': 'Edit budget income',
-            'initial': {
-                'budget': budget,
-                'target': income
-            }
-        }
-    )
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def edit_expense_details(request, id, expense_id):
+def edit_budget_expense_details(request, id, expense_id):
     budget = get_budget_or_404(request, id)
     expense = get_object_or_404(budget.expenses, pk=expense_id)
+    return_url = reverse('budgets:get_expense_details',
+                         args=[budget.id, expense_id])
+
+    validate_pre_requirements(request, expense, return_url)
+
     return render_generic_form(
         request=request, form_class=EditBudgetItemForm, context={
-            'return_url': reverse('budgets:get_expense_details', args=[budget.id, expense_id]),
+            'return_url': return_url,
             'title': 'Edit budget expense',
             'initial': {
                 'budget': budget,
@@ -200,22 +241,26 @@ def edit_expense_details(request, id, expense_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
-def remove_budget_income(request, id, income_id):
+@require_http_methods(['GET', 'POST'])
+def approve_budget_expense(request, id, expense_id):
     budget = get_budget_or_404(request, id)
-    return_url = f'{reverse("budgets:get_details", args=[id])}?tab=incomes'
+    expense = get_object_or_404(budget.expenses, pk=expense_id)
+    return_url = reverse('budgets:get_expense_details',
+                         args=[budget.id, expense_id])
 
-    if should_be_approved(budget):
-        raise ApplicationError(
-            Warnings.INCOME_CANNOT_BE_DELETED_BUDGET_APPROVED, return_url)
+    validate_pre_requirements(request, expense, return_url, action='approve')
 
-    income = get_object_or_404(budget.incomes, pk=income_id)
-    if should_be_approved(income):
-        raise ApplicationError(
-            Warnings.INCOME_CANNOT_BE_DELETED_IT_HAS_BEEN_APPROVED, return_url)
-
-    income.delete()
-    return redirect(return_url)
+    return render_generic_form(
+        request=request,
+        form_class=BudgetItemApproveForm, context={
+            'return_url': return_url,
+            'title': 'Add approvement',
+            'initial': {
+                'author': request.user,
+                'fund': request.user.volunteer_profile.fund,
+                'target': expense
+            },
+        })
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -224,15 +269,18 @@ def remove_budget_expense(request, id, expense_id):
     budget = get_budget_or_404(request, id)
     return_url = f'{reverse("budgets:get_details", args=[id])}?tab=expenses'
 
+    validate_pre_requirements(request, budget, return_url)
+
     if should_be_approved(budget):
         raise ApplicationError(
             Warnings.EXPENSE_CANNOT_BE_DELETED_BUDGET_APPROVED, return_url)
 
     expense = get_object_or_404(budget.expenses, pk=expense_id)
+
     if should_be_approved(expense):
         raise ApplicationError(
             Warnings.EXPENSE_CANNOT_BE_DELETED_IT_HAS_BEEN_APPROVED, return_url)
-    
+
     task = expense.task
     task.expense = None
     task.save()
@@ -242,10 +290,30 @@ def remove_budget_expense(request, id, expense_id):
 
 
 @user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET', 'POST'])
+def add_budget_reviewer(request, id):
+    budget = get_budget_or_404(request, id)
+    return_url = f'{reverse("budgets:get_details", args=[id])}?tab=reviewers'
+
+    validate_pre_requirements(request, budget, return_url)
+
+    return render_generic_form(
+        request=request, form_class=AddBudgetReviewerForm, context={
+            'return_url': return_url,
+            'title': 'Add budget reviewer',
+            'initial': {
+                'budget': budget
+            }
+        })
+
+
+@user_passes_test(user_should_be_volunteer)
 @require_http_methods(['POST'])
 def remove_budget_reviewer(request, id, reviewer_id):
     budget = get_budget_or_404(request, id)
     return_url = f'{reverse("budgets:get_details", args=[id])}?tab=reviewers'
+
+    validate_pre_requirements(request, budget, return_url)
 
     if budget.reviewers.count() == 1:
         """redirect to error page with return url"""
@@ -391,13 +459,14 @@ def budget_expenses_planing(request, id):
 @require_http_methods(['GET'])
 def get_reviewer_details(request, id, reviewer_id):
     default_tab = 'incomes'
-    approvements_queryset = Exists(Approvement.objects.filter(approved_incomes=OuterRef('pk'), author=reviewer))
     tabs = {
         'incomes': lambda budget, reviewer:
-            Income.objects.filter(Q(budget=budget) & approvements_queryset)
+            Income.objects.filter(Q(budget=budget) & Exists(Approvement.objects.filter(
+                approved_incomes=OuterRef('pk'), author=reviewer)))
         .prefetch_related('approvements'),
         'expenses': lambda budget, reviewer:
-            Expense.objects.filter(Q(budget=budget) & approvements_queryset)
+            Expense.objects.filter(Q(budget=budget) & Exists(Approvement.objects.filter(
+                approved_incomes=OuterRef('pk'), author=reviewer)))
         .prefetch_related('approvements'),
     }
 

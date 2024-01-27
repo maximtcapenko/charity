@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load budgetfilters %}
   <h2 class="mt-4">{{ budget.name }}</h2>
-
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
       <a href="{% url 'funds:get_details' budget.fund_id %}">{{ budget.fund.name }}</a>
@@ -50,11 +50,11 @@
           <div class="row">
             <div class="col-1">
               <i class="fa-solid fa-pen-to-square"></i>
-              {% if not budget.approvement.is_rejected %}
-                <a href="{% url 'budgets:edit_details' budget.id %}">Edit</a>
-              {% else %}
-                <a href="{% url 'budgets:edit_details' budget.id %}">Edit</a>
-              {% endif %}
+              <a {% if budget|budget_can_be_edited:user %}
+                    href="{% url 'budgets:edit_details' budget.id %}"
+                 {% else %}
+                    class="link-disabled" href=""
+                 {% endif %}>Edit</a>
             </div>
          </div>
         </div>

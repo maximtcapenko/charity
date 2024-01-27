@@ -1,5 +1,11 @@
+{% load budgetfilters %}
 <div>
-    <a href="{% url 'budgets:add_budget_reviewer' budget.id %}" class="btn btn-link" >Add reviewer</a>
+    <a  {% if budget|budget_reviewer_can_be_added:user %}
+          href="{% url 'budgets:add_budget_reviewer' budget.id %}" 
+          class="btn btn-link"
+        {% else %}
+          class="btn btn-link disabled"
+        {% endif %}>Add reviewer</a>
 </div>
 {% load customtags %}
 <div class="card mb-4">

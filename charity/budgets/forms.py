@@ -32,7 +32,7 @@ class CreateBudgetForm(
             lable_func=get_reviewer_label,
             queryset=User.objects
             .filter(volunteer_profile__fund_id=fund.id)
-            .only('id', 'username'), label='Reviewer', required=True)
+            .only('id', 'username'), label='Manager', required=True)
 
         FormControlMixin.__init__(self, *args, **kwargs)
 

@@ -1,25 +1,21 @@
 <div class="card mb-4">
     <div class="card-header">
-      <i class="fas fa-table me-1"></i>
-      Reviewed expenses
+      <i class="fas fa-sack-dollar"></i>
+      Expenses
     </div>
     <div class="card-body">
       <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Amount</th>
-            <th>Created</th>
-            <th>Reviews</th>
-          </tr>
-        </thead>
         <tbody>
           {% for expense in page %}
             <tr>
-              <td>
-                <a href="{% url 'budgets:get_expense_details' expense.budget_id expense.id %}">{{ expense.amount }}</a>
+              <td class="col-2 align-middle">
+                <h6>
+                  <i class="fa-solid fa-dollar-sign fa-sm"></i>
+                  <a href="{% url 'budgets:get_expense_details' expense.budget_id expense.id %}">{{ expense.amount }}</a>
+                </h6>
+                {{ expense.date_created }}
               </td>
-               <td>{{ expense.date_created }}</td>
-               <td>
+               <td class="align-middle">
                 <ul>
                     {% for approvement in income.approvements.all %}
                        <li> {{ approvement.date_created }} {% include 'partials/td_approvement_part.html' %}</li>
