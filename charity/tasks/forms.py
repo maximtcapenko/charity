@@ -7,12 +7,14 @@ from django.contrib.auth.models import User
 from commons.forms import CustomLabeledModelChoiceField
 from commons.functions import should_be_approved, get_reviewer_label
 from commons.mixins import FormControlMixin, InitialValidationMixin
+
 from files.forms import CreateAttachmentForm
 from funds.models import Approvement
 from processes.models import Process
 
 from .querysets import get_available_task_process_states_queryset, \
     get_available_task_rewiewers_queryset, get_available_project_wards_queryset
+from .messages import Warnings
 from .models import Task, TaskState
 from .signals import review_request_created
 
@@ -55,15 +57,16 @@ class CreateTaskForm(
         reviewer = self.cleaned_data['reviewer']
         assignee = self.cleaned_data['assignee']
         if reviewer == assignee:
-            raise forms.ValidationError('Assignee can not be reviewer')
+            raise forms.ValidationError(
+                Warnings.ASSIGNEE_CANNOT_BE_A_TASK_REVIEWER)
 
         if not self.initial['project'].reviewers.contains(reviewer):
             raise forms.ValidationError(
-                'Reviewer is not in list of project reviewers')
+                Warnings.REVIEWER_IS_NOT_PROJECT_REVIEWER)
 
         if start_date and end_date and start_date > end_date:
             raise forms.ValidationError(
-                'End date can not be less then start date')
+                Warnings.END_DATE_CANNOT_BE_LESS_THAN_START_DATE)
 
         return self.cleaned_data
 
@@ -102,6 +105,8 @@ class UpdateTaskForm(CreateTaskForm):
 
             if self.instance.state_id:
                 self.fields.pop('process')
+
+        return self.changed_data
 
     def save(self):
         if self.instance.reviewer_id \
@@ -151,26 +156,26 @@ class ActivateTaskStateForm(
     def clean(self):
         task = self.initial['task']
         if self.instance.reviewer == task.assignee:
-            raise forms.ValidationError('Reviewer can not be assignee of task')
+            raise forms.ValidationError(
+                Warnings.REVIEWER_CANNOT_BE_A_TASK_ASSIGNEE)
 
         '''validate if budget of task is approved'''
         if task.should_be_approved:
             if task.expense == None:
                 raise forms.ValidationError(
-                    'Current task has estimation but not included to any budget')
+                    Warnings.TASK_IS_NOT_INCLUDED_IN_BUDGET)
             elif task.expense.budget.approvement == None:
                 raise forms.ValidationError(
-                    'Current task has estimation but budget is not approved yet')
+                    Warnings.TASK_IN_A_BUDGET_BUT_BUDGET_IS_NOT_APPROVED)
             elif task.expense.budget.approvement.is_rejected:
                 raise forms.ValidationError(
-                    'Current task has estimation but budget has been rejected')
+                    Warnings.TASK_IN_A_BUDGET_BUT_BUDGET_IS_REJECTED)
             elif task.expense.approvement.is_rejected:
-                raise forms.ValidationError(
-                    'Current task has estimation but it has been rejected')
+                raise forms.ValidationError(Warnings.TASK_EXPENSE_IS_REJECTED)
 
         '''validate if current state has approvement'''
         if task.state and not should_be_approved(task.state):
-            raise forms.ValidationError('Current task state is not approved')
+            raise forms.ValidationError(Warnings.CURRENT_TASK_IS_NOT_APPROVED)
 
         return self.cleaned_data
 
@@ -197,10 +202,13 @@ class ApproveTaskStateForm(
 
     def clean(self):
         author = self.initial['author']
-        task = self.initial['task']
 
-        if task.reviewer != author or self.initial['state'].reviewer != author:
-            raise forms.ValidationError('Current user is not task reviewer')
+        if should_be_approved(self.initial['state']):
+            raise forms.ValidationError(Warnings.TASK_STATE_IS_APPROVED)
+
+        if not author in [self.initial['state'].request_review.reviewer]:
+            raise forms.ValidationError(
+                Warnings.CURRENT_USER_IS_NOT_TASK_REVIEWER)
 
     def save(self):
         author = self.initial['author']
@@ -260,13 +268,15 @@ class TaskStateReviewRequestForm(
 
     def clean(self):
         if self.initial['author'] != self.initial['task'].assignee:
-            raise forms.ValidationError('Current user is not assignee of task')
+            raise forms.ValidationError(
+                Warnings.CURRENT_USER_IS_NOT_TASK_ASSIGNEE)
 
         if self.initial['state'].is_review_requested:
-            raise forms.ValidationError('Review requeset already sent')
+            raise forms.ValidationError(
+                Warnings.TASK_STATE_REVIEW_REQUEST_HAS_BEEN_SENT)
 
         if should_be_approved(self.initial['state']):
-            raise forms.ValidationError('Current state is approved')
+            raise forms.ValidationError(Warnings.TASK_STATE_IS_APPROVED)
 
         return self.cleaned_data
 

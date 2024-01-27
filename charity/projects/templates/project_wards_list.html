@@ -33,7 +33,7 @@
               {{ ward.date_created }}
             </td>
             <td class="align-middle">
-              <a {% if project|validate_pre_requirements:user %}
+              <a {% if project|validate_pre_requirements:user and ward|ward_should_not_be_used_by_any_tasks:project %}
                    href="{% url 'projects:remove_project_ward' project.id ward.id%}"
                    class="post-request"
                  {% else %}

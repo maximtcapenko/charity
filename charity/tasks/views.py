@@ -5,6 +5,7 @@ from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
+from commons.exceptions import ApplicationError
 from commons.forms import CreateCommentForm
 from commons.functions import user_should_be_volunteer, render_generic_form, \
     wrap_dicts_page_to_objects_page
@@ -17,7 +18,9 @@ from .forms import CreateTaskForm, UpdateTaskForm, \
     ActivateTaskStateForm, ApproveTaskStateForm, \
     TaskCreateAttachmentForm, TaskStateReviewRequestForm
 from .functions import get_task_or_404
+from .messages import Warnings
 from .models import Comment
+from .requirements import task_state_is_ready_for_review, task_state_is_ready_for_review_request
 from .renderers import TaskStateCardRenderer
 
 
@@ -124,6 +127,9 @@ def approve_task_state(request, task_id, id):
     task = get_task_or_404(request, task_id)
     state = get_object_or_404(task.states, pk=id)
 
+    if not task_state_is_ready_for_review(state, request.user, task):
+        raise ApplicationError(Warnings.TASK_STATE_IS_NOT_READY_FOR_REVIEW)
+    
     return render_generic_form(
         request=request,
         form_class=ApproveTaskStateForm,
@@ -145,6 +151,9 @@ def approve_task_state(request, task_id, id):
 def request_task_state_review(request, task_id, id):
     task = get_task_or_404(request, task_id)
     state = get_object_or_404(task.states, pk=id)
+
+    if not task_state_is_ready_for_review_request(state, request.user, task):
+        raise ApplicationError(Warnings.TASK_STATE_IS_NOT_READY_FOR_REVIEW)
 
     return render_generic_form(
         request=request,

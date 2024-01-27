@@ -1,6 +1,9 @@
 from django import forms
 from django.http import HttpResponseNotAllowed
+from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
+
+from . import DEFAULT_PAGE_SIZE
 from .exceptions import NullArgumentError
 from .mixins import FileUploadMixin
 from .utils import DictObjectWrapper, WrappedPage
@@ -116,3 +119,16 @@ def wrap_dicts_page_to_objects_page(page, model=None):
 
 def get_reviewer_label(user):
     return f'{user.username} ({user.volunteer_profile.title})'
+
+
+def get_page(queryset, page_number):
+    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
+    page = paginator.get_page(page_number)
+
+    return page, paginator.count
+
+
+def get_wrapped_page(model, queryset, page_number):
+    page, count = get_page(queryset, page_number)
+
+    return wrap_dicts_page_to_objects_page(page, model=model), count

@@ -119,3 +119,11 @@ def render_partial(parser, token):
         else:
             kwargs[str(token[:equals])] = token[equals+1:]
     return ViewNode(view_name, args, kwargs)
+
+
+@register.simple_tag(takes_context=True)
+def get_context_values(context, *keys):
+    result = {}
+    for key in keys:
+        result[key] = context.get(key, None)
+    return result

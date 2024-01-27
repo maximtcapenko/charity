@@ -5,7 +5,7 @@
   <span class="badge bg-info text-dark">on review</span>
 {% elif task_state.approvement.is_rejected %}
   {% include 'partials/user_image_part.html' with user=task_state.approvement.author %}
-  <a href="{% url 'tasks:get_state_details' task_id task_state.id %}" class="badge bg-danger">rejected</a>
+  <a href="{% url 'tasks:get_state_details' task.id task_state.id %}" class="badge bg-danger">rejected</a>
 {% else %}
   <div>
     {% include 'partials/user_image_part.html' with user=task_state.approvement.author %}

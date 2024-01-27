@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load customtags %}
+{% load taskfilters %}
 <h2 class="mt-4">{{ state.state.name }}</h2>
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
@@ -80,21 +82,26 @@
       </div>
       <div class="row">
         <div>
-          {% if not state.is_review_requested and not state.approvement or state.approvement.is_rejected%}
-            <a href="{% url 'tasks:request_task_state_review' task.id state.id %}" class="btn btn-link">Request review</a>
-          {% else %}
-            <a href="{% url 'tasks:request_task_state_review' task.id state.id %}" class="btn btn-link disabled">Request review</a>
-          {% endif %}
+          {% get_context_values 'user' 'task' as context %}
+          <a  {% if state|task_state_is_ready_for_review_request:context %}
+                href="{% url 'tasks:request_task_state_review' task.id state.id %}"
+                class="btn btn-link"
+              {% else %}
+                href=""
+                class="btn btn-link disabled"
+              {% endif %}>Request review</a>
         </div>
       </div>
     </div>
   </div>
   <div>
-    {% if state.is_review_requested %}
-      <a href="{% url 'tasks:approve_task_state' task.id state.id %}" class="btn btn-link">Add review</a>
-      {%else%}
-      <a href="{% url 'tasks:approve_task_state' task.id state.id %}" class="btn btn-link disabled">Add review</a>
-    {% endif %}
+    <a {% if state|task_state_is_ready_for_review:context %}
+        href="{% url 'tasks:approve_task_state' task.id state.id %}" 
+        class="btn btn-link"
+      {% else %}
+        class="btn btn-link disabled"
+        href=""
+      {% endif %}>Add review </a>
   </div>
   {% include 'approvements_list.html' %}
 {% endblock %}
