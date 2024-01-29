@@ -1,10 +1,12 @@
 from django import forms
-from .models import Ward
+
 from commons.mixins import FormControlMixin
 
+from customfields.forms import BaseCustomFieldsModelForm
+from .models import Ward
 
-class CreateWardForm(forms.ModelForm, FormControlMixin):
 
+class CreateWardForm(BaseCustomFieldsModelForm, FormControlMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         FormControlMixin.__init__(self)
@@ -13,4 +15,4 @@ class CreateWardForm(forms.ModelForm, FormControlMixin):
 
     class Meta:
         model = Ward
-        exclude = ['id','attachments','cover']
+        exclude = ['id', 'attachments', 'cover']

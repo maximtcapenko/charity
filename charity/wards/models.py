@@ -1,9 +1,11 @@
+import eav
+
 from django.db import models
-from django.db.models.query import QuerySet
+from commons.models import Base
+
+from customfields.models import CustomFieldsEvaConfig
 from files.models import Attachment
 from funds.models import Fund
-
-from commons.models import Base
 
 
 class ActiveWardManager(models.Manager):
@@ -35,3 +37,6 @@ def fund_total_wards_count(self):
 
 Fund.add_to_class('total_wards_count', property(
     fget=fund_total_wards_count))
+
+
+eav.register(Ward, CustomFieldsEvaConfig)

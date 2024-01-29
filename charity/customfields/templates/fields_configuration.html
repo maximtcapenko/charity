@@ -7,30 +7,42 @@
     </li>
     <li class="breadcrumb-item active">Configuration</li>
   </ol>
+  <div>
+    <a href="{% url 'customfields:add_custom_field' %}" class="btn btn-link">Add field</a>
+  </div>
   <div class="card mb-4">
-    <div class="card-body">
-      <div class="bg-light text-dark">
-      </div>
+    <div class="card-header">
+       Custom Fields
     </div>
-  </div>
-  <div class="col-4">
-  <form class="form-inline" action="" method="get">
-    <label for="id_type">Entity:</label>
-    <select class="form-select" name="type_id" required="true" id="id_type" onchange="javascript:this.form.submit()">
-      <option value="">Select Entity</option>
-      {% for type in types %}
-       {% if selected_type == type.model %}
-          <option selected="true" value="{{ type.model }}">{{ type.model }}</option>
-        {% else %}
-          <option value="{{ type.model }}">{{ type.model }}</option>
-        {% endif %}
-      {% endfor %}
-    </select>
-  </form>
-  </div>
-  <div class="card mb-4">
     <div class="card-body">
-      
+      <table class="table table-striped">
+        <tbody>
+          {% for field in page %}
+            <tr>
+              <td class="col-3 align-middle">
+                  <h6>
+                    <a href="{% url 'customfields:edit_custom_field' field.id %}">{{ field.attribute.name }}</a>
+                  </h6>
+                    {{ field.date_created }}
+                  <div>
+                    <span class="badge bg-primary">
+                      {{ field.attribute.datatype }}
+                    </span>
+                  </div>
+              </td>
+               <td class="align-middle">
+                {% if field.attribute.required %}
+                  <span class="badge bg-danger">required</span>
+                {% endif %}
+                {% if field.is_public %}
+                  <span class="badge bg-primary">public</span>
+                {% endif %}
+               </td>
+             </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
 {% endblock %}

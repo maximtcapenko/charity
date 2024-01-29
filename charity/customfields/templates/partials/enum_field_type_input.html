@@ -1,0 +1,40 @@
+<div id="{{ widget.attrs.id }}">
+  <div class="row justify-center">
+    <div class="col-12">
+      <div class="input-group mb-3">
+          <input type="text" class="{{widget.attrs.class}} choice-input" placeholder="add an item..." />
+          <div class="col-auto">
+            <button class="btn btn-primary" id="add-choice" type="button">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="list-group list-of-choices">
+          {% for enum_value in  widget.enum_values %}
+              <input type="text" readonly=true value={{enum_value.value}} class="list-group-item" />
+          {% endfor %}
+      </div>
+    </div>
+  </div>
+  <script>
+    var button = document.getElementById('add-choice')
+    var choice_input = document.querySelector('.choice-input')
+    var div = document.querySelector('.list-of-choices')
+    
+    button.addEventListener('click', function () {
+      if (choice_input.value == null || choice_input.value == '') {
+        return;
+      }
+    
+      var input = document.createElement('input')
+      input.type = 'text'
+      input.readOnly = true
+      input.name = '{{widget.name}}'
+      input.value = choice_input.value
+      input.classList.add('list-group-item')
+      div.appendChild(input)
+    
+      choice_input.value = ''
+    })
+  </script>
+</div>
