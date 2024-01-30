@@ -21,7 +21,6 @@ from .functions import get_task_or_404
 from .messages import Warnings
 from .models import Comment
 from .requirements import task_state_is_ready_for_review, task_state_is_ready_for_review_request
-from .renderers import TaskStateCardRenderer
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -213,14 +212,10 @@ def get_details(request, id):
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
     page = None
-    states_renderer = None
-    if tab == 'process':
-        states_renderer = TaskStateCardRenderer(task, request)
-    elif tab == 'comments':
+    if tab == 'comments':
         page = wrap_dicts_page_to_objects_page(
             paginator.get_page(request.GET.get('page')), model=Comment)
-    else:
-        states_renderer = None
+    elif tab == 'files':
         page = paginator.get_page(request.GET.get('page'))
 
     return render(request, 'task_details.html', {
@@ -229,7 +224,6 @@ def get_details(request, id):
         'items_count': paginator.count,
         'selected_tab': tab,
         'task': task,
-        'states_renderer': states_renderer,
         'page': page
     })
 

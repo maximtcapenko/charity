@@ -1,9 +1,9 @@
 <div class="col">
-  <div class="{{ css_class }}" style="max-width: 18rem;">
+  <div class="card mb-3 {{card_css_class}}" style="max-width: 18rem;">
     <div class="card-header">
       <div class="row">
         <div class="col">
-          Step #{{ process_state.order_position }}
+          Step #{{process_state.order_position}}
         </div>
         <div class="col d-flex justify-content-end">
           <div>{{reviews_count}} <i class="fa-regular fa-eye"></i></div>
@@ -11,14 +11,14 @@
       </div>
     </div>
     <div class="card-body">
-      <h5 class="card-title">{{ process_state.name }}</h5>
+      <h5 class="card-title">{{process_state.name}}</h5>
       <p class="card-text">
         {% if current_state %}
           <a href="{% url 'tasks:get_state_details' task.id  current_state.id%}">
-            {{ process_state.notes }}
+            {{process_state.notes}}
           </a>
         {% elif not task_states %}
-          {{ process_state.notes }}
+          {{process_state.notes}}
         {% endif %}
       </p>
       <p class="card-text">
@@ -26,7 +26,7 @@
          {% include 'partials/task_step_state.html' %}
       {% endfor %}
       </p>
-      <a href="{% url 'tasks:move_to_next_state' task.id %}?process_state_id={{process_state.id}}" class="{{btn_class}}">Start</a>
+      <a href="{% url 'tasks:move_to_next_state' task.id %}?process_state_id={{process_state.id}}" class="btn btn-primary {{btn_css_class}}">Start</a>
     </div>
   </div>
 </div>
