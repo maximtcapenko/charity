@@ -1,12 +1,31 @@
 from copy import deepcopy
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from eav.forms import BaseDynamicEntityForm
 from eav.models import Attribute, EnumGroup, EnumValue
 from commons.forms import FormControlMixin, InitialValidationMixin
 
 from .models import CustomField
-from .widgets import ListGroupField
+from .widgets import EAVEnumListGroupField
+
+
+DATATYPE_CHOICES = (
+    (Attribute.TYPE_TEXT, _('Text')),
+    (Attribute.TYPE_DATE, _('Date')),
+    (Attribute.TYPE_FLOAT, _('Float')),
+    (Attribute.TYPE_INT, _('Integer')),
+    (Attribute.TYPE_BOOLEAN, _('True / False')),
+    (Attribute.TYPE_ENUM, _('Multiple Choice')),
+)
+
+
+def validate_field_name(value):
+    import re
+    match = re.match('^(.*\s+.*)+$', value)
+    if match is not None:
+        raise forms.ValidationError(
+            _('Name of the field cannot contain white spaces.'))
 
 
 class CustomFieldCreateForm(forms.ModelForm, InitialValidationMixin, FormControlMixin):
@@ -31,13 +50,15 @@ class CustomFieldCreateForm(forms.ModelForm, InitialValidationMixin, FormControl
         FormControlMixin.__init__(self)
 
     label = forms.CharField(required=True, max_length=50, label='Label')
-    name = forms.CharField(required=True, max_length=50, label='Name')
+    name = forms.CharField(required=True, max_length=50,
+                           label='Name', validators=[validate_field_name])
     field_type = forms.ChoiceField(
-        choices=Attribute.DATATYPE_CHOICES, required=True, label='Field Type')
+        choices=DATATYPE_CHOICES, required=True, label='Field Type')
 
     required = forms.BooleanField(
         required=False, label='Is required', initial=False)
-    enum_choices = ListGroupField(required=False)
+    enum_choices = EAVEnumListGroupField(
+        required=False, relation_id='id_field_type', relation_value=Attribute.TYPE_ENUM)
 
     class Meta:
         model = CustomField
@@ -53,7 +74,6 @@ class CustomFieldCreateForm(forms.ModelForm, InitialValidationMixin, FormControl
                     self.initial['content_type'],
                     self.cleaned_data['enum_choices'])
             else:
-
                 attribute = self._create_attribute(
                     self.cleaned_data['label'],
                     self.cleaned_data['name'],
@@ -66,7 +86,6 @@ class CustomFieldCreateForm(forms.ModelForm, InitialValidationMixin, FormControl
             self.instance.attribute.name = self.cleaned_data['label']
             self.instance.attribute.required = self.cleaned_data['required']
             self.instance.attribute.save()
-
 
         self.instance.save()
 
@@ -114,7 +133,6 @@ class BaseCustomFieldsModelForm(BaseDynamicEntityForm):
     }
 
     def _build_dynamic_fields(self):
-        # Reset form fields.
         self.fields = deepcopy(self.base_fields)
 
         for attribute in self.entity.get_all_attributes():

@@ -2,9 +2,9 @@
   <div class="row justify-center">
     <div class="col-12">
       <div class="input-group mb-3">
-          <input type="text" class="{{widget.attrs.class}} choice-input" placeholder="add an item..." />
+          <input type="text" class="{{widget.attrs.class}} choice-input" disabled placeholder="add an item..." />
           <div class="col-auto">
-            <button class="btn btn-primary" id="add-choice" type="button">Add</button>
+            <button class="btn btn-primary" id="add-choice" disabled type="button">Add</button>
         </div>
       </div>
     </div>
@@ -17,11 +17,8 @@
     </div>
   </div>
   <script>
-    var button = document.getElementById('add-choice')
-    var choice_input = document.querySelector('.choice-input')
-    var div = document.querySelector('.list-of-choices')
-    
-    button.addEventListener('click', function () {
+    var choice_input = document.querySelector('.choice-input')    
+    document.getElementById('add-choice').addEventListener('click', function () {
       if (choice_input.value == null || choice_input.value == '') {
         return;
       }
@@ -32,9 +29,25 @@
       input.name = '{{widget.name}}'
       input.value = choice_input.value
       input.classList.add('list-group-item')
-      div.appendChild(input)
+      input.classList.add('enum-field-value')
+      document.querySelector('.list-of-choices').appendChild(input)
     
       choice_input.value = ''
+    })
+
+    document.getElementById('{{widget.relation_id}}').addEventListener('change', function() {  
+        var input = document.getElementById('{{widget.relation_id}}')
+        var value = input.value
+        if (value == '{{widget.relation_value}}' ){
+          document.getElementById('add-choice').disabled = false
+          document.querySelector('.choice-input').disabled = false
+        } else {
+          document.getElementById('add-choice').disabled = true
+          document.querySelector('.choice-input').disabled = true
+          var enumValues = [].slice.call(document.querySelectorAll('.enum-field-value'))
+
+          enumValues.forEach((element) => element.parentNode.removeChild(element));
+        }
     })
   </script>
 </div>
