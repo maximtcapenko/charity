@@ -21,7 +21,7 @@
             <tr>
               <td class="col-3 align-middle">
                   <h6>
-                    <a href="{% url 'customfields:edit_custom_field' field.id %}">{{ field.attribute.name }}</a>
+                    <a href="{% url 'customfields:edit_field_details' field.id %}">{{ field.attribute.name }}</a>
                   </h6>
                     {{ field.date_created }}
                   <div>
@@ -30,14 +30,17 @@
                     </span>
                   </div>
               </td>
-               <td class="align-middle">
+              <td class="align-middle">
                 {% if field.attribute.required %}
                   <span class="badge bg-danger">required</span>
                 {% endif %}
                 {% if field.is_public %}
                   <span class="badge bg-primary">public</span>
                 {% endif %}
-               </td>
+              </td>
+              <td class="align-middle">
+                <a href="{% url 'customfields:remove_custom_field' field.id %}" class="post-request">Remove</a>
+              </td>
              </tr>
           {% endfor %}
         </tbody>
@@ -45,4 +48,6 @@
       {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+  {% include 'partials/js.html' %}
+  {% include 'generic_errormodal.html' %}
 {% endblock %}

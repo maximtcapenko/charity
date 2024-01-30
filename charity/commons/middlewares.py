@@ -1,5 +1,7 @@
 from django.shortcuts import redirect
 from django.utils import http
+from django.utils.translation import gettext_lazy as _
+
 from urllib.parse import urlparse
 
 from .exceptions import ApplicationError
@@ -15,7 +17,7 @@ class BadRequestMiddleware:
     def process_exception(self, request, exception):
         if isinstance(exception, ApplicationError):
             message = http.urlsafe_base64_encode(
-                exception.error_message.encode('utf-8'))
+                _(exception.error_message).encode('utf-8'))
             parse_result = urlparse(exception.return_url)
             if parse_result.query:
                 url = f'{exception.return_url}&message={message}'

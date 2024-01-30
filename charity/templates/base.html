@@ -105,7 +105,7 @@
                 <div class="sb-nav-link-icon">
                 </div>Budgets
               </a>
-              <a class="nav-link" href="{% url 'customfields:get_fields_configuration' %}">
+              <a class="nav-link" href="{% url 'customfields:get_list' %}">
                 <div class="sb-nav-link-icon">
                 </div>Custom fields
               </a>
@@ -147,7 +147,6 @@
     <script>
       window.addEventListener('DOMContentLoaded', event => {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        console.log(tooltipTriggerList);
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
           return new bootstrap.Tooltip(tooltipTriggerEl)
         })
