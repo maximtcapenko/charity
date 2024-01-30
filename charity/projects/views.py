@@ -28,7 +28,6 @@ from .models import Project
 from .requirements import process_should_not_be_used_by_any_tasks, \
     project_should_not_contain_any_tasks, reviewer_should_not_be_used_by_any_tasks, \
     ward_should_not_be_used_by_any_tasks
-from .renderers import TasksBoardRenderer
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -276,17 +275,12 @@ def get_details(request, id):
 
     page, count = tabs.get(tab)(project)
 
-    tasks_renderer = None
-    if tab == 'tasks':
-        tasks_renderer = TasksBoardRenderer(project, page, request)
-
     return render(request, 'project_details.html', {
         'title': 'Project',
         'tabs': tabs.keys(),
         'items_count': count,
         'project': project,
         'selected_tab': tab,
-        'tasks_renderer': tasks_renderer,
         'page': page
     })
 
