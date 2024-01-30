@@ -45,6 +45,24 @@ def create(request):
 
 @user_passes_test(user_should_be_volunteer)
 @login_required
+@require_http_methods(['GET', 'POST'])
+def edit_details(request, id):
+    ward = get_object_or_404(Ward.objects.filter(
+        fund_id=request.user.volunteer_profile.fund_id), pk=id)
+    
+    return render_generic_form(
+        request=request, form_class=CreateWardForm, context={
+            'title': 'Add ward',
+            'return_url': reverse('wards:get_details', args=[ward.id]),
+            'initial': {
+                'fund': request.user.volunteer_profile.fund
+            },
+            'instance': ward
+        })
+
+
+@user_passes_test(user_should_be_volunteer)
+@login_required
 @require_http_methods(['GET'])
 def get_list(request):
     """ 

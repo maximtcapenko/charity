@@ -99,11 +99,15 @@
               </a>
               <a class="nav-link" href="{% url 'wards:get_list' %}">
                 <div class="sb-nav-link-icon">
-                </div>Adoptees
+                </div>Wards
               </a>
               <a class="nav-link" href="{% url 'budgets:get_list' %}">
                 <div class="sb-nav-link-icon">
                 </div>Budgets
+              </a>
+              <a class="nav-link" href="{% url 'customfields:get_list' %}">
+                <div class="sb-nav-link-icon">
+                </div>Custom fields
               </a>
               <a class="nav-link" href="{% url 'processes:get_list' %}">
                 <div class="sb-nav-link-icon">
@@ -143,7 +147,6 @@
     <script>
       window.addEventListener('DOMContentLoaded', event => {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        console.log(tooltipTriggerList);
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
           return new bootstrap.Tooltip(tooltipTriggerEl)
         })

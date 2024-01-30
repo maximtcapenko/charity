@@ -106,8 +106,6 @@ class UpdateTaskForm(CreateTaskForm):
             if self.instance.state_id:
                 self.fields.pop('process')
 
-        return self.changed_data
-
     def save(self):
         if self.instance.reviewer_id \
                 and not self.instance.subscribers.contains(self.instance.reviewer):

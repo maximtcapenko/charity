@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load customfieldstags %}
   <h2 class="mt-4">{{ ward.name }}</h2>
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item">
@@ -52,9 +53,12 @@
               <span>inactive</span>
               {% endif%}
             </div>
+              <div>
+                {% render_custom_fields ward %}
+              </div>
             <div>
               <i class="fa-solid fa-pen-to-square"></i>
-              <a href="#">Edit</a>
+              <a href="{% url 'wards:edit_details' ward.id %}">Edit</a>
             </div>
           </div>
         </div>

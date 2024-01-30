@@ -87,7 +87,7 @@ def approve_budget(request, id):
 @require_http_methods(['POST'])
 def remove_budget(request, id):
     budget = get_budget_or_404(request, id)
-    return_url = reverse("budgets:get_list")
+    return_url = reverse('budgets:get_list')
 
     validate_pre_requirements(request, budget, return_url)
     if budget.incomes.exists():

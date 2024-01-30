@@ -27,6 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+EAV2_PRIMARY_KEY_FIELD = "django.db.models.UUIDField"
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,7 +46,8 @@ INSTALLED_APPS = [
     'processes.apps.ProcessesConfig',
     'projects.apps.ProjectsConfig',
     'tasks.apps.TasksConfig',
-    'wards.apps.WardsConfig'
+    'wards.apps.WardsConfig',
+    'eav'
 ]
 
 MIDDLEWARE = [
