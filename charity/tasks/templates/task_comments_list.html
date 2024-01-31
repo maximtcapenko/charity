@@ -1,35 +1,4 @@
-{% load customtags %}
 <div>
-   <a href="{% url 'tasks:add_comment' task.id %}" class="btn btn-link">Add new comment</a>
+   <a href="{% url 'add_generic_comment' model_name task.id %}" class="btn btn-link">Add new comment</a>
 </div>
-  <div class="card mb-4">
-    <div class="card-header">
-      <i class="fa-regular fa-message"></i>
-    </div>
-    <div class="card-body">
-      {% for comment in page %}
-      {% if forloop.counter|add:-1|divisibleby:2 %}
-      <div class="row mt-2">
-      {% else %} 
-      <div class="row mt-2 bg-light text-dark">
-      {% endif %}
-        <div class="col-2">
-            <div>
-              {{ comment.author.volunteer_profile|cover }}
-              <a href="{% url 'tasks:get_comment_details' task.id comment.id %}">{{ comment.author.username }}</a>
-              <span class="badge bg-secondary rounded-circle">{{ comment.replies_count }}</span>
-            </div>
-            {{ comment.date_created }}
-        </div>
-        <div class="col-10">
-          {{ comment.notes }}
-        </div>
-      </div>
-      {% endfor %}
-      <div class="row mt-2">
-        <div>
-        {% include 'paginator.html' with obj_page=page %}
-        </div>
-      </div>
-    </div>
-  </div>
+{% include "topics.html" with target_id=task.id %}

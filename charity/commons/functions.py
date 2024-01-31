@@ -1,11 +1,14 @@
 from django import forms
+from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseNotAllowed
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
 
 from . import DEFAULT_PAGE_SIZE
 from .exceptions import NullArgumentError
 from .mixins import FileUploadMixin
+from .models import Base, Comment
 from .utils import DictObjectWrapper, WrappedPage
 
 
@@ -132,3 +135,46 @@ def get_wrapped_page(model, queryset, page_number):
     page, count = get_page(queryset, page_number)
 
     return wrap_dicts_page_to_objects_page(page, model=model), count
+
+
+def resolve_rel_attr_path(attr_model, model, path=None, visited=None):
+    """
+    Resolves an attribute of type `attr_model` from type `model`.
+    Returns a full path
+    """
+    excludes = [User]
+
+    if visited is None:
+        visited = set()
+    if path is None:
+        path = ''
+
+    for field in model._meta.fields:
+        if field.is_relation and field.null == False and field.related_model \
+                not in excludes and field.related_model not in visited and issubclass(field.related_model, Base):
+            path += f'{"" if path == "" else "__"}{field.name}'
+            visited.add(field.related_model)
+            if field.related_model is attr_model:
+                return path
+            else:
+                return resolve_rel_attr_path(attr_model, field.related_model, path, visited)
+    return None
+
+
+def resolve_many_to_many_attr_path(attr_model, model):
+    for field in model._meta.local_many_to_many:
+        if field.related_model is attr_model:
+            return field.name
+
+    return None
+
+
+def resolve_comments_attr(content_type, id):
+    """
+    Resolves attribute with type list[`Comment`] from `content_type` object
+    `content_type`: `ContentType`
+    """
+    comments_attr = resolve_many_to_many_attr_path(
+        Comment, content_type.model_class())
+    instance = content_type.model_class().objects.get(pk=id)
+    return getattr(instance, comments_attr)

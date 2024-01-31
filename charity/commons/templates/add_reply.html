@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load customtags %}
+<h2 class="mt-4">{{ title }}</h2>
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item">
+        <a href="{% url 'funds:get_current_details' %}">{{ fund.name }}</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href={{ return_url }}>Back</a>
+    </li>
+    <li class="breadcrumb-item active">Reply</li>
+</ol>
+<div class="row mt-2">
+    <div class="col-2">
+        <div>
+        {% include 'partials/user_image_part.html' with user=comment.author %}
+          <span class="badge bg-danger rounded">topic</span>
+          <span>
+            <i class="fa-solid fa-reply"></i>
+          </span>
+        </div>
+        {{ comment.date_created }}
+    </div>
+    <div class="col-10 bg-light text-dark">
+      {{ comment.notes }}
+    </div>
+</div>
+<div class="container">
+    <div class="row mt-2">
+        <div class="col-2">
+            <div>
+                {% include 'partials/user_image_part.html' %}
+            </div>
+            {% now 'jS F Y H:i' %}
+        </div>
+        <div class="col-10">
+            <form action="" method="post">
+                {% csrf_token %}
+                {{ form }}
+                <div class="row mt-1">
+                    <div>
+                        <input type="submit" class="btn btn-link" value="Publish" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

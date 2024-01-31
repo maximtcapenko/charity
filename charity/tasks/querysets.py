@@ -43,12 +43,6 @@ def get_project_tasks_comments_count_queryset(project):
         .values('id', 'comments_count')
 
 
-def get_task_comments_with_reply_count_queryset(task):
-    return task.comments.filter(
-        reply_id__isnull=True).annotate(
-        replies_count=Count('replies')).order_by('date_created')
-
-
 def get_task_comments_authors_queryset(task):
     return VolunteerProfile.objects.filter(
         user_id__in=task.comments.values('author_id')).all()
@@ -74,7 +68,7 @@ def get_available_task_rewiewers_queryset(task):
     Returns `User` queryset
     """
     return User.objects.filter(~Q(id__in=[task.assignee.id]) &
-        Exists(Project.objects.filter(id=task.project_id, reviewers__id=OuterRef('pk'))))
+                               Exists(Project.objects.filter(id=task.project_id, reviewers__id=OuterRef('pk'))))
 
 
 def get_available_task_process_states_queryset(task):

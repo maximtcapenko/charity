@@ -1,0 +1,13 @@
+{% for reply in replies %}
+<div id="{{reply.id}}" class="row mt-2 bg-light text-dark">
+    <div class="col-2">
+        <div>
+            {% include 'partials/user_image_part.html' with user=reply.author %}
+        </div>
+        {{ reply.date_created }}
+    </div>
+    <div class="col-10">
+        {{ reply.notes }}
+    </div>
+  </div>
+{% endfor %}

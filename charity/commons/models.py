@@ -35,7 +35,7 @@ User.add_to_class('not_viewed_notifications', property(
 
 
 class Comment(Base):
-    notes = models.TextField(blank=True, null=True)
+    notes = models.TextField()
     author = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name='comments')
     reply = models.ForeignKey(
@@ -43,3 +43,6 @@ class Comment(Base):
     '''use @user_name in comment notes in order to tag user'''
     tagged_interlocutors = models.ManyToManyField(
         User, related_name='tags')
+    
+    class Meta:
+        ordering = ['date_created']

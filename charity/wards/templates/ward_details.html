@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load customtags %}
 {% load customfieldstags %}
   <h2 class="mt-4">{{ ward.name }}</h2>
   <ol class="breadcrumb mb-4">
@@ -65,4 +66,8 @@
       </div>
     </div>
   </div>
+  <div>
+    <a href="{% url 'add_generic_comment' model_name ward.id %}" class="btn btn-link">Add new comment</a>
+ </div>
+  {% render_partial 'commons.views.get_comments_with_replies' model=model_name id=ward.id %}
 {% endblock %}

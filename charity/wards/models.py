@@ -1,7 +1,7 @@
 import eav
 
 from django.db import models
-from commons.models import Base
+from commons.models import Base, Comment
 
 from customfields.models import CustomFieldsEvaConfig
 from files.models import Attachment
@@ -23,6 +23,7 @@ class Ward(Base):
     cover = models.ImageField(upload_to='covers', null=True)
     attachments = models.ManyToManyField(
         Attachment, related_name='ward_attachments')
+    comments = models.ManyToManyField(Comment, related_name='commented_wards')
 
     objects = models.Manager()
     active_objects = ActiveWardManager()

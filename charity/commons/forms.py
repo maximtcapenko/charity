@@ -1,13 +1,15 @@
 from django import forms
 
-from .functions import get_argument_or_error
+from funds.models import Fund
+
+from .functions import get_argument_or_error, resolve_comments_attr, resolve_rel_attr_path
 from .mixins import FormControlMixin, InitialValidationMixin
 from .models import Comment
 
 
 class CreateCommentForm(
         forms.ModelForm, InitialValidationMixin, FormControlMixin):
-    __initial__ = ['target', 'author']
+    __initial__ = ['target_id', 'target_content_type', 'author', 'fund']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -15,16 +17,31 @@ class CreateCommentForm(
         FormControlMixin.__init__(self)
 
         self.fields['author'].widget = forms.HiddenInput()
+        self.fields['notes'].label = False
 
         reply = self.initial.get('reply')
+
         if reply:
             self.fields['reply'].widget = forms.HiddenInput()
         else:
             self.fields.pop('reply')
 
     def clean(self):
-        form_reply = self.cleaned_data.get('reply')
+        content_type = self.initial['target_content_type']
+        fund_attr_path = resolve_rel_attr_path(
+            Fund, content_type.model_class())
 
+        """Check if author and commented item are in the same fund"""
+        filter = {
+            fund_attr_path: self.initial['fund'],
+            'pk': self.initial['target_id']
+        }
+
+        if not content_type.model_class().objects.filter(**filter).exists():
+            raise forms.ValidationError(
+                'Author does not have access to commented object')
+
+        form_reply = self.cleaned_data.get('reply')
         if form_reply:
             reply = get_argument_or_error('reply', self.initial)
             if form_reply.id != reply.id:
@@ -35,7 +52,9 @@ class CreateCommentForm(
 
     def save(self):
         self.instance.save()
-        self.initial['target'].comments.add(self.instance)
+        comments = resolve_comments_attr(
+            self.initial['target_content_type'], self.initial['target_id'])
+        comments.add(self.instance)
         return self.instance
 
     class Meta:

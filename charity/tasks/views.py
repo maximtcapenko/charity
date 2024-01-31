@@ -9,11 +9,11 @@ from commons.exceptions import ApplicationError
 from commons.forms import CreateCommentForm
 from commons.functions import user_should_be_volunteer, render_generic_form, \
     wrap_dicts_page_to_objects_page
+from commons.querysets import get_comments_with_reply_count_queryset
 from processes.models import ProcessState
 from projects.models import Project
 
-from .querysets import get_available_task_process_states_queryset, \
-    get_task_comments_with_reply_count_queryset
+from .querysets import get_available_task_process_states_queryset
 from .forms import CreateTaskForm, UpdateTaskForm, \
     ActivateTaskStateForm, ApproveTaskStateForm, \
     TaskCreateAttachmentForm, TaskStateReviewRequestForm
@@ -92,11 +92,12 @@ def add_comment(request, id):
 
     return render_generic_form(
         request=request, form_class=CreateCommentForm, context={
-            'title': 'Add new comment',
+            'title': 'Add new topic',
             'return_url': return_url,
             'initial': {
                 'author': request.user,
-                'target': task
+                'target_id': task.id,
+                'target_model': task._meta.model_name
             }
         })
 
@@ -195,10 +196,7 @@ def get_details(request, id):
     default_tab = 'process'
     tabs = {
         'process': lambda task: ProcessState.objects.filter(process_id=task.process_id).all(),
-        'comments': lambda task: get_task_comments_with_reply_count_queryset(
-            task).values(
-                'id', 'author__id', 'author__username', 'author__volunteer_profile__cover',
-                'date_created', 'notes', 'replies_count'),
+        'comments': lambda task: get_comments_with_reply_count_queryset(task._meta.model_name, task.id),
         'files': lambda task:  task.attachments.all()
     }
 
@@ -221,6 +219,7 @@ def get_details(request, id):
     return render(request, 'task_details.html', {
         'title': 'Task',
         'tabs': tabs.keys(),
+        'model_name': task._meta.model_name,
         'items_count': paginator.count,
         'selected_tab': tab,
         'task': task,

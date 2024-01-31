@@ -15,4 +15,4 @@ class CreateWardForm(BaseCustomFieldsModelForm, FormControlMixin):
 
     class Meta:
         model = Ward
-        exclude = ['id', 'attachments', 'cover']
+        exclude = ['id', 'attachments', 'cover', 'comments']

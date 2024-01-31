@@ -52,7 +52,7 @@ def edit_details(request, id):
     
     return render_generic_form(
         request=request, form_class=CreateWardForm, context={
-            'title': 'Add ward',
+            'title': 'Edit ward',
             'return_url': reverse('wards:get_details', args=[ward.id]),
             'initial': {
                 'fund': request.user.volunteer_profile.fund
@@ -88,5 +88,6 @@ def get_details(request, id):
 
     return render(request, 'ward_details.html', {
         'ward': ward,
+        'model_name': ward._meta.model_name,
         'title': 'Ward'
     })
