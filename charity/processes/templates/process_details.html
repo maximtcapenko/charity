@@ -1,67 +1,67 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h2 class="mt-4">{{ process.name }}</h2>
-  <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item active">
-      <a href="{% url 'funds:get_current_details'%}"> {{ user.volunteer_profile.fund.name }} </a>
-    </li>
-    <li class="breadcrumb-item active">
-      <a href="{% url 'processes:get_list'%}">Processes</a>
-    </li>
-    <li class="breadcrumb-item active">Process Details</li>
-  </ol>
-  <div class="card mb-4">
-    <div class="card-body">
-        <div class="row">
-          <div class="col">
-            <div class="bg-light text-dark">
-              <i class="fa-regular fa-clipboard"></i>
-              <strong>Description</strong>: {{ process.notes }}
-            </div>
+<h2 class="mt-4">{{ process.name }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item active">
+    <a href="{% url 'funds:get_current_details'%}"> {{ user.volunteer_profile.fund.name }} </a>
+  </li>
+  <li class="breadcrumb-item active">
+    <a href="{% url 'processes:get_list'%}">Processes</a>
+  </li>
+  <li class="breadcrumb-item active">Process Details</li>
+</ol>
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row">
+      <div class="col">
+        <div class="bg-light text-dark">
+          <i class="fa-regular fa-clipboard"></i>
+          <strong>Description</strong>: {{ process.notes }}
+        </div>
+      </div>
+      <div class="col">
+        <div class="bg-light text-dark">
+          <div>
+            <strong>Created</strong>: {{ process.date_created }}
           </div>
-          <div class="col">
-            <div class="bg-light text-dark">
-              <div>
-                <strong>Created</strong>: {{ process.date_created }}
-              </div>
-              <div>
-               <strong>Projects usage</strong>: {{ process.active_project_count }}
-              </div>
-              <div>
-                <strong>Status</strong>:
-                {% if not process.is_inactive %}
-                  <span class="badge bg-primary">active</span>
-                {% else %}
-                  <span class="badge bg-secondary">inactive</span>
-                {% endif %}
-              </div>
-            </div>
+          <div>
+            <strong>Projects usage</strong>: {{ process.active_project_count }}
+          </div>
+          <div>
+            <strong>Status</strong>:
+            {% if not process.is_inactive %}
+              <span class="badge bg-primary">active</span>
+            {% else %}
+              <span class="badge bg-secondary">inactive</span>
+            {% endif %}
           </div>
         </div>
-        <div class="row mt-2">
-          <div class="row">
-            <div>
-              <i class="fa-solid fa-pen-to-square"></i>
-              <a href="{% url 'processes:edit_details' process.id %}">Edit</a>
-            </div>
-         </div>
-        </div>
-     </div>
-  </div>
-  <div>
-    <a href="{% url 'processes:create_state' process.id %}" class="btn btn-link" >Add state</a>
-  </div>
-  <div class="card mb-4">
-    <div class="card-header">
-        <i class="fa-solid fa-gears"></i>
-        Flow
+      </div>
     </div>
-    <div class="card-body">
-        <div class="row row-cols-1 row-cols-md-4 g-4">
-          {% for state in states %}
-            {% include "partials/state_card.html" %}
-          {% endfor %}
+    <div class="row mt-2">
+      <div class="row">
+        <div>
+          <i class="fa-solid fa-pen-to-square"></i>
+          <a href="{% url 'processes:edit_details' process.id %}">Edit</a>
         </div>
+      </div>
     </div>
   </div>
+</div>
+<div>
+  <a href="{% url 'processes:create_state' process.id %}" class="btn btn-link" >Add state</a>
+</div>
+<div class="card mb-4">
+  <div class="card-header">
+      <i class="fa-solid fa-gears"></i>
+      Flow
+  </div>
+  <div class="card-body">
+      <div class="row row-cols-1 row-cols-md-4 g-4">
+        {% for state in states %}
+          {% include "partials/state_card.html" %}
+        {% endfor %}
+      </div>
+  </div>
+</div>
 {% endblock %}

@@ -1,13 +1,18 @@
-{% if task.is_started and not task.state and task.state.is_review_requested %}
-<span class="badge bg-success">started</span>
+{% if task.is_started and not task.state %}
+  <span class="badge bg-success">started</span>
+{% elif task.state and not task.state.is_review_requested %}
+  <span class="badge bg-primary">in progress</span>
 {% elif task.is_started and task.state and task.state.is_review_requested %}
-<span class="badge bg-info text-dark">on review</span>
+  <span class="badge bg-info text-dark">on review</span>
 {% else %}
-<span class="badge bg-secondary">not started</span> 
+  <span class="badge bg-secondary">not started</span>
 {% endif %}
-{% if task.is_high_priority %}
-<span class="badge bg-warning text-dark">high priority</span>
-{% endif %}
-{% if task.is_expired %}
-<span class="badge bg-danger">expired</span>
+
+{% if not skip_priority %}
+  {% if task.is_high_priority %}
+    <span class="badge bg-warning text-dark">high priority</span>
+  {% endif %}
+  {% if task.is_expired %}
+    <span class="badge bg-danger">expired</span>
+  {% endif %}
 {% endif %}

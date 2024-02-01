@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 <h2 class="mt-4">{{ reviewer.username }}</h2>
-
 <ol class="breadcrumb mb-4">
   <li class="breadcrumb-item">
     <a href="{% url 'projects:get_details' project.id %}?tab=reviewers">{{ project.name }}</a>
@@ -9,44 +8,44 @@
   <li class="breadcrumb-item active">Reviewer Details</li>
 </ol>
 <div class="card mb-4">
-    <div class="card-header">
-      <i class="fas fa-table me-1"></i>
-      Reviewed tasks
-    </div>
-    <div class="card-body">
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th>Task</th>
-            <th>Task state</th>
-            <th>Created</th>
-            <th>Reviews</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for state in page %}
-            <tr>
-              <td>
-                {% for task in  state.state_tasks.all %}
-                   <a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a>
-                {% endfor %}
-              </td>
-                <td>
-                   {{ state.state.name}}
-               </td>
-               <td>{{ state.date_created }}</td>
-               <td>
-                <ul>
-                  {% for approvement in state.approvements.all %}
-                     <li> {{ approvement.date_created }} {% include 'partials/td_approvement_part.html' %}</li>
-                  {% endfor %}
-                  </ul>
-               </td>
-             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% include 'paginator.html' with obj_page=page %}
-    </div>
+  <div class="card-header">
+    <i class="fas fa-table me-1"></i>
+    Reviewed tasks
   </div>
+  <div class="card-body">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Task state</th>
+          <th>Created</th>
+          <th>Reviews</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for state in page %}
+          <tr>
+            <td>
+              {% for task in  state.state_tasks.all %}
+                  <a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a>
+              {% endfor %}
+            </td>
+              <td>
+                  {{ state.state.name}}
+              </td>
+              <td>{{ state.date_created }}</td>
+              <td>
+              <ul>
+                {% for approvement in state.approvements.all %}
+                    <li> {{ approvement.date_created }} {% include 'partials/td_approvement_part.html' %}</li>
+                {% endfor %}
+                </ul>
+              </td>
+            </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% include 'paginator.html' with obj_page=page %}
+  </div>
+</div>
 {% endblock %}

@@ -1,12 +1,12 @@
 {% load customtags %}
 {% load projectfilters %}
 <div>
-    <a  {% if project|validate_pre_requirements:user %}
-          href="{% url 'projects:add_ward_to_project' project.id %}" 
-          class="btn btn-link"
-        {% else %}
-          href=""  class="btn btn-link disabled"
-        {% endif %}>Add adoptee</a>
+  <a  {% if project|validate_pre_requirements:user %}
+        href="{% url 'projects:add_ward_to_project' project.id %}" 
+        class="btn btn-link"
+      {% else %}
+        href=""  class="btn btn-link disabled"
+      {% endif %}>Add adoptee</a>
 </div>
 <div class="card mb-4">
   <div class="card-header">

@@ -4,63 +4,63 @@
 {% load projectfilters %}
 {% render_partial 'funds.views.get_get_current_details_partial' title='Projects' %}
 <div>
-    <a href="{% url 'projects:create' %}" class="btn btn-link">Add project</a>
+  <a href="{% url 'projects:create' %}" class="btn btn-link">Add project</a>
+</div>
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="fas fa-table me-1"></i>
+    Active projects
   </div>
-  <div class="card mb-4">
-    <div class="card-header">
-      <i class="fas fa-table me-1"></i>
-      Active projects
-    </div>
-    <div class="card-body">
-      <table class="table table-striped">
-        <tbody>
-          {% for project in page %}
-            <tr>
-              <td class="col-3"> 
-                <h6>
-                <a href="{% url 'projects:get_details' project.id %}">{{ project.name }}</a>
-                </h6>
-                {{ project.date_created }}
-              </td>
-              <td class="align-middle">
-                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Budget">
-                  <i class="fa-solid fa-dollar-sign fa-xs"></i>
-                  {{ project.approved_budget|floatformat:'2g' }}
-                </span>
-              </td>
-              <td class="col-2 align-middle">
-                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Active tasks">
-                  <i class="fa-solid fa-list-check fa-xs"></i>
-                  {{ project.active_tasks_count }}
-                </span>
-              </td>
-              <td class="col-1 align-middle">
-                {% if project.is_closed %}
-                  <span class="badge bg-secondary">closed</span>
-                {% else %}
-                  <span class="badge bg-primary">active</span>
-                {% endif %}
-              </td>
-              <td class="align-middle">
-                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Leader">
-                  {% include 'partials/user_image_part.html' with user=project.leader %}
-                </span>
-              </td>
-              <td class="align-middle">
-                <a {% if project|validate_pre_requirements:user and project|project_should_not_contain_any_tasks %}
-                  href="{% url 'projects:remove_project' project.id %}" 
-                  class="post-request"
-                {% else %}
-                  href="#" class="link-disabled"
-                {% endif %}>Remove</a>               
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-       {% include 'paginator.html' with obj_page=page %}
-    </div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <tbody>
+        {% for project in page %}
+          <tr>
+            <td class="col-3"> 
+              <h6>
+              <a href="{% url 'projects:get_details' project.id %}">{{ project.name }}</a>
+              </h6>
+              {{ project.date_created }}
+            </td>
+            <td class="align-middle">
+              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Budget">
+                <i class="fa-solid fa-dollar-sign fa-xs"></i>
+                {{ project.approved_budget|floatformat:'2g' }}
+              </span>
+            </td>
+            <td class="col-2 align-middle">
+              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Active tasks">
+                <i class="fa-solid fa-list-check fa-xs"></i>
+                {{ project.active_tasks_count }}
+              </span>
+            </td>
+            <td class="col-1 align-middle">
+              {% if project.is_closed %}
+                <span class="badge bg-secondary">closed</span>
+              {% else %}
+                <span class="badge bg-primary">active</span>
+              {% endif %}
+            </td>
+            <td class="align-middle">
+              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Leader">
+                {% include 'partials/user_image_part.html' with user=project.leader %}
+              </span>
+            </td>
+            <td class="align-middle">
+              <a {% if project|validate_pre_requirements:user and project|project_should_not_contain_any_tasks %}
+                href="{% url 'projects:remove_project' project.id %}" 
+                class="post-request"
+              {% else %}
+                href="#" class="link-disabled"
+              {% endif %}>Remove</a>               
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+      {% include 'paginator.html' with obj_page=page %}
   </div>
-  {% include 'generic_errormodal.html' %}
-  {% include 'partials/js.html' %}
-  {% endblock %}
+</div>
+{% include 'generic_errormodal.html' %}
+{% include 'partials/js.html' %}
+{% endblock %}

@@ -16,55 +16,55 @@
 </ol>
 <div class="card mb-4">
   <div class="card-body">
+    <div class="row">
+      <div class="col">
+        <div class="bg-light text-dark">
+          <i class="fa-regular fa-clipboard"></i>
+          <strong>Description</strong>: {{ expense.notes }}
+        </div>
+      </div>
+      <div class="col">
+        <div class="bg-light text-dark">
+          <div>
+            <strong>Created</strong>: {{ expense.date_created }}
+          </div>
+          <div>
+            <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' expense.author.volunteer_profile.id %}">{{ expense.author.username }}</a>
+          </div>
+          <div>
+            {% if  expense.reviewer %}
+            <strong>Reviewer</strong>: <a href="{% url 'funds:get_volunteer_details' expense.reviewer.volunteer_profile.id %}">{{ expense.reviewer.username }}</a>
+            {% else%}
+            <strong>Reviewer</strong>: 
+            {% endif %}
+          </div>
+          <div>
+            <strong>Amount</strong>: {{ expense.amount|floatformat:'2g' }}
+          </div>
+          <div>
+            {% include 'partials/li_approvement_part.html' with approvement=expense.approvement %}
+          </div>
+          <div>
+            <strong>Project</strong>: <a href="{% url 'projects:get_details' expense.project.id %}">{{ expense.project.name }} </a>
+          </div>
+          <div>
+            <strong>Task</strong>: <a href="{% url 'tasks:get_details' expense.task.id %}">{{ expense.task.name }} </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-2">
       <div class="row">
-        <div class="col">
-          <div class="bg-light text-dark">
-            <i class="fa-regular fa-clipboard"></i>
-            <strong>Description</strong>: {{ expense.notes }}
-          </div>
-        </div>
-        <div class="col">
-          <div class="bg-light text-dark">
-            <div>
-              <strong>Created</strong>: {{ expense.date_created }}
-            </div>
-            <div>
-              <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' expense.author.volunteer_profile.id %}">{{ expense.author.username }}</a>
-            </div>
-            <div>
-              {% if  expense.reviewer %}
-              <strong>Reviewer</strong>: <a href="{% url 'funds:get_volunteer_details' expense.reviewer.volunteer_profile.id %}">{{ expense.reviewer.username }}</a>
-              {% else%}
-              <strong>Reviewer</strong>: 
-              {% endif %}
-            </div>
-            <div>
-              <strong>Amount</strong>: {{ expense.amount|floatformat:'2g' }}
-            </div>
-            <div>
-              {% include 'partials/li_approvement_part.html' with approvement=expense.approvement %}
-            </div>
-            <div>
-              <strong>Project</strong>: <a href="{% url 'projects:get_details' expense.project.id %}">{{ expense.project.name }} </a>
-            </div>
-            <div>
-              <strong>Task</strong>: <a href="{% url 'tasks:get_details' expense.task.id %}">{{ expense.task.name }} </a>
-            </div>
-          </div>
+        <div class="col-1">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <a  {% if expense|budget_item_can_be_edited:user %}
+                href="{% url 'budgets:edit_expense_details' budget.id expense.id %}"
+              {% else %}
+                href="" class="link-disabled"
+              {% endif %}>Edit</a>
         </div>
       </div>
-      <div class="row mt-2">
-        <div class="row">
-          <div class="col-1">
-            <i class="fa-solid fa-pen-to-square"></i>
-            <a  {% if expense|budget_item_can_be_edited:user %}
-                  href="{% url 'budgets:edit_expense_details' budget.id expense.id %}"
-                {% else %}
-                  href="" class="link-disabled"
-                {% endif %}>Edit</a>
-          </div>
-       </div>
-      </div>
+     </div>
    </div>
 </div>
 <div>
