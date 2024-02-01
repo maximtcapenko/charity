@@ -1,5 +1,0 @@
-{% load customtags %}
-<div>
-    <a href="{% url 'files:attach_file' model_name task.id %}" class="btn btn-link">Upload file</a>
-</div>
-{% render_partial 'files.views.get_list' model=model_name target_id=task.id %}

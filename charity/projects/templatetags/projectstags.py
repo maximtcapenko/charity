@@ -12,6 +12,7 @@ register = template.Library()
 def render_tasks_board(context, project, tasks):
     request = context["request"]
     task_template_name = 'partials/project_task_card.html'
+    items_count = context.get('items_count')
 
     def _get_context():
         todo_tasks = ''
@@ -53,6 +54,7 @@ def render_tasks_board(context, project, tasks):
             'in_progress_tasks': mark_safe(in_progress_tasks),
             'on_review_tasks': mark_safe(on_review_tasks),
             'done_tasts': mark_safe(done_tasts),
+            'items_count': items_count,
             'page': tasks
         }
 

@@ -46,6 +46,8 @@ def get_list(request, model, target_id):
 
     return render(request, 'partials/files_list.html', {
         'page': paginator.get_page(request.GET.get('page')),
+        'model_name': model,
+        'target_id':target_id,
         'items_count': paginator.count,
     })
 

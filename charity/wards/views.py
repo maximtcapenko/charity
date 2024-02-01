@@ -83,11 +83,23 @@ def get_list(request):
 @login_required
 @require_http_methods(['GET'])
 def get_details(request, id):
+    default_tab = 'comments'
+    tabs = [
+        'comments',
+        'files'
+    ]
+    tab = request.GET.get('tab', default_tab)
+
+    if not tab in tabs:
+        tab = default_tab
+
     ward = get_object_or_404(Ward.objects.filter(
         fund_id=request.user.volunteer_profile.fund_id), pk=id)
 
     return render(request, 'ward_details.html', {
         'ward': ward,
+        'tabs': tabs,
+        'selected_tab': tab,
         'model_name': ward._meta.model_name,
         'title': 'Ward'
     })

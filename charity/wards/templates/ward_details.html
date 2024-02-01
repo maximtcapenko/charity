@@ -66,5 +66,23 @@
       </div>
     </div>
   </div>
-  {% render_partial 'comments.views.get_comments_with_replies' model=model_name target_id=ward.id %}
+  <ul class="nav nav-pills mb-3">
+    {% for tab in tabs %}
+    <li class="nav-item" role="presentation">
+      {% if selected_tab == tab %}
+        <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
+        </a>
+      {% else %}
+        <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  <div>
+    {% for tab in tabs %}
+    {% if selected_tab == tab %}
+      {% include 'partials/ward_'|add:tab|add:'_list.html' %}
+    {% endif %}
+    {% endfor %}
+  </div>
 {% endblock %}

@@ -1,41 +1,41 @@
 {% load customtags %}
 <div class="card mb-4">
-    <div class="card-header">
-      <i class="fa-regular fa-eye"></i>
-      Reviews
-    </div>
-    <div class="card-body">
-      {% for approvement in page %}
-      {% if forloop.counter|add:-1|divisibleby:2 %}
-      <div class="row mt-2">
-      {% else %} 
-      <div class="row mt-2 bg-light text-dark">
-      {% endif %}
-        <div class="col-2">
-            <div class="row">
-              <div class="col">
-                {{ approvement.author.volunteer_profile|cover }}
-                <a href="{% url 'funds:get_volunteer_details' approvement.author.volunteer_profile.id %}">{{ approvement.author.username }}</a>
-              </div>
-              <div class="col d-flex align-items-center">
-                {% if approvement.is_rejected %}
-                <span class="badge bg-danger">rejected</span>
-                {% else %}
-                <span class="badge bg-success">approved</span>
-                {% endif %}
-              </div>
-            </div>
-            {{ approvement.date_created }}
+  <div class="card-header">
+    {{ items_count }} <i class="fa-regular fa-eye"></i>
+    Reviews
+  </div>
+  <div class="card-body">
+    {% for approvement in page %}
+    {% if forloop.counter|add:-1|divisibleby:2 %}
+    <div class="row mt-2">
+    {% else %} 
+    <div class="row mt-2 bg-light text-dark">
+    {% endif %}
+      <div class="col-2">
+        <div class="row">
+          <div class="col">
+            {{ approvement.author.volunteer_profile|cover }}
+            <a href="{% url 'funds:get_volunteer_details' approvement.author.volunteer_profile.id %}">{{ approvement.author.username }}</a>
+          </div>
+          <div class="col d-flex align-items-center">
+            {% if approvement.is_rejected %}
+            <span class="badge bg-danger">rejected</span>
+            {% else %}
+            <span class="badge bg-success">approved</span>
+            {% endif %}
+          </div>
         </div>
-        <div class="col">
-          {{ approvement.notes }}
-        </div>
+        {{ approvement.date_created }}
       </div>
-      {% endfor %}
-      <div class="row mt-2">
-        <div>
-        {% include 'paginator.html' with obj_page=page %}
-        </div>
+      <div class="col">
+        {{ approvement.notes }}
+      </div>
+    </div>
+    {% endfor %}
+    <div class="row mt-2">
+      <div>
+      {% include 'paginator.html' with obj_page=page %}
       </div>
     </div>
   </div>
+</div>

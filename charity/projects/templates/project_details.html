@@ -61,7 +61,6 @@
     <li class="nav-item" role="presentation">
       {% if selected_tab == tab %}
         <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
-          <span class="badge bg-danger rounded-circle">{{ items_count }}</span>
         </a>
       {% else %}
         <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
@@ -72,7 +71,7 @@
   <div>
     {% for tab in tabs %}
     {% if selected_tab == tab %}
-      {% include 'project_'|add:tab|add:'_list.html' %}
+      {% include 'partials/project_'|add:tab|add:'_list.html' %}
     {% endif %}
     {% endfor %}
   </div>

@@ -99,7 +99,7 @@
   <div>
     {% for tab in tabs %}
     {% if selected_tab == tab %}
-      {% include 'task_'|add:tab|add:'_list.html' %}
+      {% include 'partials/task_'|add:tab|add:'_list.html' %}
     {% endif %}
     {% endfor %}
   </div>
