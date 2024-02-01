@@ -3,7 +3,8 @@ import datetime
 from django.db import models
 from django.contrib.auth.models import User
 
-from commons.models import Base, Comment
+from comments.models import Comment
+from commons.models import Base
 from files.models import Attachment
 from funds.models import Approvement, RequestReview
 from budgets.models import Budget

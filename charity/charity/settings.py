@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'budgets.apps.BudgetsConfig',
+    'comments.apps.CommentsConfig',
     'commons.apps.CommonsConfig',
     'customfields.apps.CustomfieldsConfig',
     'files.apps.FilesConfig',

@@ -1,4 +1,7 @@
 {% load customtags %}
+<div>
+  <a href="{% url 'comments:add_generic_comment' model_name target_id %}" class="btn btn-link">Add new comment</a>
+</div>
 <div class="card mb-4">
     <div class="card-header">
       {{items_count}} <i class="fa-regular fa-message"></i>
@@ -11,7 +14,7 @@
               {% include 'partials/user_image_part.html' with user=comment.author %}
               <span class="badge bg-danger rounded">topic</span>
               <span data-bs-toggle="tooltip" data-bs-placement="top" title="Reply">
-                <a href="{% url 'add_reply_to_comment' model_name target_id comment.id %}">
+                <a href="{% url 'comments:add_reply_to_comment' model_name target_id comment.id %}">
                     <i class="fa-solid fa-reply"></i>
                 </a>
               </span>
@@ -24,7 +27,7 @@
       </div>
         {% if comment.replies_count > 0 %}
             <div class="container">
-            {% render_partial 'commons.views.get_replies_for_comment' comment_id=comment.id %}
+            {% render_partial 'comments.views.get_replies_for_comment' comment_id=comment.id %}
             </div>
         {% endif %}
       {% endfor %}

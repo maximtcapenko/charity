@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from eav.forms import BaseDynamicEntityForm
 from eav.models import Attribute, EnumGroup, EnumValue
-from commons.forms import FormControlMixin, InitialValidationMixin
+from commons.mixins import FormControlMixin, InitialValidationMixin
 
 from .models import CustomField
 from .widgets import EAVEnumListGroupField

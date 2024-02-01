@@ -1,5 +1,4 @@
 from django import forms
-from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseNotAllowed
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
@@ -8,7 +7,7 @@ from django.shortcuts import redirect, render
 from . import DEFAULT_PAGE_SIZE
 from .exceptions import NullArgumentError
 from .mixins import FileUploadMixin
-from .models import Base, Comment
+from .models import Base
 from .utils import DictObjectWrapper, WrappedPage
 
 

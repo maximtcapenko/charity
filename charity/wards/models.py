@@ -1,8 +1,9 @@
 import eav
 
 from django.db import models
-from commons.models import Base, Comment
+from commons.models import Base
 
+from comments.models import Comment
 from customfields.models import CustomFieldsEvaConfig
 from files.models import Attachment
 from funds.models import Fund
