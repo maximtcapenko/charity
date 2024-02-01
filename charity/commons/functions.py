@@ -161,7 +161,7 @@ def resolve_rel_attr_path(attr_model, model, path=None, visited=None):
     return None
 
 
-def resolve_many_to_many_attr_path(attr_model, model):
+def resolve_many_2_many_attr_path(attr_model, model):
     for field in model._meta.local_many_to_many:
         if field.related_model is attr_model:
             return field.name
@@ -169,12 +169,12 @@ def resolve_many_to_many_attr_path(attr_model, model):
     return None
 
 
-def resolve_comments_attr(content_type, id):
+def resolve_many_2_many_attr(attr_model, content_type, id):
     """
     Resolves attribute with type list[`Comment`] from `content_type` object
     `content_type`: `ContentType`
     """
-    comments_attr = resolve_many_to_many_attr_path(
-        Comment, content_type.model_class())
+    comments_attr = resolve_many_2_many_attr_path(
+        attr_model, content_type.model_class())
     instance = content_type.model_class().objects.get(pk=id)
     return getattr(instance, comments_attr)

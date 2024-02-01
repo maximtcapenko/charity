@@ -1,7 +1,7 @@
 {% load customtags %}
 <div class="card mb-4">
     <div class="card-header">
-      <i class="fa-regular fa-message"></i>
+      {{items_count}} <i class="fa-regular fa-message"></i>
     </div>
     <div class="card-body">
       {% for comment in page %}
@@ -28,7 +28,7 @@
             </div>
         {% endif %}
       {% endfor %}
-      <div class="row mt-2">
+      <div class="row mt-3">
         <div>
         {% include 'paginator.html' with obj_page=page %}
         </div>

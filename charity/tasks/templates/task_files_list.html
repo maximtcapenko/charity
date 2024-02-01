@@ -1,36 +1,5 @@
+{% load customtags %}
 <div>
-    <a href="{% url 'tasks:attach_file' task.id %}" class="btn btn-link">Upload file</a>
+    <a href="{% url 'files:attach_file' model_name task.id %}" class="btn btn-link">Upload file</a>
 </div>
-<div class="card mb-4">
-    <div class="card-header">
-      <i class="fa-regular fa-file"></i>
-      Files
-    </div>
-    <div class="card-body">
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Date</th>
-            <th>Notes</th>
-            <th>Author</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for file in page %}
-            <tr>
-              <td>{{ file.name }}
-                <i class="fa-solid fa-cloud-arrow-down"></i>
-              </td>
-              <td>{{ file.type }}</td>
-              <td>{{ file.date_created }}</td>
-              <td>{{ file.notes }}</td>
-              <td>{{ file.author.username }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% include 'paginator.html' with obj_page=page %}
-    </div>
-  </div>
+{% render_partial 'files.views.get_list' model=model_name target_id=task.id %}

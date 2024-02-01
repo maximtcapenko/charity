@@ -2,7 +2,7 @@ from django import forms
 
 from funds.models import Fund
 
-from .functions import get_argument_or_error, resolve_comments_attr, resolve_rel_attr_path
+from .functions import get_argument_or_error, resolve_many_2_many_attr, resolve_rel_attr_path
 from .mixins import FormControlMixin, InitialValidationMixin
 from .models import Comment
 
@@ -52,7 +52,7 @@ class CreateCommentForm(
 
     def save(self):
         self.instance.save()
-        comments = resolve_comments_attr(
+        comments = resolve_many_2_many_attr(Comment,
             self.initial['target_content_type'], self.initial['target_id'])
         comments.add(self.instance)
         return self.instance

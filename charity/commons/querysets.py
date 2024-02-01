@@ -1,7 +1,9 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count
 
-from .functions import resolve_comments_attr
+from commons.models import Comment
+
+from .functions import resolve_many_2_many_attr
 
 
 def get_comments_with_reply_count_queryset(model: str, pk):
@@ -11,7 +13,7 @@ def get_comments_with_reply_count_queryset(model: str, pk):
     `author__volunteer_profile__id`, `'date_created'`, `'notes'`, `'replies_count'` }
     """
     content_type = ContentType.objects.get(model=model)
-    comments = resolve_comments_attr(content_type, pk)
+    comments = resolve_many_2_many_attr(Comment, content_type, pk)
 
     return comments.filter(
         reply_id__isnull=True).annotate(

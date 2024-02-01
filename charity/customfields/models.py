@@ -1,5 +1,3 @@
-import eav
-
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 
@@ -16,6 +14,7 @@ class CustomField(Base):
     attribute = models.OneToOneField(
         Attribute, on_delete=models.CASCADE, related_name='custom_field')
     is_public = models.BooleanField(default=False, null=False)
+    is_searchable = models.BooleanField(default=False, null=False)
 
 
 class CustomFieldsEvaConfig(EavConfig):

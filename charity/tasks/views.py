@@ -129,7 +129,7 @@ def approve_task_state(request, task_id, id):
 
     if not task_state_is_ready_for_review(state, request.user, task):
         raise ApplicationError(Warnings.TASK_STATE_IS_NOT_READY_FOR_REVIEW)
-    
+
     return render_generic_form(
         request=request,
         form_class=ApproveTaskStateForm,
@@ -170,24 +170,6 @@ def request_task_state_review(request, task_id, id):
             }
         }
     )
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def attach_file(request, id):
-    return render_generic_form(
-        request=request,
-        form_class=TaskCreateAttachmentForm,
-        context={
-            'return_url': '%s?%s' % (
-                reverse('tasks:get_details', args=[id]), 'tab=files'),
-            'title': 'Upload file',
-            'initial': {
-                'author': request.user,
-                'task': get_task_or_404(request, id),
-                'fund': request.user.volunteer_profile.fund
-            }
-        })
 
 
 @user_passes_test(user_should_be_volunteer)
