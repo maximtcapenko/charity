@@ -1,0 +1,45 @@
+{% load taskstags %}
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="fa-solid fa-list-check"></i>
+  </div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <tbody>
+        {% for task in ward.tasks.all %}
+          <tr>
+            <td class="col-3 align-middle">
+              <h6><a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a></h6>
+              {{ task.date_created }}
+              {% if task.is_high_priority %}
+                <span class="badge bg-warning text-dark">high priority</span>
+              {% else %}
+                <span class="badge bg-secondary">regular</span>
+              {% endif %}
+            </td>
+            <td class="col-2 align-middle">
+              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Assignee">
+                {% include 'partials/user_image_part.html' with user=task.assignee %}
+              </span>
+            </td>
+            <td class="align-middle">
+              {% render_task_progress task=task %}
+            </td>
+            <td class="align-middle text-center">
+              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Budget">
+                <i class="fa-solid fa-dollar-sign fa-xs"></i>
+                {% if task.expense %}
+                  <a href="{% url 'budgets:get_expense_details' task.expense.budget_id task.expense_id %}"> 
+                    {{ task.estimated_expense_amount|floatformat:'2g' }}
+                  </a> 
+                {% else %}
+                  {{ task.estimated_expense_amount|floatformat:'2g' }}
+                {% endif %}
+              </span>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

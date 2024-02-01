@@ -86,7 +86,8 @@ def get_details(request, id):
     default_tab = 'comments'
     tabs = [
         'comments',
-        'files'
+        'files',
+        'tasks'
     ]
     tab = request.GET.get('tab', default_tab)
 

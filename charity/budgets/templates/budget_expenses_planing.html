@@ -2,90 +2,90 @@
 {% block content %}
 {% load customtags %}
 {% load budgetfilters %}
-  <h2 class="mt-4">Add expense to {{ budget.name }}</h2>
-  <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item">
-      <a href="{% url 'budgets:get_details' budget.id %}?tab=expenses">{{ budget.name }}</a>
-    </li>
-    <li class="breadcrumb-item active">Planing</li>
-  </ol>
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="bg-light text-dark">
-        <div>
-          <strong>Available Income</strong>: {{ avaliable_income_amount|floatformat:'2g' }}
-        </div>
-        <div>
-          {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
-        </div>
+<h2 class="mt-4">Add expense to {{ budget.name }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'budgets:get_details' budget.id %}?tab=expenses">{{ budget.name }}</a>
+  </li>
+  <li class="breadcrumb-item active">Planing</li>
+</ol>
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="bg-light text-dark">
+      <div>
+        <strong>Available Income</strong>: {{ avaliable_income_amount|floatformat:'2g' }}
+      </div>
+      <div>
+        {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
       </div>
     </div>
   </div>
-  <div class="col-4">
-  <form class="form-inline" action="" method="get">
-    <label for="id_project">Project:</label>
-    <select class="form-select" name="project_id" required="true" id="id_project" onchange="javascript:this.form.submit()">
-      <option value="">Select Project</option>
-      {% for project in projects %}
-       {% if selected_project == project.project.id|stringformat:"s" %}
-          <option selected="true" value="{{ project.project.id }}">{{ project.project.name }} ({{ project.requested_budget|floatformat:'2g' }})</option>
-        {% else %}
-          <option value="{{ project.project.id }}">{{ project.project.name }} ({{ project.requested_budget|floatformat:'2g' }})</option>
-       {% endif %}
-      {% endfor %}
-    </select>
-  </form>
+</div>
+<div class="col-4">
+<form class="form-inline" action="" method="get">
+  <label for="id_project">Project:</label>
+  <select class="form-select" name="project_id" required="true" id="id_project" onchange="javascript:this.form.submit()">
+    <option value="">Select Project</option>
+    {% for project in projects %}
+      {% if selected_project == project.project.id|stringformat:"s" %}
+        <option selected="true" value="{{ project.project.id }}">{{ project.project.name }} ({{ project.requested_budget|floatformat:'2g' }})</option>
+      {% else %}
+        <option value="{{ project.project.id }}">{{ project.project.name }} ({{ project.requested_budget|floatformat:'2g' }})</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+</form>
+</div>
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="fa-solid fa-list-check"></i>
+    Tasks
   </div>
-  <div class="card mb-4">
-    <div class="card-header">
-      <i class="fa-solid fa-list-check"></i>
-      Tasks
-    </div>
-    <div class="card-body">
-      <table class="table table-striped">
-        <thead>
+  <div class="card-body">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Task name</th>
+          <th>Ward</th>
+          <th>Created</th>
+          <th>State</th>
+          <th>Estimated expenses</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in tasks %}
           <tr>
-            <th>Task name</th>
-            <th>Ward</th>
-            <th>Created</th>
-            <th>State</th>
-            <th>Estimated expenses</th>
-            <th></th>
+            <td>
+              <h6>
+                <a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a>
+              </h6>
+            </td>
+            <td>
+              {{ task.ward|cover }}
+              {{ task.ward.name }}
+            </td>
+            <td>{{ task.date_created }}</td>
+            <td>
+              {% if task.is_high_priority %}
+              <span class="badge bg-warning text-dark">high priority</span>
+              {% else %}
+              <span class="badge bg-secondary">regular</span>
+            {% endif %}
+            </td>
+            <td>{{ task.estimated_expense_amount|floatformat:'2g' }}</td>
+            <td>
+              <a  {% if budget|budget_item_can_be_added:user %}
+                    href="{% url 'budgets:add_expenses' budget.id %}?task_id={{task.id}}&project_id={{selected_project}}"
+                  {% else %}
+                    class="link-disabled"
+                  {% endif %}>Add expense</a>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {% for task in tasks %}
-            <tr>
-              <td>
-                <h6>
-                  <a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a>
-                </h6>
-              </td>
-              <td>
-                {{ task.ward|cover }}
-                {{ task.ward.name }}
-              </td>
-              <td>{{ task.date_created }}</td>
-              <td>
-                {% if task.is_high_priority %}
-                <span class="badge bg-warning text-dark">high priority</span>
-                {% else %}
-                <span class="badge bg-secondary">regular</span>
-              {% endif %}
-              </td>
-              <td>{{ task.estimated_expense_amount|floatformat:'2g' }}</td>
-              <td>
-                <a  {% if budget|budget_item_can_be_added:user %}
-                      href="{% url 'budgets:add_expenses' budget.id %}?task_id={{task.id}}&project_id={{selected_project}}"
-                    {% else %}
-                      class="link-disabled"
-                    {% endif %}>Add expense</a>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-  {% include 'generic_errormodal.html' %}
+</div>
+{% include 'generic_errormodal.html' %}
 {% endblock %}

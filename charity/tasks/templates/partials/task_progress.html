@@ -1,0 +1,10 @@
+<div class="row">
+  <div class="col-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Status">
+    {% include 'partials/task_status.html' with skip_priority=True %}
+  </div>
+  <div class="col">
+    <div class="progress bg-light" style="height: 20px;" data-bs-toggle="tooltip" data-bs-placement="top" title="Complete">
+      <div class="progress-bar" role="progressbar" style="width: {{complete_in_percents}}%;" aria-valuenow="{{complete_in_percents}}" aria-valuemin="0" aria-valuemax="100">{{complete_in_percents}}%</div>
+    </div>
+  </div>
+</div>

@@ -86,3 +86,18 @@ def render_task_states_board(context, task):
         }, request, using=None)
 
     return {'html' : mark_safe(html)}
+
+
+@register.inclusion_tag('partials/task_progress.html', takes_context=True)
+def render_task_progress(context, task):
+    from processes.models import ProcessState
+
+    states_count = ProcessState.objects.filter(process_id=task.process_id).count()
+    task_states_count = task.states.filter(approvement__is_rejected=False).count()
+
+    complete_in_percents = round(task_states_count / states_count * 100) 
+  
+    return {
+        'task': task,
+        'complete_in_percents': complete_in_percents
+    }

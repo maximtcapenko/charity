@@ -1,106 +1,106 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-  <h2 class="mt-4">{{ task.name }}</h2>
-  <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item">
-      <a href="{% url 'funds:get_current_details' %}">{{ task.project.fund.name }}</a>
-    </li>
-    <li class="breadcrumb-item">
-      <a href="{% url 'projects:get_list' %}">Projects</a>
-    </li>
-    <li class="breadcrumb-item">
-      <a href="{% url 'projects:get_details' task.project.id %}">{{ task.project.name }}</a>
-    </li>
-    <li class="breadcrumb-item active">Task Details</li>
-  </ol>
-    <div class="card mb-4">
-      <div class="card-body">
-          <div class="row">
-              <div class="col">
-                <div class="bg-light text-dark">
-                   <i class="fa-regular fa-clipboard"></i>
-                   <strong>Description</strong>: {{ task.notes }}
-                </div>
-              </div>
-              <div class="col">
-                <div class="bg-light text-dark">
-                  <div>
-                    {{ task.ward|thumbnail:50 }}
-                    <a href="{% url 'wards:get_details' task.ward_id %}"> {{ task.ward.name }} </a>
-                  </div>
-                  <div>
-                    <strong>Period</strong>: {{ task.start_date }} - {{ task.end_date }}
-                  </div>
-                  <div>
-                    <strong>Created</strong>: {{ task.date_created}}
-                  </div>
-                  <div>
-                    <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' task.author.volunteer_profile.id %}">{{ task.author.username }}</a>
-                  </div>
-                  <div>
-                    <strong>Assignee</strong>: <a href="{% url 'funds:get_volunteer_details' task.assignee.volunteer_profile.id %}">{{ task.assignee.username }}</a>
-                  </div>
-                  <div>
-                    {% if  task.reviewer %}
-                    <strong>Reviewer</strong>: <a href="{% url 'funds:get_volunteer_details' task.reviewer.volunteer_profile.id %}">{{ task.reviewer.username }}</a>
-                    {% else%}
-                    <strong>Reviewer</strong>: 
-                    {% endif %}
-                  </div>
-                  <div>
-                    <strong>Status</strong>: {% include 'partials/task_status.html' %}
-                  </div>
-                  <div class="row">
-                    <div class="col-4">
-                      {% if  task.expense %}
-                      <strong>Expenses</strong>: <a href="{% url 'budgets:get_expense_details' task.expense.budget_id task.expense.id %}">{{ task.estimated_expense_amount|floatformat:'2g' }}</a>
-                      {% else %}
-                      <strong>Expenses</strong>: {{ task.estimated_expense_amount|floatformat:'2g' }}
-                      {% endif %}
-                    </div>
-                    <div class="col">
-                      {% include 'partials/li_approvement_part.html' with approvement=task.expense.approvement %}
-                    </div>
-                  </div>
-                  <div>
-                    <strong>Process</strong>: <a href="{% url 'processes:get_details' task.process_id%}">{{ task.process.name }}</a>
-                  </div>
-                  <div>
-                    {% if not task.state %}
-                    <strong>Current state</strong>: Not started
-                    {% else %}
-                    <strong>Current state</strong>: <a href="{% url 'tasks:get_state_details' task.id task.state.id %}">{{ task.state.state.name }}</a>
-                    {% endif %}
-                  </div>
-                </div>  
-              </div>
-          </div>
-          <div class="row mt-2">
-            <div>
-              <i class="fa-solid fa-pen-to-square"></i>
-              <a href="{% url 'tasks:edit_details' task.id %}">Edit</a>
-            </div>
-          </div>
+<h2 class="mt-4">{{ task.name }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_current_details' %}">{{ task.project.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'projects:get_list' %}">Projects</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'projects:get_details' task.project.id %}">{{ task.project.name }}</a>
+  </li>
+  <li class="breadcrumb-item active">Task Details</li>
+</ol>
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row">
+      <div class="col">
+        <div class="bg-light text-dark">
+          <i class="fa-regular fa-clipboard"></i>
+          <strong>Description</strong>: {{ task.notes }}
         </div>
       </div>
-  <ul class="nav nav-pills mb-3">
-    {% for tab in tabs %}
-    <li class="nav-item" role="presentation">
-      {% if selected_tab == tab %}
-        <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
-        </a>
-      {% else %}
-        <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
-      {% endif %}
-    </li>
-    {% endfor %}
-  </ul>
-  <div>
-    {% for tab in tabs %}
-    {% if selected_tab == tab %}
-      {% include 'partials/task_'|add:tab|add:'_list.html' %}
-    {% endif %}
-    {% endfor %}
+      <div class="col">
+        <div class="bg-light text-dark">
+          <div>
+            {{ task.ward|thumbnail:50 }}
+            <a href="{% url 'wards:get_details' task.ward_id %}"> {{ task.ward.name }} </a>
+          </div>
+          <div>
+            <strong>Period</strong>: {{ task.start_date }} - {{ task.end_date }}
+          </div>
+          <div>
+            <strong>Created</strong>: {{ task.date_created}}
+          </div>
+          <div>
+            <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' task.author.volunteer_profile.id %}">{{ task.author.username }}</a>
+          </div>
+          <div>
+            <strong>Assignee</strong>: <a href="{% url 'funds:get_volunteer_details' task.assignee.volunteer_profile.id %}">{{ task.assignee.username }}</a>
+          </div>
+          <div>
+            {% if  task.reviewer %}
+            <strong>Reviewer</strong>: <a href="{% url 'funds:get_volunteer_details' task.reviewer.volunteer_profile.id %}">{{ task.reviewer.username }}</a>
+            {% else%}
+            <strong>Reviewer</strong>: 
+            {% endif %}
+          </div>
+          <div>
+            <strong>Status</strong>: {% include 'partials/task_status.html' %}
+          </div>
+          <div class="row">
+            <div class="col-4">
+              {% if  task.expense %}
+              <strong>Expenses</strong>: <a href="{% url 'budgets:get_expense_details' task.expense.budget_id task.expense.id %}">{{ task.estimated_expense_amount|floatformat:'2g' }}</a>
+              {% else %}
+              <strong>Expenses</strong>: {{ task.estimated_expense_amount|floatformat:'2g' }}
+              {% endif %}
+            </div>
+            <div class="col">
+              {% include 'partials/li_approvement_part.html' with approvement=task.expense.approvement %}
+            </div>
+          </div>
+          <div>
+            <strong>Process</strong>: <a href="{% url 'processes:get_details' task.process_id%}">{{ task.process.name }}</a>
+          </div>
+          <div>
+            {% if not task.state %}
+            <strong>Current state</strong>: Not started
+            {% else %}
+            <strong>Current state</strong>: <a href="{% url 'tasks:get_state_details' task.id task.state.id %}">{{ task.state.state.name }}</a>
+            {% endif %}
+          </div>
+        </div>  
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div>
+        <i class="fa-solid fa-pen-to-square"></i>
+        <a href="{% url 'tasks:edit_details' task.id %}">Edit</a>
+      </div>
+    </div>
   </div>
+</div>
+<ul class="nav nav-pills mb-3">
+  {% for tab in tabs %}
+  <li class="nav-item" role="presentation">
+    {% if selected_tab == tab %}
+      <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
+      </a>
+    {% else %}
+      <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+<div>
+  {% for tab in tabs %}
+  {% if selected_tab == tab %}
+    {% include 'partials/task_'|add:tab|add:'_list.html' %}
+  {% endif %}
+  {% endfor %}
+</div>
 {% endblock %}
