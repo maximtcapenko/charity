@@ -8,7 +8,7 @@
       <a href="{% url 'funds:get_current_details' %}">{{ ward.fund.name }}</a>
     </li>
     <li class="breadcrumb-item">
-      <a href="{% url 'wards:get_list' %}">Adoptees</a>
+      <a href="{% url 'wards:get_list' %}">Wards</a>
     </li>
     <li class="breadcrumb-item active">Details</li>
   </ol>
@@ -66,8 +66,5 @@
       </div>
     </div>
   </div>
-  <div>
-    <a href="{% url 'add_generic_comment' model_name ward.id %}" class="btn btn-link">Add new comment</a>
- </div>
-  {% render_partial 'commons.views.get_comments_with_replies' model=model_name id=ward.id %}
+  {% render_partial 'comments.views.get_comments_with_replies' model=model_name target_id=ward.id %}
 {% endblock %}

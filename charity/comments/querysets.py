@@ -1,9 +1,9 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count
 
-from commons.models import Comment
+from commons.functions import resolve_many_2_many_attr
 
-from .functions import resolve_many_2_many_attr
+from .models import Comment
 
 
 def get_comments_with_reply_count_queryset(model: str, pk):

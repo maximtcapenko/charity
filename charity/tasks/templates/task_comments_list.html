@@ -1,4 +1,2 @@
-<div>
-   <a href="{% url 'add_generic_comment' model_name task.id %}" class="btn btn-link">Add new comment</a>
-</div>
-{% include "topics.html" with target_id=task.id %}
+{% load customtags %}
+{% render_partial 'comments.views.get_comments_with_replies' model=model_name target_id=task.id %}
