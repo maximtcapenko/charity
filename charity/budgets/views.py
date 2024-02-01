@@ -466,7 +466,7 @@ def get_reviewer_details(request, id, reviewer_id):
         .prefetch_related('approvements'),
         'expenses': lambda budget, reviewer:
             Expense.objects.filter(Q(budget=budget) & Exists(Approvement.objects.filter(
-                approved_incomes=OuterRef('pk'), author=reviewer)))
+                approved_expenses=OuterRef('pk'), author=reviewer)))
         .prefetch_related('approvements'),
     }
 

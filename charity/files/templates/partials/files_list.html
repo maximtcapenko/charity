@@ -1,0 +1,40 @@
+<div class="card mb-4">
+    <div class="card-header">
+      {{ items_count }} <i class="fa-regular fa-file"></i>
+    </div>
+    <div class="card-body">
+      <table class="table table-striped">
+        <tbody>
+          {% for file in page %}
+            <tr>
+              <td class="col-3 align-middle">
+                <h6>
+                  <i class="fa-solid fa-paperclip"></i>
+                  <a href="{% url 'files:get_file' file.id %}">
+                    {{ file.name }} </a>
+                </h6>
+                {{ file.date_created }}
+              </td>
+              <td class="align-middle">
+                <span class="badge bg-primary">
+                  {{ file.type }}
+                </span>
+              </td>
+              <td class="align-middle">
+                {{ file.size }} KB
+              </td>
+              <td class="align-middle">
+                {{ file.notes }}
+              </td>
+              <td class="align-middle">
+                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Author">
+                  {% include 'partials/user_image_part.html' with user=file.author %}
+                </span>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
+  </div>

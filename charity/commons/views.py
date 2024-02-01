@@ -27,7 +27,7 @@ def view_notification_details(request, id):
 @require_http_methods(['GET', 'POST'])
 def add_comment(request, model, id):
     content_type = ContentType.objects.get(model=model)
-    return_url = f"{reverse('%s:get_details' % content_type.app_label, args=[id])}?tab=comments#pager"
+    return_url = f"{reverse('%s:get_details' % content_type.app_label, args=[id])}?tab=comments"
     initial = {
         'author': request.user,
         'fund': request.user.volunteer_profile.fund,

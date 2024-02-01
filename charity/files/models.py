@@ -22,5 +22,8 @@ class Attachment(Base):
     author = models.ForeignKey(User, on_delete=models.PROTECT)
     fund = models.ForeignKey(Fund, on_delete=models.PROTECT)
 
+    def size(self):
+        return round(self.file.size / 1000)
+
     def __str__(self):
         return f'{self.name} ({self.type})'

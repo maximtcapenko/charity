@@ -17,7 +17,7 @@
               </td>
                <td class="align-middle">
                 <ul>
-                    {% for approvement in income.approvements.all %}
+                    {% for approvement in expense.approvements.all %}
                        <li> {{ approvement.date_created }} {% include 'partials/td_approvement_part.html' %}</li>
                     {% endfor %}
                     </ul>
