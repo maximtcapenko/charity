@@ -8,10 +8,10 @@ from django.urls import reverse
 from commons import DEFAULT_PAGE_SIZE
 from commons.functions import user_should_be_volunteer, render_generic_form, \
     wrap_dicts_page_to_objects_page
+from filters.models import Filter
+from projects.models import Project
 from .forms import CreateWardForm
 from .models import Ward
-from projects.models import Project
-from tasks.models import Task
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -49,7 +49,7 @@ def create(request):
 def edit_details(request, id):
     ward = get_object_or_404(Ward.objects.filter(
         fund_id=request.user.volunteer_profile.fund_id), pk=id)
-    
+
     return render_generic_form(
         request=request, form_class=CreateWardForm, context={
             'title': 'Edit ward',
@@ -65,17 +65,22 @@ def edit_details(request, id):
 @login_required
 @require_http_methods(['GET'])
 def get_list(request):
-    """ 
-    project_subquery = Project.objects.filter(wards__in=models.OuterRef('pk'), is_closed=False)\
-    .values('name')[:1]
-    """
-    queryset = Ward.objects.filter(fund_id=request.user.volunteer_profile.fund_id)\
-        .prefetch_related(models.Prefetch('projects', Project.objects.filter(is_closed=False)))
+    queryset = Ward.objects.filter(fund_id=request.user.volunteer_profile.fund_id)
+    filter_id = request.GET.get('filter_id')
+    if filter_id:
+        filter = get_object_or_404(Filter, pk=filter_id)
+        search_fields = filter.expressions.filter(
+            field__is_searchable=True).all()
+        for field in search_fields:
+            queryset = queryset.filter(field.get_expression(Ward))
+
+ 
+    queryset = queryset.prefetch_related(models.Prefetch('projects', Project.objects.filter(is_closed=False)))
 
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
     return render(request, 'wards_list.html', {
-        'page': wrap_dicts_page_to_objects_page(paginator.get_page(request.GET.get('page')), model=Ward)
+        'page': paginator.get_page(request.GET.get('page'))
     })
 
 

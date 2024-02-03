@@ -1,78 +1,78 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load projectfilters %}
-  <h2 class="mt-4">{{ project.name }}</h2>
-  <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item">
-      <a href="{% url 'funds:get_details' project.fund_id %}">{{ project.fund.name }}</a>
-    </li>
-    <li class="breadcrumb-item">
-      <a href="{% url 'projects:get_list' %}">Projects</a>
-    </li>
-    <li class="breadcrumb-item active">Project Details</li>
-  </ol>
-  <div class="card mb-4">
-    <div class="card-body">
+<h2 class="mt-4">{{ project.name }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_details' project.fund_id %}">{{ project.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'projects:get_list' %}">Projects</a>
+  </li>
+  <li class="breadcrumb-item active">Project Details</li>
+</ol>
+<div class="card mb-4">
+  <div class="card-body">
+      <div class="row">
+        <div class="col">
+          <div class="bg-light text-dark">
+            <i class="fa-regular fa-clipboard"></i>
+            <strong>Description</strong>: {{ project.notes }}
+          </div>
+        </div>
+        <div class="col">
+          <div class="bg-light text-dark">
+            <div>
+              <strong>Created</strong>: {{ project.date_created }}
+            </div>
+            <div>
+              <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' project.author.volunteer_profile.id %}">{{ project.author.username }}</a>
+            </div>
+            <div>
+              <strong>Leader</strong>: <a href="{% url 'funds:get_volunteer_details' project.leader.volunteer_profile.id %}">{{ project.leader.username }}</a>
+            </div>
+            <div>
+              <strong>Budget</strong>: {{ project.approved_budget|floatformat:'2g' }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-2">
         <div class="row">
-          <div class="col">
-            <div class="bg-light text-dark">
-              <i class="fa-regular fa-clipboard"></i>
-              <strong>Description</strong>: {{ project.notes }}
-            </div>
+          <div class="col-1">
+            <i class="fa-solid fa-pen-to-square"></i>
+            {% if project|validate_pre_requirements:user %}
+              <a href="{% url 'projects:update' project.id %}">Edit</a>
+            {% else %}
+              <a href="" class="link-disabled">Edit</a>
+            {% endif %}
           </div>
           <div class="col">
-            <div class="bg-light text-dark">
-              <div>
-                <strong>Created</strong>: {{ project.date_created }}
-              </div>
-              <div>
-                <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' project.author.volunteer_profile.id %}">{{ project.author.username }}</a>
-              </div>
-              <div>
-                <strong>Leader</strong>: <a href="{% url 'funds:get_volunteer_details' project.leader.volunteer_profile.id %}">{{ project.leader.username }}</a>
-              </div>
-              <div>
-                <strong>Budget</strong>: {{ project.approved_budget|floatformat:'2g' }}
-              </div>
-            </div>
+            <i class="fa-solid fa-lock"></i>
+            <a href="{% url 'projects:close' project.id %}">Close</a>
           </div>
         </div>
-        <div class="row mt-2">
-          <div class="row">
-            <div class="col-1">
-              <i class="fa-solid fa-pen-to-square"></i>
-              {% if project|validate_pre_requirements:user %}
-                <a href="{% url 'projects:update' project.id %}">Edit</a>
-              {% else %}
-                <a href="" class="link-disabled">Edit</a>
-              {% endif %}
-            </div>
-            <div class="col">
-              <i class="fa-solid fa-lock"></i>
-              <a href="{% url 'projects:close' project.id %}">Close</a>
-            </div>
-         </div>
-        </div>
-     </div>
-  </div>
-  <ul class="nav nav-pills mb-3">
-    {% for tab in tabs %}
-    <li class="nav-item" role="presentation">
-      {% if selected_tab == tab %}
-        <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
-        </a>
-      {% else %}
-        <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
-      {% endif %}
-    </li>
-    {% endfor %}
-  </ul>
-  <div>
-    {% for tab in tabs %}
+      </div>
+    </div>
+</div>
+<ul class="nav nav-pills mb-3">
+  {% for tab in tabs %}
+  <li class="nav-item" role="presentation">
     {% if selected_tab == tab %}
-      {% include 'partials/project_'|add:tab|add:'_list.html' %}
+      <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
+      </a>
+    {% else %}
+      <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
     {% endif %}
-    {% endfor %}
-  </div>
-  {% include 'generic_errormodal.html' %}
+  </li>
+  {% endfor %}
+</ul>
+<div>
+  {% for tab in tabs %}
+  {% if selected_tab == tab %}
+    {% include 'partials/project_'|add:tab|add:'_list.html' %}
+  {% endif %}
+  {% endfor %}
+</div>
+{% include 'generic_errormodal.html' %}
 {% endblock %}

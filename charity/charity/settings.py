@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'commons.apps.CommonsConfig',
     'customfields.apps.CustomfieldsConfig',
     'files.apps.FilesConfig',
+    'filters.apps.FiltersConfig',
     'funds.apps.FundsConfig',
     'processes.apps.ProcessesConfig',
     'projects.apps.ProjectsConfig',

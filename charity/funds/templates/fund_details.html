@@ -47,7 +47,7 @@
   <div>
     {% for tab in tabs %}
       {% if selected_tab == tab %}
-        {% include 'fund_'|add:tab|add:'_list.html' %}
+        {% include 'partials/fund_'|add:tab|add:'_list.html' %}
       {% endif %}
     {% endfor %}
   </div>

@@ -67,8 +67,9 @@ def get_available_task_rewiewers_queryset(task):
     """
     Returns `User` queryset
     """
-    return User.objects.filter(~Q(id__in=[task.assignee.id]) &
-                               Exists(Project.objects.filter(id=task.project_id, reviewers__id=OuterRef('pk'))))
+    return User.objects.filter(
+        ~Q(id__in=[task.assignee.id]) &
+        Exists(Project.objects.filter(id=task.project_id, reviewers__id=OuterRef('pk'))))
 
 
 def get_available_task_process_states_queryset(task):

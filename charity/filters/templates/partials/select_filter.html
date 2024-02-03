@@ -1,0 +1,16 @@
+{% if  filters|length > 0 %}
+<div class="col-4">
+    <form class="form-inline" action="" method="get">
+      <select class="form-select" name="filter_id" onchange="javascript:this.form.submit()">
+        <option value="">Select Filter</option>
+        {% for filter in  filters %}
+        <option 
+        {% if selected_filter == filter.id|stringformat:"s" %}
+           selected="true" 
+        {% endif %}
+        value="{{filter.id}}">{{filter.name}}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+{% endif %}
