@@ -1,0 +1,12 @@
+<div>
+  <p>
+    <select class="form-select" name="operand">
+      {% for operand in available_operands %}
+      <option value="{{operand}}">{{operand}}</option>
+      {% endfor %}
+    </select>
+  </p>
+  <p>
+    {{input}}
+  </p>
+</div>

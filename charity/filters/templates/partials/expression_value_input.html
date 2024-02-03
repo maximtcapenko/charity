@@ -1,0 +1,33 @@
+<div>
+  <div id="{{ widget.attrs.id }}">
+
+  </div>
+  <script>
+    document.getElementById('{{widget.relation_id}}').addEventListener('change', function() {  
+        var controlArea = document.getElementById('{{ widget.attrs.id }}')
+        var input = document.getElementById('{{widget.relation_id}}')
+        var filedId = input.value
+
+        if (filedId == null || filedId == '') {
+          controlArea.innerHTML = ''
+          return
+        }
+        var request = new XMLHttpRequest()
+        request.onload = () => {
+            if (request.readyState == 4 && request.status == 200) {
+                var json = JSON.parse(request.response)
+                
+                var operand = document.getElementById('{{widget.operand_id}}')
+                if (operand != null){
+                  operand.parentNode.removeChild(operand)
+                }
+                controlArea.innerHTML = json.html
+              }
+        }
+        var url = '{{widget.fetch_url}}'.concat('?field_id=', filedId)
+        request.open('GET', url)
+        request.send()
+    })
+  </script>
+</div>
+  

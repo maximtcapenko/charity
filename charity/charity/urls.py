@@ -26,17 +26,18 @@ urlpatterns = [
     path("accounts/login/", auth_views.LoginView.as_view(template_name="login.html")),
     path("accounts/logout/", auth_views.LogoutView.as_view()),
     path('admin/', admin.site.urls),
-    path('funds/', include('funds.urls')),
+    path('budgets/', include('budgets.urls')),
     path('comments/', include('comments.urls')),
     path('customfields/', include('customfields.urls')),
+    path('files/', include('files.urls')),
+    path('filters/', include('filters.urls')),
+    path('funds/', include('funds.urls')),
     path('notifications/<uuid:id>/details/',
          common_views.view_notification_details, name='view_notification_details'),
+    path('processes/', include('processes.urls')),
     path('projects/', include('projects.urls')),
     path('tasks/', include('tasks.urls')),
     path('wards/', include('wards.urls')),
-    path('budgets/', include('budgets.urls')),
-    path('processes/', include('processes.urls')),
-    path('files/', include('files.urls'))
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,

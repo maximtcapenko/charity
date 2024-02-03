@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mt-4">Filters for {{ fund.name }}</h2>
+<ol class="breadcrumb mb-4">
+<li class="breadcrumb-item">
+    <a href="{% url 'funds:get_current_details' %}">{{ fund.name }}</a>
+</li>
+<li class="breadcrumb-item active">Filters</li>
+</ol>
+<div>
+  <a href="{% url 'filters:add_filter' %}" class="btn btn-link">Add filter</a>
+</div>
+<div class="card mb-4">
+  <div class="card-header">Custom Filters</div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <tbody>
+        {% for filter in page %}
+        <tr>
+          <td class="col-3 align-middle">
+            <h6><a href="{% url 'filters:get_details' filter.id %}">{{ filter.name }}</a></h6>
+              {{ filter.date_created }}
+          </td>
+          <td class="align-middle">
+             <span class="badge bg-primary">{{ filter.content_type.model }}</span>
+          </td>
+          <td class="align-middle">
+            {{ filter.notes }}
+          </td>
+          <td class="align-middle">
+            <a href="#" class="post-request">Remove</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% include 'paginator.html' with obj_page=page %}
+  </div>
+</div>
+{% include 'partials/js.html' %}
+{% include 'generic_errormodal.html' %}
+{% endblock %}

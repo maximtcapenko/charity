@@ -10,7 +10,7 @@ from funds.models import Fund
 
 class CustomField(Base):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    fund = models.ForeignKey(Fund, on_delete=models.PROTECT)
+    fund = models.ForeignKey(Fund, on_delete=models.PROTECT, related_name='custom_fields')
     attribute = models.OneToOneField(
         Attribute, on_delete=models.CASCADE, related_name='custom_field')
     is_public = models.BooleanField(default=False, null=False)

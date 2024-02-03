@@ -19,6 +19,14 @@ DATATYPE_CHOICES = (
     (Attribute.TYPE_ENUM, _('Multiple Choice')),
 )
 
+DATATYPE_DICT = {
+    Attribute.TYPE_TEXT: _('Text'),
+    Attribute.TYPE_DATE: _('Date'),
+    Attribute.TYPE_FLOAT: _('Float'),
+    Attribute.TYPE_INT: _('Integer'),
+    Attribute.TYPE_BOOLEAN: _('True / False'),
+    Attribute.TYPE_ENUM: _('Multiple Choice'),
+}
 
 def validate_field_name(value):
     import re

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mt-4">{{ filter.name }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_details' filter.fund_id %}">{{ filter.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'filters:get_list' %}">Filters</a>
+  </li>
+  <li class="breadcrumb-item active">Filter Details</li>
+</ol>
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row">
+      <div class="col">
+        <div class="bg-light text-dark">
+          <i class="fa-regular fa-clipboard"></i>
+          <strong>Description</strong>: {{ filter.notes }}
+        </div>
+      </div>
+      <div class="col">
+        <div class="bg-light text-dark">
+          <div>
+            <strong>Created</strong>: {{ filter.date_created }}
+          </div>
+          <div>
+            <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' filter.author.volunteer_profile.id %}">{{ filter.author.username }}</a>
+        </div>
+          <div>
+            <strong>Content type</strong>:
+            <span class="badge bg-primary">
+              {{ filter.content_type.model }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div>
+  <a href="{% url 'filters:add_expression' filter.id %}" class="btn btn-link">Add expression</a>
+</div>
+<div class="card mb-4">
+  <div class="card-header">
+    Filter expressions
+  </div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <tbody>
+      {% for expression in filter.expressions.all %}
+        <tr>
+          <td class="col-3 align-middle">
+            <h6>
+              <a href="#">{{ expression.field.attribute.name }}</a>
+            </h6>
+            {{ expression.date_created }}
+          </td>
+          <td class="align-middle">
+            <span class="badge bg-primary">
+            {{ expression.operand }}
+            </span>
+          </td>
+          <td class="align-middle">
+            <ul>
+            {% for value in expression.values.all %}
+              <li class="list-group-item">{{value.value}}</li>
+            {% endfor %}
+            </ul>
+          </td>
+          <td class="align-middle">
+            <a href="{% url 'filters:remove_expression' filter.id expression.id %}" class="post-request">Remove</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include 'partials/js.html' %}
+{% include 'generic_errormodal.html' %}
+{% endblock %}

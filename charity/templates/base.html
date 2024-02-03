@@ -13,6 +13,7 @@
         - {{ title }}
       {% endif %}
     </title>
+    <link rel="icon" href="{% static 'assets/img/logo.png' %}" type="image/png">
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'css/fixed-styles.css' %}">
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
@@ -103,7 +104,7 @@
               </a>
               <div>
                 <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="#">Filters</a>
+                    <a class="nav-link" href="{% url 'filters:get_list' %}">Filters</a>
                 </nav>
               </div>
            

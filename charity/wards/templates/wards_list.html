@@ -3,7 +3,7 @@
 {% load customtags %}
 {% render_partial 'funds.views.get_get_current_details_partial' title='Adoptees' %}
 <div>
-  <a href="{% url 'wards:create' %}" class="btn btn-link" >Add adoptee</a>
+  <a href="{% url 'wards:create' %}" class="btn btn-link">Add ward</a>
 </div>
 <div class="card mb-4">
   <div class="card-header">
@@ -11,6 +11,7 @@
     Adoptees
   </div>
   <div class="card-body">
+    {% render_partial 'filters.views.get_select_filters' model_name='ward' %}
     <table class="table table-striped">
       <tbody>
         {% for ward in page %}
