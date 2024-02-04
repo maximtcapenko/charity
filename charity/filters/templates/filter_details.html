@@ -6,7 +6,7 @@
     <a href="{% url 'funds:get_details' filter.fund_id %}">{{ filter.fund.name }}</a>
   </li>
   <li class="breadcrumb-item">
-    <a href="{% url 'filters:get_list' %}">Filters</a>
+    <a href="{% url 'filters:get_list' filter.content_type.model %}">Filters</a>
   </li>
   <li class="breadcrumb-item active">Filter Details</li>
 </ol>
@@ -36,6 +36,14 @@
         </div>
       </div>
     </div>
+    <div class="row mt-2">
+      <div class="row">
+        <div class="col-1">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <a href="{% url 'filters:edit_details' filter.id %}">Edit</a>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <div>
@@ -52,7 +60,7 @@
         <tr>
           <td class="col-3 align-middle">
             <h6>
-              <a href="#">{{ expression.field.attribute.name }}</a>
+              <a href="{% url 'filters:get_expression_details' filter.id expression.id %}">{{ expression.field.attribute.name }}</a>
             </h6>
             {{ expression.date_created }}
           </td>

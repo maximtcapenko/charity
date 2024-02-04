@@ -8,7 +8,7 @@
 <li class="breadcrumb-item active">Filters</li>
 </ol>
 <div>
-  <a href="{% url 'filters:add_filter' %}" class="btn btn-link">Add filter</a>
+  <a href="{% url 'filters:add_filter' content_type.model %}" class="btn btn-link">Add filter</a>
 </div>
 <div class="card mb-4">
   <div class="card-header">Custom Filters</div>
@@ -28,7 +28,7 @@
             {{ filter.notes }}
           </td>
           <td class="align-middle">
-            <a href="#" class="post-request">Remove</a>
+            <a href="{% url 'filters:remove_filter' filter.id %}" class="post-request">Remove</a>
           </td>
         </tr>
         {% endfor %}
