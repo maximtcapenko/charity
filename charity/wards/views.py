@@ -6,8 +6,7 @@ from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
-from commons.functions import user_should_be_volunteer, render_generic_form, \
-    wrap_dicts_page_to_objects_page
+from commons.functions import user_should_be_volunteer, render_generic_form
 from filters.models import Filter
 from projects.models import Project
 from .forms import CreateWardForm

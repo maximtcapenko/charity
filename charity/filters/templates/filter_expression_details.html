@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mt-4">{{ expression.field.attribute.name }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_details' expression.filter.fund_id %}">{{ expression.filter.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'filters:get_list' expression.filter.content_type.model %}">Filters</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'filters:get_details' expression.filter.id %}">{{ expression.filter.name }}</a>
+  </li>
+  <li class="breadcrumb-item active">Expression Details</li>
+</ol>
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row">
+      <div class="col">
+        <div class="bg-light text-dark">
+          <div>
+            <strong>Created</strong>: {{ expression.date_created }}
+          </div>
+          <div>
+            <strong>Field</strong>: 
+            <a href="{% url 'customfields:edit_field_details' expression.field.id %}">{{ expression.field.attribute.name }}</a>
+          </div>
+          <div>
+            <strong>Field type</strong>:
+            <span class="badge bg-primary">
+            {{ expression.field.attribute.datatype }}
+            </span>
+          </div>
+          <div>
+            <strong>Operand</strong>:
+            <span class="badge bg-primary">
+                {{ expression.operand }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div>
+  <a href="{% url 'filters:add_expression_value' expression.filter_id expression.id %}" class="btn btn-link">Add value</a>
+</div>
+<div class="card mb-4">
+  <div class="card-header">
+    Values
+  </div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <tbody>
+        {% for value in expression.values.all %}
+        <tr>
+          <td class="col-2 align-middle">
+            {{ value.value }}
+          </td>
+          <td class="align-middle">
+            {{ value.date_created }}
+          </td>
+        </tr>
+        {% endfor %}    
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

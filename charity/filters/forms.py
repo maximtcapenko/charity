@@ -1,11 +1,12 @@
-from typing import Any
 from django import forms
 from django.db.models import Q, Exists, OuterRef
 from django.urls import reverse
 
+from eav.models import Attribute
+
 from commons.forms import CustomLabeledModelChoiceField
 from commons.mixins import FormControlMixin, InitialValidationMixin
-from customfields.forms import DATATYPE_DICT
+from customfields.forms import DATATYPE_DICT, BaseCustomFieldsModelForm
 
 from .models import TYPE_OPERAND_MAPPING, Expression, Filter, ExpressionValue
 from .widgets import ExpressionFieldValue
@@ -85,3 +86,37 @@ class CreateFilterExpressionForm(
     class Meta:
         model = Expression
         exclude = ('id', 'date_created', 'filter')
+
+
+class AddExpressionValueForm(
+        forms.Form, InitialValidationMixin, FormControlMixin):
+    __initial__ = ['expression']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
+
+        expression = self.initial['expression']
+        attribute = expression.field.attribute
+        field = BaseCustomFieldsModelForm.FIELD_CLASSES.get(
+            attribute.datatype)()
+
+        if attribute.datatype == Attribute.TYPE_ENUM:
+            values = attribute.get_choices().values_list('value', 'value')
+            choices = [('', f'Select {attribute.name}')] + list(values)
+            field.choices = choices
+        elif attribute.datatype == Attribute.TYPE_DATE:
+            field.widget.attrs.update({'type': 'date'})
+
+        self.fields['value'] = field
+
+        FormControlMixin.__init__(self)
+
+    
+    def save(self):
+        instance = ExpressionValue(expression=self.initial['expression'])
+        value = self.cleaned_data['value']
+        instance.value = value
+        instance.save()
+        
+        return instance

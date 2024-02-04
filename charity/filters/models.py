@@ -74,7 +74,7 @@ class Filter(Base):
 
 
 class Expression(Base):
-    filter = models.ForeignKey(Filter, on_delete=models.PROTECT,
+    filter = models.ForeignKey(Filter, on_delete=models.CASCADE,
                                related_name='expressions')
     field = models.ForeignKey(CustomField, on_delete=models.PROTECT)
     operand = models.CharField(choices=Operand.choices, max_length=10)
@@ -110,3 +110,7 @@ class ExpressionValue(Base):
     @property
     def value(self):
         return self.get_value(self.expression.field.attribute)
+
+    @value.setter
+    def value(self, value):
+        self.set_value(self.expression.field.attribute, value)
