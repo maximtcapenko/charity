@@ -1,4 +1,5 @@
-from django.db.models import DecimalField, Exists, Sum, Subquery, OuterRef, Value
+from django.db.models import BooleanField, Case, DecimalField, \
+    Exists, Sum, Subquery, OuterRef, Value, When
 from django.db.models.functions import Coalesce
 
 from tasks.models import Expense
@@ -14,11 +15,13 @@ def get_budget_with_avaliable_amounts_queryset(fund):
         .values('budget_id').annotate(expense_sum=Sum('amount', default=0)).values('expense_sum')
 
     return Budget.objects.filter(fund=fund).annotate(
+        excess_payd = Case(When(payout_excess_contribution__isnull=False, then=True), default=False, output_field=BooleanField()),
         incomes_exist=Exists(Income.objects.filter(budget=OuterRef('pk'))),
         avaliable_income_amount=Coalesce(
             Subquery(approved_incomes_queryset), Value(0, output_field=DecimalField())),
         avaliable_expense_amount=Coalesce(Subquery(approved_expenses_queryset), Value(0, output_field=DecimalField()))) \
         .values('id', 'name', 'date_created',
+                'excess_payd',
                 'author__id',
                 'approvement__id', 
                 'approvement__is_rejected',

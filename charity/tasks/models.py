@@ -5,9 +5,10 @@ from django.contrib.auth.models import User
 
 from comments.models import Comment
 from commons.models import Base
+
+from budgets.models import Budget
 from files.models import Attachment
 from funds.models import Approvement, RequestReview
-from budgets.models import Budget
 from processes.models import Process, ProcessState
 from projects.models import Project
 from wards.models import Ward
@@ -67,6 +68,8 @@ class Task(Base):
     is_done = models.BooleanField(default=False)
     estimated_expense_amount = models.DecimalField(
         max_digits=10, decimal_places=2)
+    actual_expense_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0)
     process = models.ForeignKey(
         Process, on_delete=models.PROTECT, related_name='tasks')
     project = models.ForeignKey(
@@ -92,7 +95,7 @@ class Task(Base):
 
     @property
     def is_on_review(self):
-        return self.is_started and self.state_id and self.state.is_review_requested
+        return self.is_started and self.state_id and self.state.is_review_requested and not self.is_done
 
     @property
     def should_be_approved(self):
@@ -103,45 +106,9 @@ class Task(Base):
         return self.is_started and self.end_date is not None and self.end_date < datetime.date.today()
 
 
-def project_expired_tasks_count(self):
-    return Task.objects.filter(models.Q(project__id=self.id, is_done=False, is_started=True) &
-                               models.Q(end_date__isnull=False, end_date__lt=datetime.date.today())) \
-        .aggregate(total=models.Count('id'))['total']
-
-
-def project_active_tasks_count(self):
-    return self.tasks.filter(is_done=False, is_started=True) \
-        .aggregate(total=models.Count('id'))['total']
-
-
-def project_approved_budget(self):
-    return Task.objects.filter(project__id=self.id, expense__approvement__is_rejected=False) \
-        .aggregate(budget=models.Sum('expense__amount', default=0))['budget']
-
-
-def budget_approved_expenses(self):
-    return Expense.objects.filter(budget__id=self.id, approvement__is_rejected=False)\
-        .aggregate(budget=models.Sum('amount', default=0))['budget']
-
-
 def user_assigned_active_tasks(self):
     return self.assigned_tasks.filter(is_done=False)
 
-
-Project.add_to_class('active_tasks_count', property(
-    fget=project_active_tasks_count))
-
-Project.add_to_class('approved_budget', property(
-    fget=project_approved_budget
-))
-
-Project.add_to_class('expired_tasks_count', property(
-    fget=project_expired_tasks_count
-))
-
-Budget.add_to_class('avaliable_expenses_amount', property(
-    fget=budget_approved_expenses
-))
 
 User.add_to_class('assigned_active_tasks', property(
     fget=user_assigned_active_tasks

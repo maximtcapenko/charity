@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.functional import cached_property
+
 from commons.models import Base, Notification
 
 
@@ -34,6 +36,9 @@ class Approvement(Base):
     class Meta:
         ordering = ['date_created']
 
+    def __str__(self) -> str:
+        return 'rejected' if self.is_rejected else 'approved'
+
 
 class Contributor(Base):
     name = models.CharField(max_length=256, blank=False,
@@ -62,6 +67,12 @@ class Contribution(Base):
     contributor = models.ForeignKey(
         Contributor, on_delete=models.PROTECT, related_name='contributions')
 
+    @cached_property
+    def available_amount(self):
+        income_amount = self.incomes.aggregate(
+            income_amount=models.Sum('amount', default=0))['income_amount']
+        return self.amount - income_amount
+
 
 class RequestReview(Base):
     author = models.ForeignKey(
@@ -77,8 +88,8 @@ class RequestReview(Base):
         ordering = ['date_created']
 
 
-def fund_total_contributors_count(self):
-    return Contributor.objects.filter(fund__id=self.id).aggregate(total=models.Count('id'))['total']
+def user_fund(self):
+    return self.volunteer_profile.fund
 
 
 def fund_total_volunteers_count(self):
@@ -88,5 +99,7 @@ def fund_total_volunteers_count(self):
 Fund.add_to_class('total_volunteers_count', property(
     fget=fund_total_volunteers_count))
 
-Fund.add_to_class('total_contributors_count', property(
-    fget=fund_total_contributors_count))
+
+fund_cached_property = cached_property(user_fund, name='fund')
+User.add_to_class('fund', fund_cached_property)
+fund_cached_property.__set_name__(User, 'fund')

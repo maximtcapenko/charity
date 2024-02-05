@@ -1,9 +1,11 @@
 {% if task.is_started and not task.state %}
   <span class="badge bg-success">started</span>
-{% elif task.state and not task.state.is_review_requested %}
+{% elif task.state and not task.state.is_review_requested and not task.is_done%}
   <span class="badge bg-primary">in progress</span>
 {% elif task.is_started and task.state and task.state.is_review_requested %}
   <span class="badge bg-info text-dark">on review</span>
+{% elif task.is_done %}
+  <span class="badge bg-success">done</span>
 {% else %}
   <span class="badge bg-secondary">not started</span>
 {% endif %}

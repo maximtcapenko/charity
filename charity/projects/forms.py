@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from commons.mixins import InitialValidationMixin, FormControlMixin
 from commons.forms import CustomLabeledModelChoiceField
-from commons.functions import validate_modelform_field, get_reviewer_label
+from commons.functional import validate_modelform_field, get_reviewer_label
 
 from processes.models import Process, ProcessState
 from wards.models import Ward

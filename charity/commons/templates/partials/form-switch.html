@@ -1,0 +1,4 @@
+<div class="form-check form-switch">
+    <input type="checkbox" name="{{ widget.name }}"{% if widget.value != None %} value="{{ widget.value|stringformat:'s' }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+    <label class="form-check-label" for="{{widget.attrs.id}}">{{widget.attrs.label}}</label>
+</div>

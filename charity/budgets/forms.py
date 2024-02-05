@@ -1,16 +1,19 @@
+import datetime
+
 from django import forms
 from django.contrib.auth.models import User
 from django.db import models
 
 from commons.mixins import InitialValidationMixin, FormControlMixin
-from commons.functions import validate_modelform_field, should_be_approved, \
+from commons.functional import validate_modelform_field, should_be_approved, \
     get_reviewer_label
 from commons.forms import CustomLabeledModelChoiceField
 
 from funds.models import Approvement
+from funds.forms import CreateContributionForm
 from tasks.models import Expense, Task
 
-from .functions import get_budget_available_income
+from .functional import get_budget_available_income
 from .messages import Warnings
 from .models import Budget, Income, Contribution
 from .signals import exprense_created, budget_intem_reviewer_assigned
@@ -47,7 +50,7 @@ class CreateBudgetForm(
     class Meta:
         model = Budget
         exclude = ['id', 'date_creted',
-                   'author', 'is_closed',
+                   'author', 'is_closed', 'payout_excess_contribution',
                    'approvement', 'approvements', 'reviewers']
 
 
@@ -70,6 +73,23 @@ class UpdateBudgetForm(CreateBudgetForm):
             raise forms.ValidationError(
                 Warnings.BUDGET_MANAGER_CANNOT_BE_UNDEFINED)
         return manager
+
+
+class CreatePayoutExcessContributionForm(CreateContributionForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['amount'].disabled = True
+        self.fields.pop('contribution_date')
+
+    def save(self):
+        self.instance.contribution_date = datetime.datetime.utcnow()
+        contribution = super().save()
+        
+        budget = self.initial['budget']
+        budget.payout_excess_contribution = contribution
+        budget.save()
+
+        return budget
 
 
 class CreateIncomeForm(

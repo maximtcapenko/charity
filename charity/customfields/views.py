@@ -7,7 +7,7 @@ from django.views.decorators.http import require_http_methods
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
-from commons.functions import render_generic_form, user_should_be_volunteer
+from commons.functional import render_generic_form, user_should_be_volunteer
 from wards.models import Ward
 
 from .forms import CustomFieldCreateForm
@@ -17,7 +17,7 @@ from .models import CustomField
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
 def add_custom_field(request):
-    fund = request.user.volunteer_profile.fund
+    fund = request.user.fund
     content_type = ContentType.objects.get_for_model(Ward)
     return render_generic_form(
         request=request, form_class=CustomFieldCreateForm,
@@ -34,7 +34,7 @@ def add_custom_field(request):
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
 def edit_field_details(request, id):
-    fund = request.user.volunteer_profile.fund
+    fund = request.user.fund
     custom_field = get_object_or_404(
         CustomField.objects.filter(fund=fund), pk=id)
     content_type = ContentType.objects.get_for_model(Ward)
@@ -56,7 +56,7 @@ def edit_field_details(request, id):
 def remove_custom_field(request, id):
     return_url = reverse('customfields:get_list')
     custom_field = get_object_or_404(
-        CustomField.objects.filter(fund=request.user.volunteer_profile.fund),
+        CustomField.objects.filter(fund=request.user.fund),
         pk=id)
 
     try:
@@ -71,7 +71,7 @@ def remove_custom_field(request, id):
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET'])
 def get_list(request):
-    fund = request.user.volunteer_profile.fund
+    fund = request.user.fund
     paginator = Paginator(CustomField.objects.filter(
         fund=fund), DEFAULT_PAGE_SIZE)
 

@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from commons import DEFAULT_PAGE_SIZE
-from commons.functions import render_generic_form, user_should_be_volunteer
+from commons.functional import render_generic_form, user_should_be_volunteer
 
 from customfields.models import CustomField
 
@@ -22,7 +22,7 @@ from .widgets import ExpressionValueWidget
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
 def add_filter(request, model_name):
-    fund = request.user.volunteer_profile.fund
+    fund = request.user.fund
     return_url = reverse('filters:get_list', args=[model_name])
     content_type = get_object_or_404(ContentType, model=model_name)
     return render_generic_form(
@@ -48,13 +48,13 @@ def get_filter_details(request, id):
                 Prefetch(
                     'expressions',
                     Expression.objects.select_related('field', 'field__attribute')))
-            .filter(fund=request.user.volunteer_profile.fund), pk=id)})
+            .filter(fund=request.user.fund), pk=id)})
 
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
 def edit_filter_details(request, id):
-    fund = request.user.volunteer_profile.fund
+    fund = request.user.fund
     filter = get_object_or_404(Filter.objects.filter(fund=fund), pk=id)
     return_url = reverse('filters:get_details', args=[id])
 
@@ -76,7 +76,7 @@ def edit_filter_details(request, id):
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['POST'])
 def remove_filter(request, id):
-    fund = request.user.volunteer_profile.fund
+    fund = request.user.fund
     filter = get_object_or_404(Filter.objects.filter(fund=fund), pk=id)
     return_url = reverse('filters:get_list', args=[filter.content_type.model])
     filter.delete()
@@ -87,7 +87,7 @@ def remove_filter(request, id):
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
 def add_expression(request, id):
-    fund = request.user.volunteer_profile.fund
+    fund = request.user.fund
     return_url = reverse('filters:get_details', args=[id])
     return render_generic_form(
         request,
@@ -105,7 +105,7 @@ def add_expression(request, id):
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET'])
 def get_expression_details(request, id, expression_id):
-    fund = request.user.volunteer_profile.fund
+    fund = request.user.fund
     expression = get_object_or_404(
         Expression.objects.select_related('field')
         .filter(filter__id=id, filter__fund=fund), pk=expression_id)
@@ -118,7 +118,7 @@ def get_expression_details(request, id, expression_id):
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
 def add_expression_value(request, id, expression_id):
-    fund = request.user.volunteer_profile.fund
+    fund = request.user.fund
     return_url = reverse('filters:get_expression_details',
                          args=[id, expression_id])
     expression = get_object_or_404(Expression.objects.filter(
@@ -135,7 +135,7 @@ def add_expression_value(request, id, expression_id):
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
 def remove_expression(request, id, expression_id):
-    fund = request.user.volunteer_profile.fund
+    fund = request.user.fund
     return_url = reverse('filters:filter_details', args=[id])
     expression = get_object_or_404(Expression.objects.filter(
         filter_id=id, filter__fund=fund), pk=expression_id)
@@ -147,7 +147,7 @@ def remove_expression(request, id, expression_id):
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET'])
 def get_list(request, model_name):
-    fund = request.user.volunteer_profile.fund
+    fund = request.user.fund
     content_type = get_object_or_404(ContentType, model=model_name)
 
     paginator = Paginator(Filter.objects.filter(
@@ -173,7 +173,7 @@ def get_filed_value_input_details(request):
 def get_select_filters(request, model_name):
     selected_filter = request.GET.get('filter_id')
     filters = Filter.objects.filter(
-        fund=request.user.volunteer_profile.fund,
+        fund=request.user.fund,
         content_type__model=model_name).all()
 
     return render(request, 'partials/select_filter.html', {

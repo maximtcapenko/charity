@@ -2,7 +2,7 @@
   <div class="card" style="max-width: 18rem;">
     <div class="card-header">
       <div class="row">
-        <div class="col">Step #{{ process_state.order_position }}</div>
+        <div class="col">Step #{{ state.order_position }}</div>
         <div class="col d-flex justify-content-end">
           <div>
             {% if not state.is_inactive %}
@@ -15,13 +15,15 @@
       </div>
     </div>
     <div class="card-body">
-      <h5 class="card-title">{{ state.name }}</h5>
+      <h5 class="card-title">
+        <a href="{% url 'processes:edit_state_details' process.id state.id %}">{{ state.name }}</a>
+      </h5>
       <p class="card-text bg bg-light">{{ state.notes }}</p>
       <p>
         <strong>Created</strong>: {{ state.date_created }}
         {% if state.is_approvement_required %}
         <strong>Required</strong>: 
-          <span class="badge bg-info">approvement</span>
+          <span class="badge bg-warning text-dark">approvement</span>
         {% endif %}
       </p>
     </div>

@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from commons import DEFAULT_PAGE_SIZE
-from commons.functions import user_should_be_volunteer, user_should_be_superuser, \
+from commons.functional import user_should_be_volunteer, user_should_be_superuser, \
     render_generic_form, wrap_dicts_page_to_objects_page
 
 from budgets.models import Income
@@ -66,14 +66,14 @@ def get_details(request, id):
 def get_get_current_details_partial(request,  *args, **kwargs):
     return render(request, 'partials/fund_details.html', {
         'title': kwargs.get('title'),
-        'fund': get_object_or_404(Fund, pk=request.user.volunteer_profile.fund_id)
+        'fund': get_object_or_404(Fund, pk=request.user.fund.id)
     })
 
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET'])
 def get_current_details(request):
-    return get_details(request, request.user.volunteer_profile.fund_id)
+    return get_details(request, request.user.fund.id)
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -81,7 +81,7 @@ def get_current_details(request):
 def get_contribution_details(request, id):
     contribution = get_object_or_404(
         Contribution.objects.filter(
-            fund_id=request.user.volunteer_profile.fund_id),
+            fund_id=request.user.fund.id),
         pk=id)
     queryset = get_contribution_details_queryset(contribution)
 
@@ -100,7 +100,7 @@ def get_contribution_details(request, id):
 def get_contributor_details(request, id):
     contributor = get_object_or_404(
         Contributor.objects.filter(
-            fund_id=request.user.volunteer_profile.fund_id),
+            fund_id=request.user.fund.id),
         pk=id)
 
     queryset = get_contributor_budgets_queryset(contributor)
@@ -120,7 +120,7 @@ def get_contributor_details(request, id):
 def get_volunteer_details(request, id):
     volunteer = get_object_or_404(
         VolunteerProfile.objects.filter(
-            fund__id=request.user.volunteer_profile.fund_id),
+            fund__id=request.user.fund.id),
         pk=id)
     return render(request, 'fund_volunteer_details.html', {
         'volunteer': volunteer
@@ -134,7 +134,7 @@ def add_volunteer_cover(request, id):
     if cover:
         volunteer = get_object_or_404(
             VolunteerProfile.objects.filter(
-                fund__id=request.user.volunteer_profile.fund_id),
+                fund__id=request.user.fund.id),
             pk=id)
         volunteer.cover = cover
         volunteer.save()
@@ -149,11 +149,11 @@ def edit_contributor_details(request, id):
         'title': 'Edit contributor',
         'return_url': reverse('funds:get_contributor_details', args=[id]),
         'initial': {
-            'fund': request.user.volunteer_profile.fund
+            'fund': request.user.fund
         },
         'instance': get_object_or_404(
             Contributor.objects.filter(
-                fund_id=request.user.volunteer_profile.fund_id),
+                fund_id=request.user.fund.id),
             pk=id)
     })
 
@@ -163,7 +163,7 @@ def edit_contributor_details(request, id):
 def edit_volunteer_profile(request, id):
     volunteer = get_object_or_404(
         VolunteerProfile.objects.filter(
-            fund__id=request.user.volunteer_profile.fund_id),
+            fund__id=request.user.fund.id),
         pk=id)
 
     return render_generic_form(
@@ -173,7 +173,7 @@ def edit_volunteer_profile(request, id):
             'return_url': reverse('funds:get_volunteer_details', args=[id]),
             'instance': volunteer,
             'initial': {
-                'fund': request.user.volunteer_profile.fund
+                'fund': request.user.fund
             },
         })
 
@@ -188,7 +188,7 @@ def add_contribution(request):
             'title': 'Add contribution',
             'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=contributions'),
             'initial': {
-                'fund': request.user.volunteer_profile.fund,
+                'fund': request.user.fund,
                 'author': request.user
             }
         })
@@ -204,7 +204,7 @@ def add_volunteer(request):
             'title': 'Add volunteer',
             'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=volunteers'),
             'initial': {
-                'fund': request.user.volunteer_profile.fund
+                'fund': request.user.fund
             }
         }
     )
@@ -220,7 +220,7 @@ def add_contributor(request):
             'title': 'Add contributor',
             'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=contributors'),
             'initial': {
-                'fund': request.user.volunteer_profile.fund
+                'fund': request.user.fund
             }
         }
     )

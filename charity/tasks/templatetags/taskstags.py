@@ -2,7 +2,7 @@ from django.utils.safestring import mark_safe
 from django import template
 from django.template import loader
 
-from commons.functions import should_be_approved, wrap_dict_set_to_objects_list
+from commons.functional import should_be_approved, wrap_dict_set_to_objects_list
 from tasks.querysets import get_task_state_review_count_queryset
 
 register = template.Library()

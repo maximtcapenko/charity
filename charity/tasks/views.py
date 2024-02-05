@@ -6,18 +6,17 @@ from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
-from commons.functions import user_should_be_volunteer, render_generic_form, \
-    wrap_dicts_page_to_objects_page
+from commons.functional import user_should_be_volunteer, render_generic_form
 from processes.models import ProcessState
 from projects.models import Project
 
 from .querysets import get_available_task_process_states_queryset
 from .forms import CreateTaskForm, UpdateTaskForm, \
     ActivateTaskStateForm, ApproveTaskStateForm, TaskStateReviewRequestForm
-from .functions import get_task_or_404
+from .functional import get_task_or_404
 from .messages import Warnings
-from .models import Comment
-from .requirements import task_state_is_ready_for_review, task_state_is_ready_for_review_request
+from .requirements import task_state_is_ready_for_review, \
+    task_state_is_ready_for_review_request
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -25,7 +24,7 @@ from .requirements import task_state_is_ready_for_review, task_state_is_ready_fo
 def create(request):
     project_id = request.GET.get('project_id')
     project = get_object_or_404(Project.objects.filter(
-        fund_id=request.user.volunteer_profile.fund_id
+        fund=request.user.fund
     ), pk=project_id)
 
     return render_generic_form(
@@ -54,6 +53,13 @@ def edit_details(request, id):
             }
         }
     )
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET', 'POST'])
+def close_task(request, id):
+    task = get_task_or_404(request, id)
+    pass
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -99,7 +105,7 @@ def approve_task_state(request, task_id, id):
             'initial': {
                 'author': request.user,
                 'state': state,
-                'fund': request.user.volunteer_profile.fund,
+                'fund': request.user.fund,
                 'task': task
             }
         }
@@ -125,7 +131,7 @@ def request_task_state_review(request, task_id, id):
                 'initial': {
                     'author': request.user,
                     'state': state,
-                    'fund': request.user.volunteer_profile.fund,
+                    'fund': request.user.fund,
                     'task': task
             }
         }
@@ -148,7 +154,8 @@ def get_details(request, id):
 
     task = get_task_or_404(request, id)
 
-    paginator = Paginator(ProcessState.objects.filter(process_id=task.process_id).all(), DEFAULT_PAGE_SIZE)
+    paginator = Paginator(ProcessState.objects.filter(
+        process_id=task.process_id).all(), DEFAULT_PAGE_SIZE)
 
     return render(request, 'task_details.html', {
         'title': 'Task',

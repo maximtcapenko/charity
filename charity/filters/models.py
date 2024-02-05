@@ -69,8 +69,12 @@ class Filter(Base):
     name = models.CharField(max_length=256)
     notes = models.TextField()
     author = models.ForeignKey(User, on_delete=models.PROTECT)
-    fund = models.ForeignKey(Fund, on_delete=models.PROTECT, related_name='filters')
+    fund = models.ForeignKey(
+        Fund, on_delete=models.PROTECT, related_name='filters')
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.name
 
 
 class Expression(Base):
@@ -79,14 +83,17 @@ class Expression(Base):
     field = models.ForeignKey(CustomField, on_delete=models.PROTECT)
     operand = models.CharField(choices=Operand.choices, max_length=10)
 
+    def __str__(self):
+        return self.field.attribute.name
+
     @property
     def is_searchable(self):
         return self.field.is_searchable
 
     def get_expression(self, model):
-        if not  hasattr(model, '_eav_config_cls'):
+        if not hasattr(model, '_eav_config_cls'):
             return None
-        
+
         operand = OPERAND_MAPPING.get(self.operand)
         return operand(model._eav_config_cls(), self.field.attribute, self.values.all())
 
@@ -114,3 +121,6 @@ class ExpressionValue(Base):
     @value.setter
     def value(self, value):
         self.set_value(self.expression.field.attribute, value)
+    
+    def __str__(self):
+        return self.value

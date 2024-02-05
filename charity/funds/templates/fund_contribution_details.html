@@ -5,7 +5,7 @@
   <h2 class="mt-4">{{ process.name }}</h2>
   <ol class="breadcrumb mb-4">
     <li class="breadcrumb-item active">
-      <a href="{% url 'funds:get_current_details'%}?tab=contributions"> {{ user.volunteer_profile.fund.name }} </a>
+      <a href="{% url 'funds:get_current_details'%}?tab=contributions"> {{ user.fund.name }} </a>
     </li>
     <li class="breadcrumb-item active">Contribution Details</li>
   </ol>
@@ -33,9 +33,11 @@
                 <div>
                   <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' contribution.author.volunteer_profile.id %}">{{ contribution.author.username }}</a>
                 </div>
-               
                 <div>
                   <strong>Amount</strong>: {{ contribution.amount|floatformat:'2g' }}
+                </div>
+                <div>
+                  <strong>Available Amount</strong>: {{ contribution.available_amount|floatformat:'2g'}}
                 </div>
               </div>  
             </div>

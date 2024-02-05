@@ -5,7 +5,7 @@ from django.db.models import Max
 from django.contrib.auth.models import User
 
 from commons.forms import CustomLabeledModelChoiceField
-from commons.functions import should_be_approved, get_reviewer_label
+from commons.functional import should_be_approved, get_reviewer_label
 from commons.mixins import FormControlMixin, InitialValidationMixin
 
 from files.forms import CreateAttachmentForm
@@ -82,7 +82,7 @@ class CreateTaskForm(
     class Meta:
         model = Task
         exclude = ['date_created', 'id', 'expense', 'state', 'comments',
-                   'states', 'subscribers', 'author',
+                   'states', 'subscribers', 'author', 'actual_expense_amount',
                    'attachments', 'order_position', 'is_done', 'is_started']
 
 
