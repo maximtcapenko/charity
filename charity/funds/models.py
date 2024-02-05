@@ -36,6 +36,9 @@ class Approvement(Base):
     class Meta:
         ordering = ['date_created']
 
+    def __str__(self) -> str:
+        return 'rejected' if self.is_rejected else 'approved'
+
 
 class Contributor(Base):
     name = models.CharField(max_length=256, blank=False,
@@ -64,7 +67,7 @@ class Contribution(Base):
     contributor = models.ForeignKey(
         Contributor, on_delete=models.PROTECT, related_name='contributions')
 
-    @property
+    @cached_property
     def available_amount(self):
         income_amount = self.incomes.aggregate(
             income_amount=models.Sum('amount', default=0))['income_amount']
@@ -89,10 +92,6 @@ def user_fund(self):
     return self.volunteer_profile.fund
 
 
-def fund_total_contributors_count(self):
-    return Contributor.objects.filter(fund__id=self.id).aggregate(total=models.Count('id'))['total']
-
-
 def fund_total_volunteers_count(self):
     return VolunteerProfile.objects.filter(fund__id=self.id).aggregate(total=models.Count('id'))['total']
 
@@ -100,9 +99,7 @@ def fund_total_volunteers_count(self):
 Fund.add_to_class('total_volunteers_count', property(
     fget=fund_total_volunteers_count))
 
-Fund.add_to_class('total_contributors_count', property(
-    fget=fund_total_contributors_count))
 
 fund_cached_property = cached_property(user_fund, name='fund')
 User.add_to_class('fund', fund_cached_property)
-fund_cached_property.__set_name__(User, "fund")
+fund_cached_property.__set_name__(User, 'fund')
