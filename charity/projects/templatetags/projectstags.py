@@ -2,7 +2,7 @@ from django.utils.safestring import mark_safe
 from django import template
 from django.template import loader
 
-from commons.functions import wrap_dict_set_to_objects_list
+from commons.functional import wrap_dict_set_to_objects_list
 from tasks.querysets import get_project_tasks_comments_count_queryset
 
 register = template.Library()
@@ -32,7 +32,7 @@ def render_tasks_board(context, project, tasks):
                     'comments_count': comments_count.comments_count if comments_count else 0
                 }, request, using=None)
 
-            elif task.is_started and not task.is_on_review:
+            elif task.is_started and not task.is_on_review and not task.is_done:
                 in_progress_tasks += loader.render_to_string(task_template_name, {
                     'task': task,
                     'comments_count': comments_count.comments_count if comments_count else 0

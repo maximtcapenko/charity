@@ -7,7 +7,8 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from commons import DEFAULT_PAGE_SIZE
-from commons.functions import resolve_many_2_many_attr, user_should_be_volunteer, render_generic_form
+from commons.functional import resolve_many_2_many_attr, \
+    user_should_be_volunteer, render_generic_form
 
 from .forms import CreateAttachmentForm
 from .models import Attachment
@@ -20,7 +21,7 @@ def attach_file(request, model, target_id):
     return_url = f"{reverse('%s:get_details' % content_type.app_label, args=[target_id])}?tab=files"
     initial = {
         'author': request.user,
-        'fund': request.user.volunteer_profile.fund,
+        'fund': request.user.fund,
         'target_id': target_id,
         'target_content_type': content_type
     }

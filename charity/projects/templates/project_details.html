@@ -47,9 +47,9 @@
               <a href="" class="link-disabled">Edit</a>
             {% endif %}
           </div>
-          <div class="col">
-            <i class="fa-solid fa-lock"></i>
-            <a href="{% url 'projects:close' project.id %}">Close</a>
+          <div class="col-2">
+            <i class="fa-solid fa-flag-checkered"></i>
+            <a href="{% url 'projects:close' project.id %}">Complete</a>
           </div>
         </div>
       </div>

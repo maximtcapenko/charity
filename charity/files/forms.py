@@ -1,6 +1,6 @@
 from django import forms
 
-from commons.functions import resolve_many_2_many_attr, resolve_rel_attr_path
+from commons.functional import resolve_many_2_many_attr, resolve_rel_attr_path
 from commons.mixins import FormControlMixin, FileUploadMixin, InitialValidationMixin
 
 from funds.models import Fund

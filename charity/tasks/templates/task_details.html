@@ -64,6 +64,9 @@
             </div>
           </div>
           <div>
+            <strong>Actual expenses</strong>: {{task.actual_expense_amount|floatformat:'2g'}}
+          </div>
+          <div>
             <strong>Process</strong>: <a href="{% url 'processes:get_details' task.process_id%}">{{ task.process.name }}</a>
           </div>
           <div>
@@ -77,9 +80,19 @@
       </div>
     </div>
     <div class="row mt-2">
-      <div>
+      <div class="col-1">
         <i class="fa-solid fa-pen-to-square"></i>
-        <a href="{% url 'tasks:edit_details' task.id %}">Edit</a>
+        <a {% if task.is_done %}
+             class="link-disabled"
+           {% else %}
+             href="{% url 'tasks:edit_details' task.id %}"
+           {% endif %}>Edit</a>
+      </div>
+      <div class="col-2">
+        <i class="fa-solid fa-flag-checkered"></i>
+        <a {% if task.is_done %}
+             class="link-disabled"
+           {% endif %} href="#">Complete</a>
       </div>
     </div>
   </div>

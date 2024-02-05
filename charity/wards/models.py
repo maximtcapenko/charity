@@ -33,12 +33,4 @@ class Ward(Base):
         return self.name
 
 
-def fund_total_wards_count(self):
-    return Ward.objects.filter(fund__id=self.id).aggregate(total=models.Count('id'))['total']
-
-
-Fund.add_to_class('total_wards_count', property(
-    fget=fund_total_wards_count))
-
-
 eav.register(Ward, CustomFieldsEvaConfig)

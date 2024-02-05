@@ -3,7 +3,7 @@
 <h2 class="mt-4">{{ process.name }}</h2>
 <ol class="breadcrumb mb-4">
   <li class="breadcrumb-item active">
-    <a href="{% url 'funds:get_current_details'%}"> {{ user.volunteer_profile.fund.name }} </a>
+    <a href="{% url 'funds:get_current_details'%}"> {{ user.fund.name }} </a>
   </li>
   <li class="breadcrumb-item active">
     <a href="{% url 'processes:get_list'%}">Processes</a>

@@ -1,9 +1,19 @@
 from django import template
 
-from commons.functions import should_be_approved
+from commons.functional import should_be_approved
 from budgets import requirements
 
 register = template.Library()
+
+
+@register.filter
+def budget_is_approved(budget):
+    return should_be_approved(budget)
+
+
+@register.filter
+def budget_back_contribution_canbe_added(budget, user):
+    return should_be_approved(budget) and not budget.payout_excess_contribution and budget.avaliable_income_amount > 0
 
 
 @register.filter

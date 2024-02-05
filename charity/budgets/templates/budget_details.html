@@ -32,13 +32,21 @@
               <strong>Manager</strong>: <a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.manager.username }}</a>
             </div>
             <div>
-              <strong>Total income amount</strong>: {{ total_approved_amount|floatformat:'2g' }}
+              <strong>Total income amount</strong>: {{ budget.total_approved_amount|floatformat:'2g' }}
             </div>
             <div>
-              <strong>Total expense amount</strong>: {{ total_approved_expenses_amount|floatformat:'2g' }}
+              <strong>Total expense amount</strong>: {{ budget.total_approved_expenses_amount|floatformat:'2g' }}
             </div>
             <div>
-              <strong>Avaliable amount</strong>: {{ total_avaliable_amount|floatformat:'2g' }}
+            </div>
+            <div>
+              {% if budget.payout_excess_contribution %}
+                <strong>Paid excess</strong>: <a href="{% url 'funds:get_contribution_details' budget.payout_excess_contribution.id%}">{{budget.payout_excess_contribution.amount|floatformat:'2g'}}</a>
+              {% elif not budget|budget_is_approved %}
+                <strong>Avaliable amount</strong>: {{ budget.avaliable_income_amount|floatformat:'2g' }}
+              {% else %}
+                <strong>Avaliable excess</strong>: {{ budget.avaliable_income_amount|floatformat:'2g' }}
+              {% endif %}
             </div>
             <div>
               {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
@@ -55,6 +63,14 @@
                 {% else %}
                   class="link-disabled" href=""
                 {% endif %}>Edit</a>
+          </div>
+          <div class="col">
+            <i class="fa-solid fa-arrow-up"></i>
+            <a {% if budget|budget_back_contribution_canbe_added:user %}
+                 href="{% url 'budgets:add_budget_excess_contribution' budget.id %}"
+               {% else %}
+                  class="link-disabled"
+               {% endif %}>Payout</a>
           </div>
         </div>
       </div>

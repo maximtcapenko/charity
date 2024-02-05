@@ -34,9 +34,12 @@ class FormControlMixin:
         for field_name in self.fields:
             field = self.fields[field_name]
             if (isinstance(field.widget, forms.CheckboxInput)):
+                field.widget.template_name = 'partials/form-switch.html'
                 field.widget.attrs.update({
+                    'label': field.label,
                     'class': 'form-check-input'
                 })
+                field.label = False
             elif (isinstance(field.widget, forms.DateInput)):
                 field.widget = forms.DateInput(
                     attrs={'type': 'date', 'class': 'form-control'})

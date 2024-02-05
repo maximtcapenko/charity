@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from commons import DEFAULT_PAGE_SIZE
-from commons.functions import user_should_be_volunteer, wrap_dicts_page_to_objects_page
+from commons.functional import user_should_be_volunteer, wrap_dicts_page_to_objects_page
 from .forms import CreateCommentForm
 from .querysets import get_comments_with_reply_count_queryset
 from .models import Comment
@@ -19,7 +19,7 @@ def add_comment(request, model, id):
     return_url = f"{reverse('%s:get_details' % content_type.app_label, args=[id])}?tab=comments"
     initial = {
         'author': request.user,
-        'fund': request.user.volunteer_profile.fund,
+        'fund': request.user.fund,
         'target_id': id,
         'target_content_type': content_type
     }
@@ -37,7 +37,7 @@ def add_comment(request, model, id):
         'return_url': return_url,
         'title': 'Add new topic',
         'form': form,
-        'fund': request.user.volunteer_profile.fund
+        'fund': request.user.fund
     })
 
 
@@ -50,7 +50,7 @@ def add_reply_to_comment(request, model, id, comment_id):
 
     initial = {
         'author': request.user,
-        'fund': request.user.volunteer_profile.fund,
+        'fund': request.user.fund,
         'target_id': id,
         'target_content_type': content_type,
         'reply': comment
@@ -72,7 +72,7 @@ def add_reply_to_comment(request, model, id, comment_id):
         'model_name': model,
         'target_id': id,
         'comment': comment,
-        'fund': request.user.volunteer_profile.fund
+        'fund': request.user.fund
     })
 
 

@@ -60,7 +60,7 @@ def get_available_project_wards_queryset(project, **kwargs):
 
     return Ward.active_objects. \
         filter(Q(projects__in=[project]) & ~
-               Exists(Task.objects.filter(task_q)))
+               Exists(Task.objects.filter(Q(is_done=False) & task_q)))
 
 
 def get_available_task_rewiewers_queryset(task):

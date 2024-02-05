@@ -6,7 +6,7 @@ from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
-from commons.functions import user_should_be_volunteer, render_generic_form
+from commons.functional import user_should_be_volunteer, render_generic_form
 from filters.models import Filter
 from projects.models import Project
 from .forms import CreateWardForm
@@ -20,7 +20,7 @@ def add_ward_cover(request, id):
     if cover:
         ward = get_object_or_404(
             Ward.objects.filter(
-                fund__id=request.user.volunteer_profile.fund_id),
+                fund=request.user.fund),
             pk=id)
         ward.cover = cover
         ward.save()
@@ -37,7 +37,7 @@ def create(request):
             'title': 'Add ward',
             'return_url': reverse('wards:get_list'),
             'initial': {
-                'fund': request.user.volunteer_profile.fund
+                'fund': request.user.fund
             }
         })
 
@@ -47,14 +47,14 @@ def create(request):
 @require_http_methods(['GET', 'POST'])
 def edit_details(request, id):
     ward = get_object_or_404(Ward.objects.filter(
-        fund_id=request.user.volunteer_profile.fund_id), pk=id)
+        fund=request.user.fund), pk=id)
 
     return render_generic_form(
         request=request, form_class=CreateWardForm, context={
             'title': 'Edit ward',
             'return_url': reverse('wards:get_details', args=[ward.id]),
             'initial': {
-                'fund': request.user.volunteer_profile.fund
+                'fund': request.user.fund
             },
             'instance': ward
         })
@@ -64,7 +64,7 @@ def edit_details(request, id):
 @login_required
 @require_http_methods(['GET'])
 def get_list(request):
-    queryset = Ward.objects.filter(fund_id=request.user.volunteer_profile.fund_id)
+    queryset = Ward.objects.filter(fund=request.user.fund)
     filter_id = request.GET.get('filter_id')
     if filter_id:
         filter = get_object_or_404(Filter, pk=filter_id)
@@ -99,7 +99,7 @@ def get_details(request, id):
         tab = default_tab
 
     ward = get_object_or_404(Ward.objects.filter(
-        fund_id=request.user.volunteer_profile.fund_id), pk=id)
+        fund=request.user.fund), pk=id)
 
     return render(request, 'ward_details.html', {
         'ward': ward,

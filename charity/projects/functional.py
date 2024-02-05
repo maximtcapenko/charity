@@ -10,7 +10,7 @@ from .requirements import user_should_be_project_author_or_leader
 def get_project_or_404(request, project_id):
     return get_object_or_404(
         Project.objects.filter(
-            fund__id=request.user.volunteer_profile.fund_id),
+            fund=request.user.fund),
         pk=project_id)
 
 

@@ -20,7 +20,7 @@ def get_budget_available_income(budget):
 
 def get_budget_or_404(request, id):
     return get_object_or_404(Budget.objects.filter(
-        fund_id=request.user.volunteer_profile.fund_id), pk=id)
+        fund=request.user.fund), pk=id)
 
 
 def validate_pre_requirements(request, instance, return_url, action=None):

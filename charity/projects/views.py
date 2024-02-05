@@ -9,7 +9,7 @@ from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
-from commons.functions import render_generic_form, user_should_be_volunteer, \
+from commons.functional import render_generic_form, user_should_be_volunteer, \
     wrap_dicts_page_to_objects_page, get_wrapped_page, get_page
 
 from funds.models import Approvement
@@ -19,7 +19,7 @@ from wards.models import Ward
 
 from .forms import CreateProjectForm, AddWardToProjectForm, \
     AddProcessToProjectForm, UpdateProjectForm, AddProjectReviewerForm
-from .functions import get_project_or_404, validate_pre_requirements
+from .functional import get_project_or_404, validate_pre_requirements
 from .querysets import get_project_processes_with_tasks_queryset, \
     get_project_wards_with_tasks_queryset, get_projects_with_tasks_queryset, \
     get_project_rewiewers_with_tasks_queryset
@@ -40,7 +40,7 @@ def add_project(request):
             'title': 'Add project',
             'initial': {
                 'author': request.user,
-                'fund': request.user.volunteer_profile.fund
+                'fund': request.user.fund
             }
         })
 
@@ -74,7 +74,7 @@ def edit_project_details(request, id):
             'return_url': return_url,
             'title': 'Update project',
             'initial': {
-                'fund': request.user.volunteer_profile.fund
+                'fund': request.user.fund
             },
             'instance': project
         })
@@ -235,7 +235,7 @@ def remove_project_task(request, id, task_id):
 @require_http_methods(['GET'])
 def get_list(request):
     queryset = get_projects_with_tasks_queryset(
-        request.user.volunteer_profile.fund)
+        request.user.fund)
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
     page = wrap_dicts_page_to_objects_page(
         paginator.get_page(request.GET.get('page')), model=Project)
@@ -271,7 +271,7 @@ def get_details(request, id):
         tab = default_tab
 
     project = get_object_or_404(Project.objects.filter(
-        fund_id=request.user.volunteer_profile.fund_id), pk=id)
+        fund=request.user.fund), pk=id)
 
     page, count = tabs.get(tab)(project)
 
@@ -289,7 +289,7 @@ def get_details(request, id):
 @require_http_methods(['GET'])
 def get_reviewer_details(request, id, reviewer_id):
     project = get_object_or_404(Project.objects.filter(
-        fund_id=request.user.volunteer_profile.fund_id), pk=id)
+        fund=request.user.fund), pk=id)
 
     reviewer = get_object_or_404(project.reviewers, pk=reviewer_id)
 

@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.functional import cached_property
+
 from commons.models import Base
 from funds.models import Fund, Approvement, Contribution
 
@@ -21,6 +23,8 @@ class Budget(Base):
     approvements = models.ManyToManyField(
         Approvement, related_name='budget_approvements')
     reviewers = models.ManyToManyField(User, related_name='budget_reviewers')
+    payout_excess_contribution = models.ForeignKey(
+        Contribution, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.name
@@ -42,6 +46,20 @@ class Budget(Base):
             return 'Closed'
         else:
             return 'Planning'
+
+    @cached_property
+    def total_approved_amount(self):
+        return self.incomes.filter(approvement__is_rejected=False) \
+            .aggregate(approved_income=models.Sum('amount', default=0))['approved_income']
+
+    @property
+    def avaliable_income_amount(self):
+        return self.total_approved_amount - self.total_approved_expenses_amount
+
+    @cached_property
+    def total_approved_expenses_amount(self):
+        return self.expenses.filter(approvement__is_rejected=False) \
+            .aggregate(approved_expense=models.Sum('amount', default=0))['approved_expense']
 
 
 class Income(Base):
@@ -78,25 +96,6 @@ def fund_active_budget_amount(self):
         .aggregate(budget=models.Sum('amount', default=0))['budget']
 
 
-def budget_total_approved_amount(self):
-    return self.incomes.filter(approvement__is_rejected=False) \
-        .aggregate(approved_income=models.Sum('amount', default=0))['approved_income']
-
-
-def budget_total_approved_expenses_amount(self):
-    return self.expenses.filter(approvement__is_rejected=False) \
-        .aggregate(approved_expense=models.Sum('amount', default=0))['approved_expense']
-
-
-def budget_avaliable_amount(self):
-    approved_income = self.incomes.filter(approvement__is_rejected=False) \
-        .aggregate(approved_income=models.Sum('amount', default=0))['approved_income']
-    approved_expense = self.expenses.filter(approvement__is_rejected=False) \
-        .aggregate(approved_expense=models.Sum('amount', default=0))['approved_expense']
-
-    return approved_income - approved_expense
-
-
 Fund.add_to_class('active_budget_amount', property(
     fget=fund_active_budget_amount
 ))
@@ -104,15 +103,3 @@ Fund.add_to_class('active_budget_amount', property(
 
 Fund.add_to_class('active_budgets_count', property(
     fget=fund_active_budgets_count))
-
-Budget.add_to_class('avaliable_income_amount', property(
-    fget=budget_avaliable_amount
-))
-
-Budget.add_to_class('total_approved_amount', property(
-    fget=budget_total_approved_amount
-))
-
-Budget.add_to_class('total_approved_expenses_amount', property(
-    fget=budget_total_approved_expenses_amount
-))

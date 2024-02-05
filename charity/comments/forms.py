@@ -1,7 +1,7 @@
 from django import forms
 from funds.models import Fund
 
-from commons.functions import get_argument_or_error, resolve_many_2_many_attr, resolve_rel_attr_path
+from commons.functional import get_argument_or_error, resolve_many_2_many_attr, resolve_rel_attr_path
 from commons.mixins import FormControlMixin, InitialValidationMixin
 
 from .models import Comment
