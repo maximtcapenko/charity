@@ -6,5 +6,5 @@ class TasksConfig(AppConfig):
     name = 'tasks'
 
     def ready(self):
-        from .signals import add_default_subscribers_wheb_task_added
+        from .signals import add_default_subscribers_when_task_added
         return super().ready()

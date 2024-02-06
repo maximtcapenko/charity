@@ -13,7 +13,7 @@ review_request_created = signals.Signal()
 
 
 @receiver(signals.post_save, sender=Task)
-def add_default_subscribers_wheb_task_added(sender, instance, created, **kwargs):
+def add_default_subscribers_when_task_added(sender, instance, created, **kwargs):
     if created:
         """When task has been created we add to default subscribers next users
         - task author
