@@ -49,7 +49,11 @@
           </div>
           <div class="col-2">
             <i class="fa-solid fa-flag-checkered"></i>
-            <a href="{% url 'projects:close' project.id %}">Complete</a>
+            <a {% if project|validate_pre_requirements:user and project|project_is_ready_to_be_completed %}
+            href="{% url 'projects:complete_project' project.id %}" class="post-request"
+            {% else %}
+            class="link-disabled"
+            {% endif %} >Complete</a>
           </div>
         </div>
       </div>

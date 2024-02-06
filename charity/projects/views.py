@@ -2,7 +2,6 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Exists, Q, OuterRef
-from django.http import HttpResponseNotAllowed
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
@@ -27,7 +26,7 @@ from .messages import Warnings
 from .models import Project
 from .requirements import process_should_not_be_used_by_any_tasks, \
     project_should_not_contain_any_tasks, reviewer_should_not_be_used_by_any_tasks, \
-    ward_should_not_be_used_by_any_tasks
+    ward_should_not_be_used_by_any_tasks, project_is_ready_to_be_completed
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -72,7 +71,7 @@ def edit_project_details(request, id):
     return render_generic_form(
         request=request, form_class=UpdateProjectForm, context={
             'return_url': return_url,
-            'title': 'Update project',
+            'title': 'Edit project',
             'initial': {
                 'fund': request.user.fund
             },
@@ -81,10 +80,21 @@ def edit_project_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def close(request, id):
+@require_http_methods(['POST'])
+def complete_project(request, id):
     project = get_object_or_404(Project, pk=id)
-    return HttpResponseNotAllowed([request.method])
+    return_url = reverse('projects:get_details', args=[project.id])
+
+    validate_pre_requirements(request, project, return_url)
+    if not project_is_ready_to_be_completed(project):
+        raise ApplicationError(Warnings.PROJET_CANNOT_BE_COMPLETED, return_url)
+    
+    import datetime
+    project.is_closed = True
+    project.closed_date = datetime.datetime.utcnow()
+    project.save()
+
+    return redirect(return_url)
 
 
 @user_passes_test(user_should_be_volunteer)

@@ -11,6 +11,11 @@ def validate_pre_requirements(project, user):
 
 
 @register.filter
+def project_is_ready_to_be_completed(project):
+    return requirements.project_is_ready_to_be_completed(project)
+
+
+@register.filter
 def project_should_not_contain_any_tasks(project):
     return requirements.project_should_not_contain_any_tasks(project)
 

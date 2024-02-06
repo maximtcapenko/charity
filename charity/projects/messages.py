@@ -1,4 +1,5 @@
 class Warnings:
+    PROJET_CANNOT_BE_COMPLETED = 'Project cannot be completed due running tasks.'
     PROJECT_PROCESS_TASKS_EXIST = 'A process cannot be removed from a project because it is used by tasks.'
     PROJECT_TASK_ISRUNNING ='The task cannot be removed from the project because the task is running or has a cost.'
     ASSET_CANNOT_BE_REMOVED_TASKS_EXIST = 'Adoptee cannot be removed from a project due to its use in tasks.'
