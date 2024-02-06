@@ -26,7 +26,7 @@ def render_tasks_board(context, project, tasks):
         for task in tasks:
             comments_count = next(
                 filter(lambda x: x.id == task.id, comments), None)
-            if not task.is_started:
+            if not task.is_started and not task.is_done:
                 todo_tasks += loader.render_to_string(task_template_name, {
                     'task': task,
                     'comments_count': comments_count.comments_count if comments_count else 0

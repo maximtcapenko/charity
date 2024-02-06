@@ -15,7 +15,7 @@ from funds.models import Approvement
 from projects.models import Project
 from tasks.querysets import get_estimated_and_not_approved_tasks_queryset, \
     get_project_requested_expenses_queryset
-from tasks.models import Task, Expense
+from tasks.models import Expense
 
 from .forms import CreateBudgetForm, CreateIncomeForm, \
     BudgetItemApproveForm, ApproveBudgetForm, UpdateBudgetForm, \

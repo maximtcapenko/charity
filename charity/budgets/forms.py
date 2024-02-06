@@ -9,14 +9,14 @@ from commons.functional import validate_modelform_field, should_be_approved, \
     get_reviewer_label
 from commons.forms import CustomLabeledModelChoiceField
 
-from funds.models import Approvement
+from funds.models import Approvement, Contributor
 from funds.forms import CreateContributionForm
 from tasks.models import Expense, Task
 
 from .functional import get_budget_available_income
 from .messages import Warnings
 from .models import Budget, Income, Contribution
-from .signals import exprense_created, budget_intem_reviewer_assigned
+from .signals import exprense_created, budget_item_reviewer_assigned
 
 
 class CreateBudgetForm(
@@ -80,6 +80,8 @@ class CreatePayoutExcessContributionForm(CreateContributionForm):
         super().__init__(*args, **kwargs)
         self.fields['amount'].disabled = True
         self.fields.pop('contribution_date')
+        self.fields['contributor'].queryset = Contributor.objects \
+            .filter(fund=self.initial['fund'], is_internal=True)
 
     def save(self):
         self.instance.contribution_date = datetime.datetime.utcnow()
@@ -392,7 +394,7 @@ class EditBudgetItemForm(
         target.save()
 
         if 'reviewer' in self.changed_data:
-            budget_intem_reviewer_assigned.send(
+            budget_item_reviewer_assigned.send(
                 sender=target.__class__,
                 budget=self.initial['budget'],
                 reviewer=self.cleaned_data['reviewer'],

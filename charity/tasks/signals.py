@@ -3,7 +3,8 @@ from django.dispatch import receiver
 from django.urls import reverse
 
 from commons.models import Notification
-from funds.models import RequestReview
+
+from funds.models import Contribution, RequestReview
 
 from .models import Task, TaskState
 
@@ -50,3 +51,11 @@ def notify_reviewer_when_review_request_created(sender, instance, fund, task, me
         notes=message, 
         notification=notification)
     instance.save()
+
+
+@receiver(signals.pre_delete, sender=Contribution)
+def move_task_in_progress_when_linked_contribution_removed(sender, instance, **kwargs):
+    tasks = Task.objects.filter(payout_excess_contribution=instance).all()
+    for task in tasks:
+        task.is_done = False
+        task.save()

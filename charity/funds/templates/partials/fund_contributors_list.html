@@ -18,10 +18,15 @@
                   <a href="{% url 'funds:get_contributor_details' contributor.id %}">
                     {{ contributor.name }}</a>
                 </h6>
+                <span class="badge bg-primary">
                 {% if contributor.is_company %}
-                <span class="badge bg-primary">business</span>
+                  business
                 {% else %}
-                  <span class="badge bg-primary">person</span>
+                 person
+                 {% endif %}
+                </span>
+                {% if contributor.is_internal %}
+                <span class="badge bg-primary">internal</span>
                 {% endif %}
               </td>
               <td class="align-middle">

@@ -19,3 +19,8 @@ def task_state_is_ready_for_review(state, context):
     task = context.get('task')
 
     return requirements.task_state_is_ready_for_review(state, user, task)
+
+
+@register.filter
+def task_is_ready_to_be_completed(task, user):
+    return requirements.task_is_ready_to_be_completed(task, user)

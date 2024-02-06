@@ -22,6 +22,7 @@ def get_contributions_queryset(fund):
                 'author__volunteer_profile__cover',
                 'contributor__id',
                 'contributor__name',
+                'contributor__is_internal',
                 'contributor__cover',
                 'incomes_exist')
 
