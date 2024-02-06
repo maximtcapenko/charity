@@ -86,7 +86,7 @@ class Task(Base):
     ward = models.ForeignKey(
         Ward, on_delete=models.PROTECT, null=True, related_name='tasks')
     payout_excess_contribution = models.ForeignKey(
-        Contribution, null=True, on_delete=models.SET_NULL)
+        Contribution, null=True, on_delete=models.SET_NULL, related_name='tasks')
     attachments = models.ManyToManyField(Attachment)
     states = models.ManyToManyField(TaskState, related_name='state_tasks')
     subscribers = models.ManyToManyField(User, related_name='subscribed_tasks')

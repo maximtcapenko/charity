@@ -5,16 +5,19 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from commons import DEFAULT_PAGE_SIZE
+from commons.exceptions import ApplicationError
 from commons.functional import user_should_be_volunteer, user_should_be_superuser, \
     render_generic_form, wrap_dicts_page_to_objects_page
 
 from budgets.models import Income
 
-from .querysets import get_contributor_budgets_queryset, get_contributions_queryset,\
-      get_contribution_details_queryset
+from .querysets import get_contributor_budgets_queryset, get_contributions_queryset, \
+    get_contribution_details_queryset
+from .messages import Warnings
 from .models import Contribution, Contributor, Fund, VolunteerProfile
 from .forms import CreateContributionForm, CreateVolunteerForm, \
     CreateContributorForm, UpdateVolunteerProfile
+from .requirements import contribution_is_ready_to_be_removed
 
 
 @user_passes_test(user_should_be_superuser)
@@ -77,22 +80,19 @@ def get_current_details(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
-def get_contribution_details(request, id):
-    contribution = get_object_or_404(
-        Contribution.objects.filter(
-            fund_id=request.user.fund.id),
-        pk=id)
-    queryset = get_contribution_details_queryset(contribution)
-
-    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
-    page = wrap_dicts_page_to_objects_page(
-        paginator.get_page(request.GET.get('page')), model=Income)
-    return render(request, 'fund_contribution_details.html', {
-        'title': 'Contribution',
-        'contribution': contribution,
-        'page': page
-    })
+@require_http_methods(['GET', 'POST'])
+def add_contributor(request):
+    return render_generic_form(
+        request=request,
+        form_class=CreateContributorForm,
+        context={
+            'title': 'Add contributor',
+            'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=contributors'),
+            'initial': {
+                'fund': request.user.fund
+            }
+        }
+    )
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -113,6 +113,91 @@ def get_contributor_details(request, id):
         'contributor': contributor,
         'page': page
     })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET', 'POST'])
+def edit_contributor_details(request, id):
+    return render_generic_form(request, form_class=CreateContributorForm, context={
+        'title': 'Edit contributor',
+        'return_url': reverse('funds:get_contributor_details', args=[id]),
+        'initial': {
+            'fund': request.user.fund
+        },
+        'instance': get_object_or_404(
+            Contributor.objects.filter(
+                fund_id=request.user.fund.id),
+            pk=id)
+    })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET', 'POST'])
+def add_contribution(request):
+    return render_generic_form(
+        request=request,
+        form_class=CreateContributionForm,
+        context={
+            'title': 'Add contribution',
+            'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=contributions'),
+            'initial': {
+                'fund': request.user.fund,
+                'author': request.user
+            }
+        })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET'])
+def get_contribution_details(request, id):
+    contribution = get_object_or_404(
+        Contribution.objects.filter(
+            fund_id=request.user.fund.id),
+        pk=id)
+    queryset = get_contribution_details_queryset(contribution)
+
+    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
+    page = wrap_dicts_page_to_objects_page(
+        paginator.get_page(request.GET.get('page')), model=Income)
+    return render(request, 'fund_contribution_details.html', {
+        'title': 'Contribution',
+        'contribution': contribution,
+        'page': page
+    })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['POST'])
+def remove_contribution(request, id):
+    return_url = f'{reverse("funds:get_current_details")}?tab=contributions'
+    contribution = get_object_or_404(request.user.fund.contributions, pk=id)
+    if not contribution_is_ready_to_be_removed(contribution, request.user):
+        raise ApplicationError(
+            Warnings.CONTRIBUTION_IS_NOT_READY_TOBE_REMOVED, return_url)
+
+    if contribution.contributor.is_internal:
+        if contribution.tasks.filter(project__is_closed=True).exists():
+            raise ApplicationError(
+                Warnings.CONTRIBUTION_IS_INTERNAL_AND_LINKED_PROJECT_IS_CLOSED, return_url)
+
+    contribution.delete()
+    return redirect(return_url)
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET', 'POST'])
+def add_volunteer(request):
+    return render_generic_form(
+        request=request,
+        form_class=CreateVolunteerForm,
+        context={
+            'title': 'Add volunteer',
+            'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=volunteers'),
+            'initial': {
+                'fund': request.user.fund
+            }
+        }
+    )
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -144,22 +229,6 @@ def add_volunteer_cover(request, id):
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
-def edit_contributor_details(request, id):
-    return render_generic_form(request, form_class=CreateContributorForm, context={
-        'title': 'Edit contributor',
-        'return_url': reverse('funds:get_contributor_details', args=[id]),
-        'initial': {
-            'fund': request.user.fund
-        },
-        'instance': get_object_or_404(
-            Contributor.objects.filter(
-                fund_id=request.user.fund.id),
-            pk=id)
-    })
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
 def edit_volunteer_profile(request, id):
     volunteer = get_object_or_404(
         VolunteerProfile.objects.filter(
@@ -176,51 +245,3 @@ def edit_volunteer_profile(request, id):
                 'fund': request.user.fund
             },
         })
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def add_contribution(request):
-    return render_generic_form(
-        request=request,
-        form_class=CreateContributionForm,
-        context={
-            'title': 'Add contribution',
-            'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=contributions'),
-            'initial': {
-                'fund': request.user.fund,
-                'author': request.user
-            }
-        })
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def add_volunteer(request):
-    return render_generic_form(
-        request=request,
-        form_class=CreateVolunteerForm,
-        context={
-            'title': 'Add volunteer',
-            'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=volunteers'),
-            'initial': {
-                'fund': request.user.fund
-            }
-        }
-    )
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET', 'POST'])
-def add_contributor(request):
-    return render_generic_form(
-        request=request,
-        form_class=CreateContributorForm,
-        context={
-            'title': 'Add contributor',
-            'return_url': '%s?%s' % (reverse('funds:get_current_details'), 'tab=contributors'),
-            'initial': {
-                'fund': request.user.fund
-            }
-        }
-    )

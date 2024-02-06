@@ -1,45 +1,49 @@
 {% load customtags %}
+{% load fundtags %}
 <div>
     <a href="{% url 'funds:add_contribution' %}" class="btn btn-link" >Add contribution</a>
+</div>
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="fa-solid fa-money-bills"></i>
+    Contributions
   </div>
-  <div class="card mb-4">
-    <div class="card-header">
-      <i class="fa-solid fa-money-bills"></i>
-      Contributions
-    </div>
-    <div class="card-body">
-      <table class="table table-striped">
-        <tbody>
-          {% for contribution in page %}
-            <tr>
-              <td class="col-3">
-                <h6>
-                  {{ contribution.contributor|thumbnail:50 }}
-                  <a href="{% url 'funds:get_contribution_details' contribution.id %}">{{ contribution.contributor.name }}</a>
-                </h6>
-                {{ contribution.contribution_date }}
-              </td>
-              <td class="align-middle">
-                <i class="fa-solid fa-dollar-sign fa-xs"></i>
-                {{ contribution.amount|floatformat:'2g' }}
-              </td>
-              <td class="align-middle">{{ contribution.notes }}</td>
-              <td class="align-middle">
-                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Author">
-                  {% include 'partials/user_image_part.html' with user=contribution.author %}
-                </span>
-              </td>
-              <td class="align-middle">
-                {% if contribution.incomes_exist  %}
-                  <a href="#" class="link-disabled">Remove</a>
-                {% else %}
-                  <a href="#">Remove</a>
-                {% endif %}
-              </td>
-              </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% include 'paginator.html' with obj_page=page %}
-    </div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <tbody>
+        {% for contribution in page %}
+          <tr>
+            <td class="col-3">
+              <h6>
+                {{ contribution.contributor|thumbnail:50 }}
+                <a href="{% url 'funds:get_contribution_details' contribution.id %}">{{ contribution.contributor.name }}</a>
+              </h6>
+              {{ contribution.contribution_date }}
+            </td>
+            <td class="align-middle">
+              <i class="fa-solid fa-dollar-sign fa-xs"></i>
+              {{ contribution.amount|floatformat:'2g' }}
+            </td>
+            <td class="align-middle">{{ contribution.notes }}</td>
+            <td class="align-middle">
+              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Author">
+                {% include 'partials/user_image_part.html' with user=contribution.author %}
+              </span>
+            </td>
+            <td class="align-middle">
+              {% if contribution|contribution_is_ready_to_be_removed:user  %}
+                <a href="{% url 'funds:remove_contribution' contribution.id %}"
+                class="post-request">Remove</a>
+              {% else %}
+                <a href="#" class="link-disabled">Remove</a>
+              {% endif %}
+            </td>
+            </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% include 'paginator.html' with obj_page=page %}
   </div>
+</div>
+{% include 'partials/js.html' %}
+{% include 'generic_errormodal.html' %}

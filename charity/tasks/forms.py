@@ -170,11 +170,10 @@ class CompleteTaskForm(forms.Form,  InitialValidationMixin, FormControlMixin):
         author = self.initial['author']
 
         task.is_done = True
-        task.is_started = False
 
         if task.expense:
             actual_expense_amount = self.cleaned_data['actual_expense_amount']
-            task.actual_expense_amount = actual_expense_amount
+            task.actual_expense_amount = task.expense.amount - actual_expense_amount
 
             if task.expense.amount > actual_expense_amount:
                 payout_excess_contribution = Contribution(
