@@ -8,7 +8,7 @@ from commons.models import Base
 
 from budgets.models import Budget
 from files.models import Attachment
-from funds.models import Approvement, RequestReview
+from funds.models import Approvement, Contribution, RequestReview
 from processes.models import Process, ProcessState
 from projects.models import Project
 from wards.models import Ward
@@ -85,6 +85,8 @@ class Task(Base):
         Expense, on_delete=models.PROTECT, null=True, related_name='task')
     ward = models.ForeignKey(
         Ward, on_delete=models.PROTECT, null=True, related_name='tasks')
+    payout_excess_contribution = models.ForeignKey(
+        Contribution, null=True, on_delete=models.SET_NULL)
     attachments = models.ManyToManyField(Attachment)
     states = models.ManyToManyField(TaskState, related_name='state_tasks')
     subscribers = models.ManyToManyField(User, related_name='subscribed_tasks')

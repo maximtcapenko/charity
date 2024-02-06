@@ -51,6 +51,7 @@ class Contributor(Base):
     email = models.EmailField(null=True, blank=True)
     website = models.URLField(null=True, blank=True)
     cover = models.ImageField(upload_to='covers', null=True)
+    is_internal = models.BooleanField(null=False, default=False)
 
     def __str__(self):
         return self.name

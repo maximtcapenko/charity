@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
+{% load taskfilters %}
 <h2 class="mt-4">{{ task.name }}</h2>
 <ol class="breadcrumb mb-4">
   <li class="breadcrumb-item">
@@ -76,6 +77,12 @@
             <strong>Current state</strong>: <a href="{% url 'tasks:get_state_details' task.id task.state.id %}">{{ task.state.state.name }}</a>
             {% endif %}
           </div>
+          {% if task.payout_excess_contribution %}
+          <div>
+            <strong>Paid excess</strong>: 
+            <a href="{% url 'funds:get_contribution_details' task.payout_excess_contribution.id %}">{{task.payout_excess_contribution.amount}}</a>
+          </div>
+          {% endif %}
         </div>  
       </div>
     </div>
@@ -90,9 +97,11 @@
       </div>
       <div class="col-2">
         <i class="fa-solid fa-flag-checkered"></i>
-        <a {% if task.is_done %}
+        <a {% if task|task_is_ready_to_be_completed:user %}
+            href="{% url 'tasks:complete_task' task.id%}"
+           {% else %}
              class="link-disabled"
-           {% endif %} href="#">Complete</a>
+           {% endif %}>Complete</a>
       </div>
     </div>
   </div>

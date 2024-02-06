@@ -5,9 +5,10 @@ from . import views
 app_name = "tasks"
 
 urlpatterns = [
+    path('add/', views.add_task, name='create'),
     path('<uuid:id>/edit/', views.edit_details, name='edit_details'),
     path('<uuid:id>/details/', views.get_details, name='get_details'),
-    path('add/', views.create, name='create'),
+    path('<uuid:id>>/complete/', views.complete_task, name='complete_task'),
     path('<uuid:task_id>/states/<uuid:id>/details/', views.get_state_details, name='get_state_details'),
     path('<uuid:task_id>/states/<uuid:id>/approve/',views.approve_task_state, name='approve_task_state'),
     path('<uuid:task_id>/states/<uuid:id>/request_review/',views.request_task_state_review, name='request_task_state_review'),

@@ -25,7 +25,7 @@ class CreateContributionForm(
 
         self.fields['fund'].widget = forms.HiddenInput()
         self.fields['contributor'].queryset = Contributor.objects \
-            .filter(fund__id=self.initial['fund'].id)
+            .filter(fund=self.initial['fund'], is_internal=False)
 
     def clean(self):
         validate_modelform_field('fund', self.initial, self.cleaned_data)

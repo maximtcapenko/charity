@@ -9,7 +9,7 @@ from commons.functional import should_be_approved, get_reviewer_label
 from commons.mixins import FormControlMixin, InitialValidationMixin
 
 from files.forms import CreateAttachmentForm
-from funds.models import Approvement
+from funds.models import Approvement, Contribution, Contributor
 from processes.models import Process
 
 from .querysets import get_available_task_process_states_queryset, \
@@ -113,6 +113,83 @@ class UpdateTaskForm(CreateTaskForm):
 
         self.instance.save()
         return self.instance
+
+
+class CompleteTaskForm(forms.Form,  InitialValidationMixin, FormControlMixin):
+    __initial__ = ['task', 'author', 'fund']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        InitialValidationMixin.__init__(self)
+
+        task = self.initial['task']
+        fund = self.initial['fund']
+
+        if task.expense:
+            self.fields['expense_amount'] = forms.DecimalField(
+                disabled=True, initial=task.expense.amount, label='Expense amount')
+            self.fields['actual_expense_amount'] = forms.DecimalField(
+                required=True, label='Actual expense amount')
+            self.fields['contributor'] = forms.ModelChoiceField(
+                queryset=Contributor.objects.filter(
+                    fund=fund, is_internal=True),
+                required=False, label='Contributor')
+
+        self.fields['notes'] = forms.CharField(widget=forms.Textarea)
+
+        FormControlMixin.__init__(self)
+
+    def clean(self):
+        task = self.initial['task']
+        if task.expense:
+            actual_expense_amount = self.cleaned_data.get(
+                'actual_expense_amount')
+            if not actual_expense_amount:
+                raise forms.ValidationError(
+                    Warnings.TASK_HAS_EXPENSES_ACUTAL_EXPENSE_AMOUNT_SHOULD_BE_INDICATED)
+
+            contributor = self.cleaned_data.get('contributor')
+
+            if actual_expense_amount > 0 and actual_expense_amount < task.expense.amount and not contributor:
+                raise forms.ValidationError(
+                    Warnings.CONTRIBUTOR_SHOULD_BE_INDICATED)
+
+            if actual_expense_amount > task.expense.amount:
+                raise forms.ValidationError(
+                    Warnings.ACTUAL_EXPENSE_IS_BIGGER_TAHN_APPROVED)
+
+            if not contributor.is_internal:
+                raise forms.ValidationError(
+                    Warnings.CONTRIBUTOR_SHOULD_BE_INTERNAL)
+
+        return self.cleaned_data
+
+    def save(self):
+        task = self.initial['task']
+        fund = self.initial['fund']
+        author = self.initial['author']
+
+        task.is_done = True
+        task.is_started = False
+
+        if task.expense:
+            actual_expense_amount = self.cleaned_data['actual_expense_amount']
+            task.actual_expense_amount = actual_expense_amount
+
+            if task.expense.amount > actual_expense_amount:
+                payout_excess_contribution = Contribution(
+                    fund=fund, contribution_date=datetime.datetime.utcnow(),
+                    author=author,
+                    contributor=self.cleaned_data['contributor'],
+                    amount=actual_expense_amount,
+                    notes=self.cleaned_data['notes'])
+                payout_excess_contribution.save()
+
+                task.payout_excess_contribution = payout_excess_contribution
+
+        task.save()
+
+        return task
 
 
 class ActivateTaskStateForm(

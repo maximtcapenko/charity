@@ -7,7 +7,7 @@ from tasks.models import Expense
 from .models import Budget, Income
 
 exprense_created = signals.Signal()
-budget_intem_reviewer_assigned = signals.Signal()
+budget_item_reviewer_assigned = signals.Signal()
 
 
 @receiver(signals.post_save, sender=Budget)
@@ -121,12 +121,12 @@ def budget_expense_approved(sender, instance, action, **kwargs):
             Notification.objects.create(
                 title=Budget.__name__,
                 receiver=receiver,
-                short=f'Exoense ({instance.amount}) reviewed',
+                short=f'Expense ({instance.amount}) reviewed',
                 message=message,
                 url=reverse('budgets:get_expense_details', args=[budget.id, instance.id]))
 
 
-@receiver(budget_intem_reviewer_assigned)
+@receiver(budget_item_reviewer_assigned)
 def budget_income_reviewer_assigned(sender, budget, reviewer, instance, **kwargs):
     Notification.objects.create(
             title=Budget.__name__,
