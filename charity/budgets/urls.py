@@ -6,7 +6,7 @@ app_name = "budgets"
 
 urlpatterns = [
     path('add', views.add_budget, name='create'),
-    path('', views.get_list, name='get_list'),
+    path('', views.get_projects_list, name='get_list'),
     path('<uuid:id>/details/', views.get_budget_details, name='get_details'),
     path('<uuid:id>/edit/', views.edit_details, name='edit_details'),
     path('<uuid:id>/remove/', views.remove_budget, name='remove'),

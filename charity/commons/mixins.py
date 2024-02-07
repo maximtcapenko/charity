@@ -74,6 +74,18 @@ class InitialValidationMixin:
             raise ValueError(f'Missing required parameters: {params}')
 
 
+class SearchFormMixin:
+    def get_search_queryset(self, queryset):
+        self.full_clean()
+        for field in self.fields:
+            value = self.cleaned_data.get(field)
+            if value:
+                resolver = self.__resolvers__[field]
+                queryset = queryset.filter(resolver(value))
+
+        return queryset
+
+
 def require_initial(*args):
     def decorator(func):
         def wrapper(self, *args, **kwargs):
