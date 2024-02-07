@@ -28,7 +28,7 @@ class CreateProjectForm(
         self.fields['author'].widget = forms.HiddenInput()
         self.fields['fund'].widget = forms.HiddenInput()
         self.fields['leader'] = CustomLabeledModelChoiceField(
-            lable_func=get_reviewer_label,
+            label_func=get_reviewer_label,
             queryset=User.objects
             .filter(volunteer_profile__fund_id=fund.id),
             label='Reviewer', required=True)
@@ -144,7 +144,7 @@ class AddProjectReviewerForm(
 
         self.fields['project'].widget = forms.HiddenInput()
         self.fields['reviewer'] = CustomLabeledModelChoiceField(
-            lable_func=get_reviewer_label,
+            label_func=get_reviewer_label,
             queryset=User.objects.filter(
                 Q(volunteer_profile__fund__id=project.fund_id) &
                 ~Q(id__in=project.reviewers.values('id'))), label='Reviewer', required=True)

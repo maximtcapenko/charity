@@ -20,12 +20,30 @@ from tasks.models import Expense
 from .forms import CreateBudgetForm, CreateIncomeForm, \
     BudgetItemApproveForm, ApproveBudgetForm, UpdateBudgetForm, \
     AddBudgetReviewerForm, CreateExpenseForm, EditBudgetItemForm, \
-    CreatePayoutExcessContributionForm
+    CreatePayoutExcessContributionForm, BudgetSearchForm
 
 from .querysets import get_budget_with_avaliable_amounts_queryset
 from .functional import get_budget_or_404, get_budget_available_income, validate_pre_requirements
 from .messages import Warnings
 from .models import Budget, Income
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET'])
+def get_projects_list(request):
+    queryset = get_budget_with_avaliable_amounts_queryset(
+        request.user.fund)
+    
+    search_form = BudgetSearchForm(request.GET)
+
+    paginator = Paginator(search_form.get_search_queryset(queryset), DEFAULT_PAGE_SIZE)
+    page = wrap_dicts_page_to_objects_page(
+        paginator.get_page(request.GET.get('page')), model=Budget)
+
+    return render(request, 'budgets_list.html', {
+        'page': page,
+        'search_form': search_form
+    })
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -41,6 +59,43 @@ def add_budget(request):
                 'author': request.user,
             }
         })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET'])
+def get_budget_details(request, id):
+    default_tab = 'incomes'
+    tabs = {
+        'incomes': lambda budget:
+            budget.incomes.select_related(
+                'author', 'author__volunteer_profile', 'approvement'),
+        'expenses': lambda budget:
+            budget.expenses.select_related(
+                'author', 'approvement', 'project'),
+        'approvements': lambda budget: budget.approvements.all(),
+        'reviewers': lambda budget: budget.reviewers.select_related('volunteer_profile')
+    }
+
+    tab = request.GET.get('tab', default_tab)
+    if not tab in tabs:
+        tab = default_tab
+
+    budget = get_budget_or_404(request, id)
+
+    queryset = tabs.get(tab)(budget)
+    search_form = BudgetSearchForm(request.GET)
+
+    paginator = Paginator(search_form.get_search_queryset(queryset), DEFAULT_PAGE_SIZE)
+
+    return render(request, 'budget_details.html', {
+        'title': 'Budget',
+        'tabs': tabs.keys(),
+        'items_count': paginator.count,
+        'budget': budget,
+        'selected_tab': tab,
+        'page': paginator.get_page(request.GET.get('page')),
+        'search_form': search_form
+    })
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -387,55 +442,6 @@ def get_expense_details(request, id, expense_id):
         'title': 'Expense',
         'budget': budget,
         'expense': expense,
-        'page': paginator.get_page(request.GET.get('page'))
-    })
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
-def get_list(request):
-    queryset = get_budget_with_avaliable_amounts_queryset(
-        request.user.fund)
-
-    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
-    page = wrap_dicts_page_to_objects_page(
-        paginator.get_page(request.GET.get('page')), model=Budget)
-
-    return render(request, 'budgets_list.html', {
-        'page': page
-    })
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
-def get_budget_details(request, id):
-    default_tab = 'incomes'
-    tabs = {
-        'incomes': lambda budget:
-            budget.incomes.select_related(
-                'author', 'author__volunteer_profile', 'approvement'),
-        'expenses': lambda budget:
-            budget.expenses.select_related(
-                'author', 'approvement', 'project'),
-        'approvements': lambda budget: budget.approvements.all(),
-        'reviewers': lambda budget: budget.reviewers.select_related('volunteer_profile')
-    }
-
-    tab = request.GET.get('tab', default_tab)
-    if not tab in tabs:
-        tab = default_tab
-
-    budget = get_budget_or_404(request, id)
-
-    queryset = tabs.get(tab)(budget)
-    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
-
-    return render(request, 'budget_details.html', {
-        'title': 'Budget',
-        'tabs': tabs.keys(),
-        'items_count': paginator.count,
-        'budget': budget,
-        'selected_tab': tab,
         'page': paginator.get_page(request.GET.get('page'))
     })
 

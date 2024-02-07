@@ -32,13 +32,13 @@ class CreateTaskForm(
 
         project = self.initial['project']
         self.fields['assignee'] = CustomLabeledModelChoiceField(
-            lable_func=get_reviewer_label,
+            label_func=get_reviewer_label,
             queryset=User.objects
             .filter(volunteer_profile__fund_id=project.fund_id),
             label='Assignee', required=True)
 
         self.fields['reviewer'] = CustomLabeledModelChoiceField(
-            lable_func=get_reviewer_label,
+            label_func=get_reviewer_label,
             queryset=project.reviewers, label='Reviewer', required=True)
 
         self.fields['ward'].queryset = get_available_project_wards_queryset(

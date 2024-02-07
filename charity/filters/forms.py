@@ -50,7 +50,7 @@ class CreateFilterExpressionForm(
         self.fields['field'] = CustomLabeledModelChoiceField(queryset=fund.custom_fields.filter(
             Q(is_searchable=True) &
             ~Exists(Expression.objects.filter(filter=filter, field=OuterRef('pk')))),
-            lable_func=lambda field: f'{field.attribute.name} ({DATATYPE_DICT[field.attribute.datatype]})',
+            label_func=lambda field: f'{field.attribute.name} ({DATATYPE_DICT[field.attribute.datatype]})',
             label='Field', required=True)
 
         self.fields['operand'] = forms.CharField(
