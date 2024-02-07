@@ -8,6 +8,7 @@ from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
+from commons.forms import ApprovedOnlySearchForm
 from commons.functional import user_should_be_volunteer, render_generic_form, \
     should_be_approved, wrap_dict_set_to_objects_list, wrap_dicts_page_to_objects_page
 
@@ -34,7 +35,7 @@ def get_projects_list(request):
     queryset = get_budget_with_avaliable_amounts_queryset(
         request.user.fund)
     
-    search_form = BudgetSearchForm(request.GET)
+    search_form = BudgetSearchForm(request.user.fund, request.GET)
 
     paginator = Paginator(search_form.get_search_queryset(queryset), DEFAULT_PAGE_SIZE)
     page = wrap_dicts_page_to_objects_page(
@@ -83,7 +84,7 @@ def get_budget_details(request, id):
     budget = get_budget_or_404(request, id)
 
     queryset = tabs.get(tab)(budget)
-    search_form = BudgetSearchForm(request.GET)
+    search_form = ApprovedOnlySearchForm(request.GET)
 
     paginator = Paginator(search_form.get_search_queryset(queryset), DEFAULT_PAGE_SIZE)
 

@@ -4,7 +4,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.db import models
 
-from commons.mixins import InitialValidationMixin, FormControlMixin
+from commons.mixins import InitialValidationMixin, FormControlMixin, SearchByNameMixin
 from commons.functional import validate_modelform_field, should_be_approved, \
     get_reviewer_label
 from commons.forms import ApprovedOnlySearchForm, CustomLabeledModelChoiceField
@@ -75,8 +75,21 @@ class UpdateBudgetForm(CreateBudgetForm):
         return manager
 
 
-class BudgetSearchForm(ApprovedOnlySearchForm):
-    pass
+class BudgetSearchForm(ApprovedOnlySearchForm, SearchByNameMixin):
+    def __init__(self, fund, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        SearchByNameMixin.__init__(self)
+
+        self.fields['manager'].queryset = User.objects.filter(
+            models.Q(volunteer_profile__fund=fund)
+            & models.Exists(Budget.objects.filter(fund=fund, manager=models.OuterRef('pk'))))
+        self.fields['manager'].widget.attrs.update({
+            'onchange': 'javascript:this.form.submit()'
+        })
+        self.order_fields(['approved_only', 'name'])
+        self.__resolvers__['manager'] = lambda field: models.Q(manager=field)
+
+    manager = forms.ModelChoiceField(queryset=User.objects, label='Manager')
 
 
 class CreatePayoutExcessContributionForm(CreateContributionForm):

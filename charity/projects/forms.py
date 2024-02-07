@@ -2,7 +2,7 @@ from django import forms
 from django.db.models import Count, Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
-from commons.mixins import InitialValidationMixin, FormControlMixin
+from commons.mixins import InitialValidationMixin, FormControlMixin, SearchByNameMixin, SearchFormMixin
 from commons.forms import CustomLabeledModelChoiceField
 from commons.functional import validate_modelform_field, get_reviewer_label
 
@@ -31,13 +31,13 @@ class CreateProjectForm(
             label_func=get_reviewer_label,
             queryset=User.objects
             .filter(volunteer_profile__fund_id=fund.id),
-            label='Reviewer', required=True)
+            label='Leader', required=True)
 
         FormControlMixin.__init__(self)
 
     class Meta:
         model = Project
-        exclude = ['date_created', 'id', 'wards', 'closed_date', 
+        exclude = ['date_created', 'id', 'wards', 'closed_date',
                    'is_closed', 'cover', 'budget', 'processes', 'reviewers']
 
 
@@ -50,6 +50,33 @@ class UpdateProjectForm(CreateProjectForm):
             raise forms.ValidationError(
                 Warnings.PROJECT_LEADER_CANNOT_BE_UNDEFINED)
         return leader
+
+
+class ProjetSearchForm(forms.Form, SearchByNameMixin, FormControlMixin, SearchFormMixin):
+    __resolvers__ = {
+        'active_only': lambda field: Q(is_closed=False)
+    }
+
+    active_only = forms.BooleanField(label='Active', required=False)
+    leader = forms.ModelChoiceField(
+        queryset=User.objects, label='Leader', required=False)
+
+    def __init__(self, fund, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        SearchByNameMixin.__init__(self)
+        FormControlMixin.__init__(self)
+
+        self.fields['active_only'].widget.attrs.update({
+            'onchange': 'javascript:this.form.submit()'
+        })
+      
+        self.fields['leader'].queryset = User.objects.filter(
+            Q(volunteer_profile__fund=fund) & Exists(Project.objects.filter(fund=fund, leader=OuterRef('pk'))))
+        self.fields['leader'].widget.attrs.update({
+            'onchange': 'javascript:this.form.submit()'
+        })
+        self.__resolvers__['leader'] = lambda field: Q(leader=field)
+        self.order_fields(['active_only', 'name'])
 
 
 class AddWardToProjectForm(

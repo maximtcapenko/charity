@@ -14,9 +14,13 @@
   <div class="card-body">
     <div>
       <form action="" method="get">
-        <div class="row row-cols-md-4 g-4">
+        <div class="row">
           {% for field in search_form %}
-          <div class="col">
+          <div class={% if forloop.counter == 1%}
+            "col-3" 
+            {% else %}
+            "col"
+            {% endif %}>
             {{field}}
           </div>
           {% endfor %}
