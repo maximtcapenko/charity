@@ -17,7 +17,7 @@ from tasks.models import Task, TaskState
 from wards.models import Ward
 
 from .forms import CreateProjectForm, AddWardToProjectForm, \
-    AddProcessToProjectForm, UpdateProjectForm, AddProjectReviewerForm
+    AddProcessToProjectForm, ProjetSearchForm, UpdateProjectForm, AddProjectReviewerForm
 from .functional import get_project_or_404, validate_pre_requirements
 from .querysets import get_project_processes_with_tasks_queryset, \
     get_project_wards_with_tasks_queryset, get_projects_with_tasks_queryset, \
@@ -27,6 +27,22 @@ from .models import Project
 from .requirements import process_should_not_be_used_by_any_tasks, \
     project_should_not_contain_any_tasks, reviewer_should_not_be_used_by_any_tasks, \
     ward_should_not_be_used_by_any_tasks, project_is_ready_to_be_completed
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET'])
+def get_list(request):
+    search_form = ProjetSearchForm(request.user.fund, request.GET)
+    queryset = get_projects_with_tasks_queryset(
+        request.user.fund)
+    paginator = Paginator(search_form.get_search_queryset(
+        queryset), DEFAULT_PAGE_SIZE)
+    page = wrap_dicts_page_to_objects_page(
+        paginator.get_page(request.GET.get('page')), model=Project)
+    return render(request, 'projects_list.html', {
+        'page': page,
+        'search_form': search_form
+    })
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -42,6 +58,47 @@ def add_project(request):
                 'fund': request.user.fund
             }
         })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_http_methods(['GET'])
+def get_details(request, id):
+    default_tab = 'tasks'
+    page_number = request.GET.get('page')
+    tabs = {
+        'tasks': lambda project: get_page(
+            project.tasks.
+            select_related(
+                'assignee', 'expense',
+                'expense__approvement',
+                'assignee__volunteer_profile')
+            .order_by('order_position'), page_number),
+        'processes': lambda project: get_wrapped_page(
+            Process, get_project_processes_with_tasks_queryset(project), page_number),
+        'wards': lambda project: get_wrapped_page(
+            Ward, get_project_wards_with_tasks_queryset(project), page_number),
+        'reviewers': lambda project: get_wrapped_page(
+            User, get_project_rewiewers_with_tasks_queryset(project), page_number)
+    }
+
+    tab = request.GET.get('tab', default_tab)
+
+    if not tab in tabs:
+        tab = default_tab
+
+    project = get_object_or_404(Project.objects.filter(
+        fund=request.user.fund), pk=id)
+
+    page, count = tabs.get(tab)(project)
+
+    return render(request, 'project_details.html', {
+        'title': 'Project',
+        'tabs': tabs.keys(),
+        'items_count': count,
+        'project': project,
+        'selected_tab': tab,
+        'page': page
+    })
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -88,7 +145,7 @@ def complete_project(request, id):
     validate_pre_requirements(request, project, return_url)
     if not project_is_ready_to_be_completed(project):
         raise ApplicationError(Warnings.PROJET_CANNOT_BE_COMPLETED, return_url)
-    
+
     import datetime
     project.is_closed = True
     project.closed_date = datetime.datetime.utcnow()
@@ -239,60 +296,6 @@ def remove_project_task(request, id, task_id):
     task.delete()
 
     return redirect(return_url)
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
-def get_list(request):
-    queryset = get_projects_with_tasks_queryset(
-        request.user.fund)
-    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
-    page = wrap_dicts_page_to_objects_page(
-        paginator.get_page(request.GET.get('page')), model=Project)
-    return render(request, 'projects_list.html', {
-        'page': page
-    })
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
-def get_details(request, id):
-    default_tab = 'tasks'
-    page_number = request.GET.get('page')
-    tabs = {
-        'tasks': lambda project: get_page(
-            project.tasks.
-            select_related(
-                'assignee', 'expense',
-                'expense__approvement',
-                'assignee__volunteer_profile')
-            .order_by('order_position'), page_number),
-        'processes': lambda project: get_wrapped_page(
-            Process, get_project_processes_with_tasks_queryset(project), page_number),
-        'wards': lambda project: get_wrapped_page(
-            Ward, get_project_wards_with_tasks_queryset(project), page_number),
-        'reviewers': lambda project: get_wrapped_page(
-            User, get_project_rewiewers_with_tasks_queryset(project), page_number)
-    }
-
-    tab = request.GET.get('tab', default_tab)
-
-    if not tab in tabs:
-        tab = default_tab
-
-    project = get_object_or_404(Project.objects.filter(
-        fund=request.user.fund), pk=id)
-
-    page, count = tabs.get(tab)(project)
-
-    return render(request, 'project_details.html', {
-        'title': 'Project',
-        'tabs': tabs.keys(),
-        'items_count': count,
-        'project': project,
-        'selected_tab': tab,
-        'page': page
-    })
 
 
 @user_passes_test(user_should_be_volunteer)

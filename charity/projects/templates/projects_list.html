@@ -12,6 +12,21 @@
     Projects
   </div>
   <div class="card-body">
+    <div>
+      <form action="" method="get">
+        <div class="row">
+          {% for field in search_form %}
+          <div class={% if forloop.counter == 1%}
+            "col-3" 
+            {% else %}
+            "col"
+            {% endif %}>
+            {{field}}
+          </div>
+          {% endfor %}
+        </div>
+      </form>
+    </div>
     <table class="table table-striped">
       <tbody>
         {% for project in page %}

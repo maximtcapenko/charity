@@ -1,6 +1,5 @@
-from functools import wraps
-
 from django import forms
+from django.db.models import Q
 from django.forms.utils import ErrorList
 from django.utils.safestring import mark_safe
 
@@ -80,10 +79,26 @@ class SearchFormMixin:
         for field in self.fields:
             value = self.cleaned_data.get(field)
             if value:
-                resolver = self.__resolvers__[field]
-                queryset = queryset.filter(resolver(value))
+                resolver = self.__resolvers__.get(field)
+                if resolver:
+                    queryset = queryset.filter(resolver(value))
 
         return queryset
+
+
+class SearchByNameMixin(FormControlMixin):
+    min_length = 4
+
+    def __init__(self):
+        self.__resolvers__['name'] = lambda field: Q(name__startswith=field)
+        self.fields['name'] = forms.CharField(
+            max_length=256, min_length=self.min_length,
+            required=False, help_text='Search by name', widget=forms.TextInput(attrs={
+                'placeholder': 'Search by name',
+                'onkeyup': 'javascript:if(this.value.length > %s){this.form.submit()}' % self.min_length
+            }))
+        
+        super().__init__(self)
 
 
 def require_initial(*args):
