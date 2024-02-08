@@ -1,16 +1,21 @@
 {% if obj_page %}
+{% load customtags %}
 <div class="pagination">
   <span class="step-links">
     {% if obj_page.has_previous %}
-      <a href="?page=1">&laquo; first</a>
-      <a href="?page={{ obj_page.previous_page_number }}">previous</a>
+    {% append_to_url_query page=1 as url %}
+      <a href="url">&laquo; first</a>
+      {% append_to_url_query page=obj_page.previous_page_number as url %}
+      <a href="{{url}}">previous</a>
     {% endif %}
 
     <span class="current">Page {{ obj_page.number }} of {{ obj_page.paginator.num_pages }}.</span>
 
     {% if obj_page.has_next %}
-      <a href="?page={{ obj_page.next_page_number }}">next</a>
-      <a href="?page={{ obj_page.paginator.num_pages }}">last &raquo;</a>
+      {% append_to_url_query page=obj_page.next_page_number as url %}
+      <a href="{{url}}">next</a>
+      {% append_to_url_query page=obj_page.paginator.num_pages as url %}
+      <a href="{{url}}">last &raquo;</a>
     {% endif %}
   </span>
 </div>

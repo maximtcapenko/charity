@@ -7,8 +7,8 @@ from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.functional import user_should_be_volunteer, render_generic_form
-from filters.models import Filter
 from projects.models import Project
+
 from .forms import CreateWardForm, SearchWardForm
 from .models import Ward
 
