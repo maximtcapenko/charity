@@ -136,7 +136,7 @@ def add_expression_value(request, id, expression_id):
 @require_http_methods(['GET', 'POST'])
 def remove_expression(request, id, expression_id):
     fund = request.user.fund
-    return_url = reverse('filters:filter_details', args=[id])
+    return_url = reverse('filters:get_details', args=[id])
     expression = get_object_or_404(Expression.objects.filter(
         filter_id=id, filter__fund=fund), pk=expression_id)
     expression.delete()
@@ -166,17 +166,3 @@ def get_filed_value_input_details(request):
     field_id = request.GET.get('field_id')
     field = get_object_or_404(CustomField, pk=field_id)
     return HttpResponse(json.dumps(ExpressionValueWidget.get_rendered_value_widget(request, field)))
-
-
-@user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
-def get_select_filters(request, model_name):
-    selected_filter = request.GET.get('filter_id')
-    filters = Filter.objects.filter(
-        fund=request.user.fund,
-        content_type__model=model_name).all()
-
-    return render(request, 'partials/select_filter.html', {
-        'filters': filters,
-        'selected_filter': selected_filter
-    })

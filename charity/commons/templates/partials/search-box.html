@@ -1,0 +1,8 @@
+<div class="input-group">
+    <input type="{{ widget.type }}" onkeyup="javascript:if(this.value=='')this.form.submit()" name="{{ widget.name }}"{% if widget.value != None %} value="{{ widget.value }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+    <span class="input-group-text" id="addon-wrapping">
+      <a href="#" style="color:#6c757d" onclick="javascript:document.getElementById('{{widget.attrs.id}}').form.submit()">
+        <i class="fa-solid fa-magnifying-glass"></i>
+     </a>
+    </span>
+</div>

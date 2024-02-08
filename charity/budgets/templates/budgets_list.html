@@ -16,11 +16,7 @@
       <form action="" method="get">
         <div class="row">
           {% for field in search_form %}
-          <div class={% if forloop.counter == 1%}
-            "col-3" 
-            {% else %}
-            "col"
-            {% endif %}>
+          <div class="col">
             {{field}}
           </div>
           {% endfor %}

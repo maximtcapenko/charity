@@ -9,7 +9,7 @@ from commons import DEFAULT_PAGE_SIZE
 from commons.functional import user_should_be_volunteer, render_generic_form
 from filters.models import Filter
 from projects.models import Project
-from .forms import CreateWardForm
+from .forms import CreateWardForm, SearchWardForm
 from .models import Ward
 
 
@@ -65,20 +65,16 @@ def edit_details(request, id):
 @require_http_methods(['GET'])
 def get_list(request):
     queryset = Ward.objects.filter(fund=request.user.fund)
-    filter_id = request.GET.get('filter_id')
-    if filter_id:
-        filter = get_object_or_404(Filter, pk=filter_id)
-        search_fields = filter.expressions.filter(
-            field__is_searchable=True).all()
-        for field in search_fields:
-            queryset = queryset.filter(field.get_expression(Ward))
+    search_form = SearchWardForm(request.user.fund, request.GET)
+    queryset = search_form.get_search_queryset(queryset)
 
- 
-    queryset = queryset.prefetch_related(models.Prefetch('projects', Project.objects.filter(is_closed=False)))
+    queryset = queryset.prefetch_related(models.Prefetch(
+        'projects', Project.objects.filter(is_closed=False)))
 
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
     return render(request, 'wards_list.html', {
+        'search_form': search_form,
         'page': paginator.get_page(request.GET.get('page'))
     })
 

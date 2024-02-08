@@ -17,7 +17,7 @@ from tasks.models import Task, TaskState
 from wards.models import Ward
 
 from .forms import CreateProjectForm, AddWardToProjectForm, \
-    AddProcessToProjectForm, ProjetSearchForm, UpdateProjectForm, AddProjectReviewerForm
+    AddProcessToProjectForm, SearchProjetForm, UpdateProjectForm, AddProjectReviewerForm
 from .functional import get_project_or_404, validate_pre_requirements
 from .querysets import get_project_processes_with_tasks_queryset, \
     get_project_wards_with_tasks_queryset, get_projects_with_tasks_queryset, \
@@ -32,7 +32,7 @@ from .requirements import process_should_not_be_used_by_any_tasks, \
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET'])
 def get_list(request):
-    search_form = ProjetSearchForm(request.user.fund, request.GET)
+    search_form = SearchProjetForm(request.user.fund, request.GET)
     queryset = get_projects_with_tasks_queryset(
         request.user.fund)
     paginator = Paginator(search_form.get_search_queryset(

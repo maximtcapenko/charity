@@ -52,7 +52,7 @@ class UpdateProjectForm(CreateProjectForm):
         return leader
 
 
-class ProjetSearchForm(forms.Form, SearchByNameMixin, FormControlMixin, SearchFormMixin):
+class SearchProjetForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchFormMixin):
     __resolvers__ = {
         'active_only': lambda field: Q(is_closed=False)
     }
