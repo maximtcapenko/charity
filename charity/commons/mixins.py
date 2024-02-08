@@ -81,24 +81,29 @@ class SearchFormMixin:
             if value:
                 resolver = self.__resolvers__.get(field)
                 if resolver:
-                    queryset = queryset.filter(resolver(value))
+                    filter = resolver(value)
+                    if hasattr(filter, '__iter__'):
+                        for expression in filter:
+                            queryset = queryset.filter(expression)
+                    else:
+                        queryset = queryset.filter(filter)
 
         return queryset
 
 
-class SearchByNameMixin(FormControlMixin):
+class SearchByNameMixin:
     min_length = 4
 
     def __init__(self):
         self.__resolvers__['name'] = lambda field: Q(name__startswith=field)
+        widget = forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Search by name'
+        })
+        widget.template_name = 'partials/search-box.html'
         self.fields['name'] = forms.CharField(
             max_length=256, min_length=self.min_length,
-            required=False, help_text='Search by name', widget=forms.TextInput(attrs={
-                'placeholder': 'Search by name',
-                'onkeyup': 'javascript:if(this.value.length > %s){this.form.submit()}' % self.min_length
-            }))
-        
-        super().__init__(self)
+            required=False, help_text='Search by name', widget=widget)
 
 
 def require_initial(*args):

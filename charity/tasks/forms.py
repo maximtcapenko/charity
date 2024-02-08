@@ -81,7 +81,7 @@ class CreateTaskForm(
 
     class Meta:
         model = Task
-        exclude = ['date_created', 'id', 'expense', 'state', 'comments',
+        exclude = ['date_created', 'id', 'expense', 'state', 'comments','payout_excess_contribution',
                    'states', 'subscribers', 'author', 'actual_expense_amount',
                    'attachments', 'order_position', 'is_done', 'is_started']
 
