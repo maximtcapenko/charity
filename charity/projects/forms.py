@@ -2,7 +2,8 @@ from django import forms
 from django.db.models import Count, Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
-from commons.mixins import InitialValidationMixin, FormControlMixin, SearchByNameMixin, SearchFormMixin
+from commons.mixins import InitialValidationMixin, FormControlMixin, \
+    SearchByNameMixin, SearchFormMixin
 from commons.forms import CustomLabeledModelChoiceField
 from commons.functional import validate_modelform_field, get_reviewer_label
 
@@ -69,7 +70,7 @@ class SearchProjetForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchFo
         self.fields['active_only'].widget.attrs.update({
             'onchange': 'javascript:this.form.submit()'
         })
-      
+
         self.fields['leader'].queryset = User.objects.filter(
             Q(volunteer_profile__fund=fund) & Exists(Project.objects.filter(fund=fund, leader=OuterRef('pk'))))
         self.fields['leader'].widget.attrs.update({

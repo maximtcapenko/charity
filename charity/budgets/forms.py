@@ -75,7 +75,7 @@ class UpdateBudgetForm(CreateBudgetForm):
         return manager
 
 
-class BudgetSearchForm(ApprovedOnlySearchForm, SearchByNameMixin):
+class SearchBudgetForm(ApprovedOnlySearchForm, SearchByNameMixin):
     def __init__(self, fund, *args, **kwargs):
         super().__init__(*args, **kwargs)
         SearchByNameMixin.__init__(self)

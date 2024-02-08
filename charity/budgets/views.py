@@ -21,7 +21,7 @@ from tasks.models import Expense
 from .forms import CreateBudgetForm, CreateIncomeForm, \
     BudgetItemApproveForm, ApproveBudgetForm, UpdateBudgetForm, \
     AddBudgetReviewerForm, CreateExpenseForm, EditBudgetItemForm, \
-    CreatePayoutExcessContributionForm, BudgetSearchForm
+    CreatePayoutExcessContributionForm, SearchBudgetForm
 
 from .querysets import get_budget_with_avaliable_amounts_queryset
 from .functional import get_budget_or_404, get_budget_available_income, validate_pre_requirements
@@ -35,7 +35,7 @@ def get_projects_list(request):
     queryset = get_budget_with_avaliable_amounts_queryset(
         request.user.fund)
     
-    search_form = BudgetSearchForm(request.user.fund, request.GET)
+    search_form = SearchBudgetForm(request.user.fund, request.GET)
 
     paginator = Paginator(search_form.get_search_queryset(queryset), DEFAULT_PAGE_SIZE)
     page = wrap_dicts_page_to_objects_page(

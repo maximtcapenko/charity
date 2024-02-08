@@ -127,3 +127,14 @@ def get_context_values(context, *keys):
     for key in keys:
         result[key] = context.get(key, None)
     return result
+
+
+@register.simple_tag(takes_context=True)
+def append_to_url_query(context, **kwargs):
+    from urllib import parse
+    from django.http import QueryDict
+    query = QueryDict(context.request.GET.urlencode(), mutable=True)
+    for key in kwargs:
+        query[key] = kwargs[key]
+
+    return f'?{query.urlencode()}'
