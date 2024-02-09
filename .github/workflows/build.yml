@@ -25,4 +25,4 @@ jobs:
         pip install -r charity/requirements.txt
     - name: Run Tests
       run: |
-        python charity/manage.py test
+        python charity/manage.py test charity
