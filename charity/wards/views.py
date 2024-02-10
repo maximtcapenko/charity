@@ -75,7 +75,8 @@ def get_list(request):
 
     return render(request, 'wards_list.html', {
         'search_form': search_form,
-        'page': paginator.get_page(request.GET.get('page'))
+        'page': paginator.get_page(request.GET.get('page')),
+        'items_count': paginator.count
     })
 
 

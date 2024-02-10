@@ -25,3 +25,16 @@ class Warnings:
     INCOME_SHOULD_BE_POSITIVE = 'Income cannot be empty or negative'
     EXPENSE_SHOULD_BE_POSITIVE = 'Expense cannot be empty or negative'
     EXPENSE_CANNOT_BE_ADDED_BUDGET_HAS_BEEN_APPROVED = 'New expense cannot be added because the current budget has been approved.'
+
+
+class Infos:
+    NEW_ROLE_ASSIGNMENT_SHORT = 'Role assignment.'
+    NEW_ROLE_ASSIGNMENT_LONG = 'You have ve been assigned to role Manager of budget {%s}.'
+    NEW_INCOME_SHORT = 'New Income (%s).'
+    NEW_INCOME_LONG = 'A new income has been received with the amount (%s) in the budget (%s)'
+    NEW_EXPENSE_SHORT = 'New Expense (%s).'
+    NEW_EXPENSE_LONG = 'A new expense has been received with the amount (%s) in the budget (%s).'
+    INCOME_HAS_BEEN_REVIEWED_SHORT = 'Income (%s) reviewed.'
+    INCOME_HAS_BEEN_REVIEWED_LONG = 'Income with amount (%s) of budget (%s) has been (%s).'
+    EXPENSE_HAS_BEEN_REVIEWED_SHORT = 'Expense (%s) reviewed.'
+    EXPENSE_HAS_BEEN_REVIEWED_LONG = 'Expense with amount (%s) of budget (%s) has been (%s).'

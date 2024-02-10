@@ -9,9 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: charity
     strategy:
       max-parallel: 4
       matrix:
@@ -26,9 +23,9 @@ jobs:
       run: |
         python -m venv .venv
         source .venv/bin/activate
-        python -m pip install -r requirements.txt
+        python -m pip install -r charity/requirements.txt
         echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
         echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
     - name: Run Tests
       run: |
-        python manage.py test
+       python charity/manage.py test charity

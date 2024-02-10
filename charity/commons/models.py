@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 
 
 class Base(models.Model):
@@ -20,6 +21,8 @@ class Notification(Base):
     short = models.CharField(max_length=100, blank=False)
     message = models.TextField()
     is_viewed = models.BooleanField(default=False)
+    target_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
+    target_id = models.UUIDField(null=True)
 
     def __str__(self):
         return f'{self.title} ({self.message})'
