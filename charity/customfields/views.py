@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
@@ -52,7 +52,7 @@ def edit_field_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def remove_custom_field(request, id):
     return_url = reverse('customfields:get_list')
     custom_field = get_object_or_404(
@@ -69,7 +69,7 @@ def remove_custom_field(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_list(request):
     fund = request.user.fund
     paginator = Paginator(CustomField.objects.filter(

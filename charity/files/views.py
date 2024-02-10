@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.functional import resolve_many_2_many_attr, \
@@ -54,7 +54,7 @@ def get_list(request, model, target_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_file(request, id):
     file = get_object_or_404(Attachment, pk=id)
     return FileResponse(file.file, as_attachment=True, filename=file.name)

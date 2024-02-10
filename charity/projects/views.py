@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Exists, Q, OuterRef
 from django.shortcuts import redirect, render, get_object_or_404
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
@@ -13,7 +13,7 @@ from commons.functional import render_generic_form, user_should_be_volunteer, \
 
 from funds.models import Approvement
 from processes.models import Process
-from tasks.models import Task, TaskState
+from tasks.models import TaskState
 from wards.models import Ward
 
 from .forms import CreateProjectForm, AddWardToProjectForm, \
@@ -30,7 +30,7 @@ from .requirements import process_should_not_be_used_by_any_tasks, \
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_list(request):
     search_form = SearchProjetForm(request.user.fund, request.GET)
     queryset = get_projects_with_tasks_queryset(
@@ -62,7 +62,7 @@ def add_project(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_details(request, id):
     default_tab = 'tasks'
     page_number = request.GET.get('page')
@@ -103,7 +103,7 @@ def get_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def remove_project(request, id):
     project = get_project_or_404(request, id)
     return_url = reverse('projects:get_list')
@@ -138,7 +138,7 @@ def edit_project_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def complete_project(request, id):
     project = get_object_or_404(Project, pk=id)
     return_url = reverse('projects:get_details', args=[project.id])
@@ -176,7 +176,7 @@ def add_project_process(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def remove_project_process(request, id, process_id):
     project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=processes'
@@ -215,7 +215,7 @@ def add_project_ward(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def remove_project_ward(request, id, ward_id):
     project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=wards'
@@ -252,7 +252,7 @@ def add_project_reviewer(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def remove_project_reviewer(request, id, reviewer_id):
     project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=reviewers'
@@ -280,7 +280,7 @@ def remove_project_reviewer(request, id, reviewer_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def remove_project_task(request, id, task_id):
     project = get_project_or_404(request, id)
     return_url = f'{reverse("projects:get_details", args=[id])}?tab=tasks'
@@ -300,7 +300,7 @@ def remove_project_task(request, id, task_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_reviewer_details(request, id, reviewer_id):
     project = get_object_or_404(Project.objects.filter(
         fund=request.user.fund), pk=id)

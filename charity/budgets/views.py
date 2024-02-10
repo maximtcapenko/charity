@@ -3,7 +3,7 @@ from django.db.models import Exists, Q, OuterRef
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
@@ -30,7 +30,7 @@ from .models import Budget, Income
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_budgets_list(request):
     queryset = get_budget_with_avaliable_amounts_queryset(
         request.user.fund)
@@ -64,7 +64,7 @@ def add_budget(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_budget_details(request, id):
     default_tab = 'incomes'
     tabs = {
@@ -163,7 +163,7 @@ def add_budget_excess_contribution(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def remove_budget(request, id):
     budget = get_budget_or_404(request, id)
     return_url = reverse('budgets:get_list')
@@ -243,7 +243,7 @@ def approve_budget_income(request, id, income_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def remove_budget_income(request, id, income_id):
     budget = get_budget_or_404(request, id)
     return_url = f'{reverse("budgets:get_details", args=[id])}?tab=incomes'
@@ -343,7 +343,7 @@ def approve_budget_expense(request, id, expense_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def remove_budget_expense(request, id, expense_id):
     budget = get_budget_or_404(request, id)
     return_url = f'{reverse("budgets:get_details", args=[id])}?tab=expenses'
@@ -387,7 +387,7 @@ def add_budget_reviewer(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def remove_budget_reviewer(request, id, reviewer_id):
     budget = get_budget_or_404(request, id)
     return_url = f'{reverse("budgets:get_details", args=[id])}?tab=reviewers'
@@ -418,7 +418,7 @@ def remove_budget_reviewer(request, id, reviewer_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_income_details(request, id, income_id):
     budget = get_budget_or_404(request, id)
     income = get_object_or_404(budget.incomes, pk=income_id)
@@ -433,7 +433,7 @@ def get_income_details(request, id, income_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_expense_details(request, id, expense_id):
     budget = get_budget_or_404(request, id)
     expense = get_object_or_404(budget.expenses, pk=expense_id)
@@ -449,7 +449,7 @@ def get_expense_details(request, id, expense_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def budget_expenses_planing(request, id):
     budget = get_budget_or_404(request, id)
     if should_be_approved(budget):
@@ -481,7 +481,7 @@ def budget_expenses_planing(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_reviewer_details(request, id, reviewer_id):
     default_tab = 'incomes'
     tabs = {

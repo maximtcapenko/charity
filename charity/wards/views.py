@@ -2,7 +2,7 @@ from django.db import models
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
@@ -62,7 +62,7 @@ def edit_details(request, id):
 
 @user_passes_test(user_should_be_volunteer)
 @login_required
-@require_http_methods(['GET'])
+@require_GET
 def get_list(request):
     queryset = Ward.objects.filter(fund=request.user.fund)
     search_form = SearchWardForm(request.user.fund, request.GET)
@@ -82,7 +82,7 @@ def get_list(request):
 
 @user_passes_test(user_should_be_volunteer)
 @login_required
-@require_http_methods(['GET'])
+@require_GET
 def get_details(request, id):
     default_tab = 'comments'
     tabs = [

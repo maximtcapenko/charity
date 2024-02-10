@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
@@ -21,7 +21,7 @@ from .requirements import contribution_is_ready_to_be_removed
 
 
 @user_passes_test(user_should_be_superuser)
-@require_http_methods(['GET'])
+@require_GET
 def get_list(request):
     paginator = Paginator(Fund.objects.order_by('id'), DEFAULT_PAGE_SIZE)
     return render(request, 'funds_list.html', {
@@ -30,7 +30,7 @@ def get_list(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_details(request, id):
     default_tab = 'contributions'
     tabs = {
@@ -65,7 +65,7 @@ def get_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_get_current_details_partial(request,  *args, **kwargs):
     return render(request, 'partials/fund_details.html', {
         'title': kwargs.get('title'),
@@ -74,7 +74,7 @@ def get_get_current_details_partial(request,  *args, **kwargs):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_current_details(request):
     return get_details(request, request.user.fund.id)
 
@@ -96,7 +96,7 @@ def add_contributor(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_contributor_details(request, id):
     contributor = get_object_or_404(
         Contributor.objects.filter(
@@ -148,7 +148,7 @@ def add_contribution(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_contribution_details(request, id):
     contribution = get_object_or_404(
         Contribution.objects.filter(
@@ -167,7 +167,7 @@ def get_contribution_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def remove_contribution(request, id):
     return_url = f'{reverse("funds:get_current_details")}?tab=contributions'
     contribution = get_object_or_404(request.user.fund.contributions, pk=id)
@@ -201,7 +201,7 @@ def add_volunteer(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_volunteer_details(request, id):
     volunteer = get_object_or_404(
         VolunteerProfile.objects.filter(
@@ -213,7 +213,7 @@ def get_volunteer_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def add_volunteer_cover(request, id):
     cover = request.FILES['cover']
     if cover:

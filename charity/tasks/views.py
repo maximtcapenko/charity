@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
@@ -40,7 +40,7 @@ def add_task(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_details(request, id):
     default_tab = 'process'
     tabs = [
@@ -184,7 +184,7 @@ def request_task_state_review(request, task_id, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_state_details(request, task_id, id):
     task = get_task_or_404(request, task_id)
     state = get_object_or_404(task.states, pk=id)

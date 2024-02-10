@@ -6,7 +6,7 @@ from django.core.paginator import Paginator
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Prefetch
 from django.urls import reverse
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.functional import render_generic_form, user_should_be_volunteer
@@ -40,7 +40,7 @@ def add_filter(request, model_name):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_filter_details(request, id):
     return render(request, 'filter_details.html', {
         'filter': get_object_or_404(
@@ -74,7 +74,7 @@ def edit_filter_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def remove_filter(request, id):
     fund = request.user.fund
     filter = get_object_or_404(Filter.objects.filter(fund=fund), pk=id)
@@ -103,7 +103,7 @@ def add_expression(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_expression_details(request, id, expression_id):
     fund = request.user.fund
     expression = get_object_or_404(
@@ -145,7 +145,7 @@ def remove_expression(request, id, expression_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_list(request, model_name):
     fund = request.user.fund
     content_type = get_object_or_404(ContentType, model=model_name)
@@ -162,7 +162,7 @@ def get_list(request, model_name):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_filed_value_input_details(request):
     field_id = request.GET.get('field_id')
     field = get_object_or_404(CustomField, pk=field_id)

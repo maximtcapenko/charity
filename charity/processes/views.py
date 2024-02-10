@@ -2,7 +2,7 @@ from django.db import models
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
@@ -75,7 +75,7 @@ def edit_state_details(request, id, state_id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_list(request):
     queryset = Process.objects.filter(
         models.Q(fund_id=request.user.fund.id),
@@ -93,7 +93,7 @@ def get_list(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['GET'])
+@require_GET
 def get_details(request, id):
     process = get_object_or_404(
         Process.objects
