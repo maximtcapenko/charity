@@ -156,7 +156,8 @@ def get_list(request, model_name):
     return render(request, 'filter_list.html', {
         'fund': fund,
         'content_type': content_type,
-        'page': paginator.get_page(request.GET.get('page'))
+        'page': paginator.get_page(request.GET.get('page')),
+        'items_count': paginator.count
     })
 
 

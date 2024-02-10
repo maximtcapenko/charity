@@ -31,7 +31,7 @@ from .models import Budget, Income
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET'])
-def get_projects_list(request):
+def get_budgets_list(request):
     queryset = get_budget_with_avaliable_amounts_queryset(
         request.user.fund)
     
@@ -43,7 +43,8 @@ def get_projects_list(request):
 
     return render(request, 'budgets_list.html', {
         'page': page,
-        'search_form': search_form
+        'search_form': search_form,
+        'items_count': paginator.count
     })
 
 

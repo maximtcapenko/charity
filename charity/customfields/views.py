@@ -75,7 +75,8 @@ def get_list(request):
     paginator = Paginator(CustomField.objects.filter(
         fund=fund), DEFAULT_PAGE_SIZE)
 
-    return render(request, 'fields_configuration.html', {
+    return render(request, 'fields_list.html', {
         'fund': fund,
-        'page': paginator.get_page(request.GET.get('page'))
+        'page': paginator.get_page(request.GET.get('page')),
+        'items_count': paginator.count
     })

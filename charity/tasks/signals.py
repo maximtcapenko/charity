@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import signals
 from django.dispatch import receiver
 from django.urls import reverse
@@ -40,15 +41,17 @@ def notify_reviewer_when_review_request_created(sender, instance, fund, task, me
     notification = Notification.objects.create(
         receiver=reviewer,
         title=Task.__name__,
+        target_content_type=ContentType.objects.get_for_model(sender),
+        target_id=instance.id,
         url=reverse('tasks:get_state_details', args=[task.id, instance.id]),
         short='Task review request',
         message=f'Review task state {instance.state.name} from {task.assignee} details: {message}')
 
     instance.request_review = RequestReview.objects.create(
         author=task.assignee,
-        reviewer=reviewer, 
-        fund=fund, 
-        notes=message, 
+        reviewer=reviewer,
+        fund=fund,
+        notes=message,
         notification=notification)
     instance.save()
 

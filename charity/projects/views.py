@@ -41,7 +41,8 @@ def get_list(request):
         paginator.get_page(request.GET.get('page')), model=Project)
     return render(request, 'projects_list.html', {
         'page': page,
-        'search_form': search_form
+        'search_form': search_form,
+        'items_count': paginator.count
     })
 
 
