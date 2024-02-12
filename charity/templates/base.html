@@ -100,43 +100,71 @@
               </a>
               <a class="nav-link" href="{% url 'wards:get_list' %}">
                 <div class="sb-nav-link-icon">
+                  <i class="fa-solid fa-leaf"></i>
                 </div>Wards
+                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
               </a>
               <div>
                 <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'filters:get_list' 'ward' %}">Filters</a>
+                  <a class="nav-link" href="{% url 'filters:get_list' 'ward' %}">
+                    <div class="sb-nav-link-icon">
+                      <i class="fa-solid fa-filter"></i>
+                    </div>
+                    Filters</a>
                 </nav>
               </div>
-              <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
+              <div>
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'submissions:get_list' %}">
+                    <div class="sb-nav-link-icon">
+                      <i class="fa-regular fa-paper-plane"></i>
+                    </div>
+                    Submission</a>
+                </nav>
+              </div>
+              <a class="nav-link">
                 <div class="sb-nav-link-icon">
+                  <i class="fa-solid fa-envelope"></i>
                 </div>
                 Mailing
                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
               </a>
-              <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+              <div>
                 <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mailings:get_gorups_list'%}">Mailing groups</a>
+                  <a class="nav-link" href="{% url 'mailings:get_gorups_list'%}">
+                    <div class="sb-nav-link-icon">
+                      <i class="fa-solid fa-at"></i>
+                    </div>
+                    Mailing groups</a>
                 </nav>
               </div>
-              <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+              <div>
                 <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mailings:get_templates_list'%}">Templates</a>
+                  <a class="nav-link" href="{% url 'mailings:get_templates_list'%}">
+                    <div class="sb-nav-link-icon">
+                      <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    Templates</a>
                 </nav>
               </div>
               <a class="nav-link" href="{% url 'budgets:get_list' %}">
                 <div class="sb-nav-link-icon">
+                  <i class="fas fa-sack-dollar"></i>
                 </div>Budgets
               </a>
               <a class="nav-link" href="{% url 'customfields:get_list' %}">
                 <div class="sb-nav-link-icon">
+                  <i class="fa-solid fa-tags"></i>
                 </div>Custom fields
               </a>
               <a class="nav-link" href="{% url 'processes:get_list' %}">
                 <div class="sb-nav-link-icon">
+                  <i class="fa-solid fa-gears"></i>
                 </div>Processes
               </a>
               <a class="nav-link" href="{% url 'projects:get_list' %}">
                 <div class="sb-nav-link-icon">
+                  <i class="fa-solid fa-diagram-project"></i>
                 </div>Projects
               </a>
             </div>

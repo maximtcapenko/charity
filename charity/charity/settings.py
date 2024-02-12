@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'processes.apps.ProcessesConfig',
     'projects.apps.ProjectsConfig',
     'tasks.apps.TasksConfig',
+    'submissions.apps.SubmissionsConfig',
     'wards.apps.WardsConfig',
     'eav',
     'ckeditor'

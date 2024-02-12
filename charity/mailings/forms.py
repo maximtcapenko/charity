@@ -47,13 +47,12 @@ class AddMailingRecipientForm(forms.Form, FormControlMixin, InitialValidationMix
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
 
-        group = self.initial['group']
         self.fields['recipient'] = CustomLabeledModelChoiceField(
             label='Recipient', required=True,
             label_func=lambda x: f'{x.name} ({x.email})',
             queryset=Contributor.objects.filter(
-                Q(fund=self.initial['fund'], is_internal=False)
-                & ~Exists(group.recipients.filter(id=OuterRef('pk')))))
+                Q(fund=self.fund, is_internal=False)
+                & ~Exists(self.group.recipients.filter(id=OuterRef('pk')))))
 
         FormControlMixin.__init__(self)
 

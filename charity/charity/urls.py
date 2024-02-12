@@ -37,6 +37,7 @@ urlpatterns = [
     path('mailings/', include('mailings.urls')),
     path('processes/', include('processes.urls')),
     path('projects/', include('projects.urls')),
+    path('submissions/', include('submissions.urls')),
     path('tasks/', include('tasks.urls')),
     path('wards/', include('wards.urls')),
 ]
