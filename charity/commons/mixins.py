@@ -32,6 +32,9 @@ class FormControlMixin:
 
         for field_name in self.fields:
             field = self.fields[field_name]
+            if not hasattr(field, 'widget'):
+                continue
+
             if (isinstance(field.widget, forms.CheckboxInput)):
                 field.widget.template_name = 'partials/form-switch.html'
                 field.widget.attrs.update({

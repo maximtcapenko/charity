@@ -45,11 +45,13 @@ INSTALLED_APPS = [
     'files.apps.FilesConfig',
     'filters.apps.FiltersConfig',
     'funds.apps.FundsConfig',
+    'mailings.apps.MailingsConfig',
     'processes.apps.ProcessesConfig',
     'projects.apps.ProjectsConfig',
     'tasks.apps.TasksConfig',
     'wards.apps.WardsConfig',
-    'eav'
+    'eav',
+    'ckeditor'
 ]
 
 MIDDLEWARE = [
@@ -155,5 +157,26 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'DEBUG',
         },
+    },
+}
+
+CKEDITOR_CONFIGS = {
+    'basic_ckeditor': {
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            {'name': 'editing', 'items': [
+                'Find', 'Replace', '-', 'SelectAll']},
+            {'name': 'basicstyles',
+             'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
+            {'name': 'paragraph',
+             'items': ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', '-',
+                       'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl']},
+            {'name': 'styles', 'items': [
+                'Styles', 'Format', 'Font', 'FontSize']},
+            {'name': 'colors', 'items': ['TextColor', 'BGColor']},
+        ],
+
+        # 'height': 300,
+        'width': '100%',
     },
 }

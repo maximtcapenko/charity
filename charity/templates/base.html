@@ -107,7 +107,22 @@
                     <a class="nav-link" href="{% url 'filters:get_list' 'ward' %}">Filters</a>
                 </nav>
               </div>
-           
+              <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
+                <div class="sb-nav-link-icon">
+                </div>
+                Mailing
+                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+              </a>
+              <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mailings:get_gorups_list'%}">Mailing groups</a>
+                </nav>
+              </div>
+              <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mailings:get_templates_list'%}">Templates</a>
+                </nav>
+              </div>
               <a class="nav-link" href="{% url 'budgets:get_list' %}">
                 <div class="sb-nav-link-icon">
                 </div>Budgets

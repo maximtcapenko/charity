@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mt-4">{{ group.name }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_details' group.fund.id %}">{{ group.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'mailings:get_gorups_list'%}">Mailing groups</a>
+  </li>
+  <li class="breadcrumb-item active">Group details</li>
+</ol>
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row">
+      <div class="col">
+        <div class="bg-light text-dark">
+          <strong>Description</strong>: {{ group.notes }}
+        </div>
+      </div>
+      <div class="col">
+        <div class="bg-light text-dark">
+          <div>
+            <strong>Created</strong>: {{ group.date_created }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="row">
+        <div class="col-1">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <a href="{% url 'mailings:edit_details' group.id %}">Edit</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div>
+  <a href="{% url 'mailings:add_recipient' group.id %}" class="btn btn-link">Add recipient</a>
+</div>
+<div class="card mb-4">
+  <div class="card-header">
+    {{items_count}} <i class="fa-solid fa-at"></i>
+    Recipients
+  </div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <tbody>
+        {% for recipient in page %}
+        <tr>
+          <td class="col-2 align-middle">
+            <h6><a href="#">{{ recipient.name }}</a></h6>
+            {{ recipient.email }}
+          </td>
+          <td class="align-middle">
+            {{ recipient.date_created }}
+          </td>
+        </tr>
+        {% endfor %}    
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
