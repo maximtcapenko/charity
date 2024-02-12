@@ -172,10 +172,10 @@ def resolve_many_2_many_attr_path(attr_model, model):
 
 def resolve_many_2_many_attr(attr_model, content_type, id):
     """
-    Resolves attribute with type list[`Comment`] from `content_type` object
+    Resolves attribute with type list[`Model`] from `content_type` object
     `content_type`: `ContentType`
     """
-    comments_attr = resolve_many_2_many_attr_path(
+    target_attr = resolve_many_2_many_attr_path(
         attr_model, content_type.model_class())
     instance = content_type.model_class().objects.get(pk=id)
-    return getattr(instance, comments_attr)
+    return getattr(instance, target_attr)

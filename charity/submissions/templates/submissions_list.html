@@ -7,7 +7,7 @@
 </div>
 <div class="card mb-4">
   <div class="card-header">
-    {{ items_count }}
+    {{ items_count }} <i class="fa-regular fa-paper-plane"></i>
     Submission lists
   </div>
   <div class="card-body">
@@ -17,7 +17,7 @@
         <tr>
           <td class="col-3 align-middle">
             <h6>
-              <a href="#">{{submission.name}}</a>
+              <a href="{% url 'submissions:get_submission_details' submission.id %}">{{submission.name}}</a>
             </h6>
             {{submission.date_created}}
             <span class="badge bg-primary">

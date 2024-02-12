@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mt-4">{{ submission.name }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_details' submission.fund_id %}">{{ submission.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'submissions:get_list' %}">Submission list</a>
+  </li>
+  <li class="breadcrumb-item active">Submission Details</li>
+</ol>
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row">
+      <div class="col">
+        <div class="bg-light text-dark">
+          <strong>Description</strong>: {{ submission.notes }}
+        </div>
+      </div>
+      <div class="col">
+        <div class="bg-light text-dark">
+          <div>
+            <strong>Created</strong>: {{ submission.date_created }}
+          </div>
+          <div>
+            <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' submission.author.volunteer_profile.id %}">{{ submission.author.username }}</a>
+          </div>
+          <div>
+            <strong>Mailing group</strong>:<a href="{% url 'mailings:get_group_details' submission.mailing_group.id %}">
+              {{submission.mailing_group.name}}</a>
+          </div>
+          <div>
+            <strong>Mailing template</strong>:<a href="{% url 'mailings:edit_template' submission.mailing_template.id %}">
+              {{submission.mailing_template.name}}</a>
+          </div>
+          <div>
+            <strong>Status</strong>:
+              <span class="badge bg-primary">
+                {{submission.status}}
+              </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% include "partials/submission_wards_list.html" %}
+{% endblock %}

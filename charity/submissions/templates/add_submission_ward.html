@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load customtags %}
+<h2 class="mt-4">Add ward to {{ submission.name }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'submissions:get_submission_details' submission.id %}">{{ submission.name }}</a>
+  </li>
+  <li class="breadcrumb-item active">Adding ward</li>
+</ol>
+{% render_partial 'wards.views.get_filter_list_partial' model=model_name target_id=submission.id %}
+{% endblock %}
