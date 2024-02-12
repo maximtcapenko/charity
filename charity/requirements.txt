@@ -6,7 +6,9 @@ click-didyoumean==0.3.0
 click-plugins==1.1.1
 click-repl==0.3.0
 django==4.2.10
+django-ckeditor==6.7.1
 django-eav2==1.5.0
+django-js-asset==2.2.0
 kombu==5.3.4
 pillow==10.2.0
 prompt-toolkit==3.0.43

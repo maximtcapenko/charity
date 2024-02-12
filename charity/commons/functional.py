@@ -35,14 +35,16 @@ def render_generic_form(request, form_class, context):
     post_form_initial = context.get('post_form_initial')
     get_form_initial = context.get('get_form_initial')
     instance = context.get('instance')
+    form_template = context.get('form_template')
 
     if instance:
         params['instance'] = instance
 
-    if issubclass(form_class, FileUploadMixin):
-        form_template = 'generic_multipartform.html'
-    else:
-        form_template = 'generic_createform.html'
+    if not form_template:
+        if issubclass(form_class, FileUploadMixin):
+            form_template = 'generic_multipartform.html'
+        else:
+            form_template = 'generic_createform.html'
 
     if request.method == 'POST':
         if initial:

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mt-4">{{ title }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_current_details' %}">{{ user.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href={{ return_url }}>Back</a>
+  </li>
+  <li class="breadcrumb-item active">{{title}}</li>
+</ol>
+<form action="" method="post">
+  {% csrf_token %}
+  {{form.media}}
+  {{form.author}}
+  {{form.fund}}
+  <div class="row mt-2">
+    <div class="col-3">
+      <div class="card">
+        <div class="card-header">
+            General
+        </div>
+        <div class="card-body">
+          <p>{{form.name}}</p>
+          <p>{{form.subject}}</p>
+          <p>{{form.content_type}}</p>
+          <p>{{form.notes}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-9">
+      <div class="card">
+        <div class="card-header">
+          Message body
+        </div>
+        <div class="card-body">
+            {{form.template.errors}}
+            {{form.template}}
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div>
+          <input type="submit" class="btn btn-link" value="Publish" />
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

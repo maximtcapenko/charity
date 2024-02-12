@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load customtags %}
+{% render_partial 'funds.views.get_get_current_details_partial' title='Mailing groups' %}
+<div>
+  <a href="{% url 'mailings:add_group'%}" class="btn btn-link">Add group</a>
+</div>
+<div class="card mb-4">
+  <div class="card-header">
+    {{items_count}} <i class="fa-solid fa-envelope"></i>
+    Mailing groups
+  </div>
+  <div class="card-body">
+    <table class="table table-striped">
+    <tbody>
+        {% for group in page %}
+        <tr>
+          <td class="col-3">
+            <h6>
+              <a href="{% url 'mailings:get_group_details' group.id %}">{{ group.name }}</a>
+            </h6>
+              {{ group.date_created }}
+          </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+    {% include 'paginator.html' with obj_page=page %}
+  </div>
+</div>
+{% endblock %}

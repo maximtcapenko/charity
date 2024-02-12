@@ -1,0 +1,8 @@
+{% for field in widget.custom_fields %}
+  <span class="badge bg-secondary">
+    {% if field.slug %}
+      {{field.slug}}
+    {% else %}
+      {{field.name}}
+    {% endif %}</span>
+{% endfor %}

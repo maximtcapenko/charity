@@ -1,4 +1,5 @@
 import json
+
 from django.http import HttpResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.contenttypes.models import ContentType
@@ -150,7 +151,7 @@ def get_list(request, model_name):
     fund = request.user.fund
     content_type = get_object_or_404(ContentType, model=model_name)
 
-    paginator = Paginator(Filter.objects.filter(
+    paginator = Paginator(Filter.objects.select_related('content_type').filter(
         fund=fund, content_type=content_type), DEFAULT_PAGE_SIZE)
 
     return render(request, 'filter_list.html', {

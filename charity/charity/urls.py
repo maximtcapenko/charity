@@ -34,6 +34,7 @@ urlpatterns = [
     path('funds/', include('funds.urls')),
     path('notifications/<uuid:id>/details/',
          common_views.view_notification_details, name='view_notification_details'),
+    path('mailings/', include('mailings.urls')),
     path('processes/', include('processes.urls')),
     path('projects/', include('projects.urls')),
     path('tasks/', include('tasks.urls')),

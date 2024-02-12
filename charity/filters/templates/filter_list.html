@@ -1,12 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 class="mt-4">Filters for {{ fund.name }}</h2>
-<ol class="breadcrumb mb-4">
-<li class="breadcrumb-item">
-    <a href="{% url 'funds:get_current_details' %}">{{ fund.name }}</a>
-</li>
-<li class="breadcrumb-item active">Filters</li>
-</ol>
+{% load customtags %}
+{% render_partial 'funds.views.get_get_current_details_partial' title='Filters' %}
 <div>
   <a href="{% url 'filters:add_filter' content_type.model %}" class="btn btn-link">Add filter</a>
 </div>
