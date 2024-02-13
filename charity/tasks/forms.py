@@ -80,7 +80,7 @@ class CreateTaskForm(
 
     class Meta:
         model = Task
-        exclude = ['date_created', 'id', 'expense', 'state', 'comments','payout_excess_contribution',
+        exclude = ['date_created', 'id', 'expense', 'state', 'comments', 'payout_excess_contribution',
                    'states', 'subscribers', 'author', 'actual_expense_amount',
                    'attachments', 'order_position', 'is_done', 'is_started']
 
@@ -258,8 +258,9 @@ class ApproveTaskStateForm(
         FormControlMixin.__init__(self)
 
     is_rejected = forms.BooleanField(label='Reject', required=False)
-    notes = forms.CharField(widget=forms.Textarea(),
-                            label='Notes', required=False)
+    notes = forms.CharField(
+        widget=forms.Textarea(),
+        label='Notes', required=False)
 
     def clean(self):
         if should_be_approved(self.state):

@@ -94,9 +94,9 @@ class SearchBudgetForm(ApprovedOnlySearchForm, SearchByNameMixin):
 class CreatePayoutExcessContributionForm(CreateContributionForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['amount'].disabled = True
+        self.form.amount.disabled = True
         self.fields.pop('contribution_date')
-        self.fields['contributor'].queryset = Contributor.objects \
+        self.form.contributor.queryset = Contributor.objects \
             .filter(fund=self.fund, is_internal=True)
 
     def save(self):
@@ -143,8 +143,7 @@ class CreateIncomeForm(
                 output_field=models.DecimalField()))
             .filter(avaliable_amount__gt=0)
             .order_by('contribution_date')
-            .values(
-                'id', 'contributor__name', 'contribution_date',
+            .values('id', 'contributor__name', 'contribution_date',
                     'amount', 'reserved_amount'), label='Contribution')
 
         self.form.budget.widget = forms.HiddenInput()

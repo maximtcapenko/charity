@@ -8,7 +8,6 @@ from commons.forms import CustomLabeledModelChoiceField
 from commons.functional import validate_modelform_field, get_reviewer_label
 
 from processes.models import Process, ProcessState
-from wards.models import Ward
 
 from .messages import Warnings
 from .models import Project
@@ -124,12 +123,11 @@ class AddProcessToProjectForm(
         return process
 
     def save(self):
-        project = self.project
         process = self.cleaned_data['process']
-        project.processes.add(process)
-        project.save()
+        self.project.processes.add(process)
+        self.project.save()
 
-        return project
+        return self.project
 
 
 class AddProjectReviewerForm(
@@ -156,8 +154,7 @@ class AddProjectReviewerForm(
         return self.cleaned_data
 
     def save(self):
-        project = self.project
         reviewer = self.cleaned_data['reviewer']
-        project.reviewers.add(reviewer)
+        self.project.reviewers.add(reviewer)
 
         return reviewer
