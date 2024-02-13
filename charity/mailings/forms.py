@@ -5,7 +5,7 @@ from django.db.models import Exists, Q, OuterRef
 from ckeditor.widgets import CKEditorWidget
 from django.urls import reverse
 
-from commons.mixins import FormControlMixin, InitialValidationMixin
+from commons.mixins import FormControlMixin, InitialMixin
 from commons.forms import CustomLabeledModelChoiceField
 from funds.models import Contributor
 
@@ -13,14 +13,15 @@ from .models import MailingGroup, MailingTemplate
 from .widgets import TemplateFieldsField
 
 
-class AddMailingGroupForm(forms.ModelForm, FormControlMixin):
+class AddMailingGroupForm(forms.ModelForm, FormControlMixin, InitialMixin):
     __initial__ = ['fund', 'author']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialMixin.__init__(self)
 
-        self.fields['fund'].widget = forms.HiddenInput()
-        self.fields['author'].widget = forms.HiddenInput()
+        self.form.fund.widget = forms.HiddenInput()
+        self.form.author.widget = forms.HiddenInput()
 
         FormControlMixin.__init__(self)
 
@@ -40,14 +41,14 @@ class AddMailingGroupForm(forms.ModelForm, FormControlMixin):
         exclude = ['id', 'date_created', 'recipients']
 
 
-class AddMailingRecipientForm(forms.Form, FormControlMixin, InitialValidationMixin):
+class AddMailingRecipientForm(forms.Form, FormControlMixin, InitialMixin):
     __initial__ = ['fund', 'group']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
-        self.fields['recipient'] = CustomLabeledModelChoiceField(
+        self.form.recipient = CustomLabeledModelChoiceField(
             label='Recipient', required=True,
             label_func=lambda x: f'{x.name} ({x.email})',
             queryset=Contributor.objects.filter(
@@ -61,16 +62,16 @@ class AddMailingRecipientForm(forms.Form, FormControlMixin, InitialValidationMix
         group.recipients.add(self.cleaned_data['recipient'])
 
 
-class AddMailingTemplateForm(forms.ModelForm, FormControlMixin, InitialValidationMixin):
+class AddMailingTemplateForm(forms.ModelForm, FormControlMixin, InitialMixin):
     __initial__ = ['fund', 'author']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
         
-        self.fields['fund'].widget = forms.HiddenInput()
-        self.fields['author'].widget = forms.HiddenInput()
-        self.fields['content_type'].queryset = ContentType.objects.filter(
+        self.form.fund.widget = forms.HiddenInput()
+        self.form.author.widget = forms.HiddenInput()
+        self.form.content_type.queryset = ContentType.objects.filter(
             model__in=[
                 'ward'])
 
@@ -82,8 +83,8 @@ class AddMailingTemplateForm(forms.ModelForm, FormControlMixin, InitialValidatio
         if hasattr(self.instance, 'content_type'):
             info.content_type = self.instance.content_type
 
-        self.fields['info'] = info
-        self.fields['template'].widget = CKEditorWidget(
+        self.form.info = info
+        self.form.template.widget = CKEditorWidget(
             config_name='basic_ckeditor')
 
         for field in self.fields:

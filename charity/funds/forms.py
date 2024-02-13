@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 
-from commons.mixins import FormControlMixin, InitialValidationMixin, FileUploadMixin
+from commons.mixins import FormControlMixin, InitialMixin, FileUploadMixin
 from commons.functional import validate_modelform_field
 from .models import Fund, Contribution, Contributor, VolunteerProfile
 
@@ -13,18 +13,18 @@ class FundForm(forms.ModelForm):
 
 
 class CreateContributionForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+        forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['fund', 'author']
 
     field_order = ['contributor']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
         FormControlMixin.__init__(self)
 
-        self.fields['fund'].widget = forms.HiddenInput()
-        self.fields['contributor'].queryset = Contributor.objects \
+        self.form.fund.widget = forms.HiddenInput()
+        self.form.contributor.queryset = Contributor.objects \
             .filter(fund=self.fund, is_internal=False)
 
     def clean(self):
@@ -42,19 +42,19 @@ class CreateContributionForm(
 
 
 class CreateVolunteerForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+        forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['fund']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
         FormControlMixin.__init__(self)
 
-        self.fields['user'].queryset = User.objects.filter(
+        self.form.user.queryset = User.objects.filter(
             volunteer_profile__isnull=True,
             is_active=True
         )
-        self.fields['fund'].widget = forms.HiddenInput()
+        self.form.fund.widget = forms.HiddenInput()
 
     def clean(self):
         validate_modelform_field('fund', self.initial, self.cleaned_data)
@@ -66,15 +66,15 @@ class CreateVolunteerForm(
 
 
 class CreateContributorForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin, FileUploadMixin):
+        forms.ModelForm, InitialMixin, FormControlMixin, FileUploadMixin):
     __initial__ = ['fund']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
         FormControlMixin.__init__(self)
 
-        self.fields['fund'].widget = forms.HiddenInput()
+        self.form.fund.widget = forms.HiddenInput()
 
     def clean(self):
         validate_modelform_field('fund', self.initial, self.cleaned_data)
@@ -86,15 +86,15 @@ class CreateContributorForm(
 
 
 class UpdateVolunteerProfile(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+        forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['fund']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
         FormControlMixin.__init__(self)
 
-        self.fields['fund'].widget = forms.HiddenInput()
+        self.form.fund.widget = forms.HiddenInput()
 
     def clean(self):
         validate_modelform_field('fund', self.initial, self.cleaned_data)

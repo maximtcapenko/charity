@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 
 from commons.forms import CustomLabeledModelChoiceField
 from commons.functional import should_be_approved, get_reviewer_label
-from commons.mixins import FormControlMixin, InitialValidationMixin
+from commons.mixins import FormControlMixin, InitialMixin
 
 from files.forms import CreateAttachmentForm
 from funds.models import Approvement, Contribution, Contributor
@@ -20,32 +20,31 @@ from .signals import review_request_created
 
 
 class CreateTaskForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+        forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['project', 'author']
     field_order = ['ward', 'name', 'process']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
-        self.fields['project'].widget = forms.HiddenInput()
+        self.form.project.widget = forms.HiddenInput()
 
-        project = self.project
-        self.fields['assignee'] = CustomLabeledModelChoiceField(
+        self.form.assignee = CustomLabeledModelChoiceField(
             label_func=get_reviewer_label,
             queryset=User.objects
-            .filter(volunteer_profile__fund_id=project.fund_id),
+            .filter(volunteer_profile__fund_id=self.project.fund_id),
             label='Assignee', required=True)
 
-        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+        self.form.reviewer = CustomLabeledModelChoiceField(
             label_func=get_reviewer_label,
-            queryset=project.reviewers, label='Reviewer', required=True)
+            queryset=self.project.reviewers, label='Reviewer', required=True)
 
-        self.fields['ward'].queryset = get_available_project_wards_queryset(
-            project).only('id', 'name')
+        self.form.ward.queryset = get_available_project_wards_queryset(
+            self.project).only('id', 'name')
 
-        self.fields['process'].queryset = Process.objects \
-            .filter(projects__in=[project]) \
+        self.form.process.queryset = Process.objects \
+            .filter(projects__in=[self.project]) \
             .only('id', 'name')
 
         FormControlMixin.__init__(self)
@@ -92,9 +91,9 @@ class UpdateTaskForm(CreateTaskForm):
 
         if self.instance:
             if self.instance.is_started:
-                self.fields['start_date'].disabled = True
+                self.form.start_date.disabled = True
 
-            self.fields['ward'].queryset = get_available_project_wards_queryset(
+            self.form.ward.queryset = get_available_project_wards_queryset(
                 self.instance.project, task_id=self.instance.id
             ).only('id', 'name')
 
@@ -115,27 +114,24 @@ class UpdateTaskForm(CreateTaskForm):
         return self.instance
 
 
-class CompleteTaskForm(forms.Form,  InitialValidationMixin, FormControlMixin):
+class CompleteTaskForm(forms.Form,  InitialMixin, FormControlMixin):
     __initial__ = ['task', 'author', 'fund']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
-        task = self.task
-        fund = self.fund
-
-        if task.expense:
-            self.fields['expense_amount'] = forms.DecimalField(
-                disabled=True, initial=task.expense.amount, label='Expense amount')
-            self.fields['actual_expense_amount'] = forms.DecimalField(
+        if self.task.expense:
+            self.form.expense_amount = forms.DecimalField(
+                disabled=True, initial=self.task.expense.amount, label='Expense amount')
+            self.form.actual_expense_amount = forms.DecimalField(
                 required=True, label='Actual expense amount')
-            self.fields['contributor'] = forms.ModelChoiceField(
+            self.form.contributor = forms.ModelChoiceField(
                 queryset=Contributor.objects.filter(
-                    fund=fund, is_internal=True),
+                    fund=self.fund, is_internal=True),
                 required=False, label='Contributor')
 
-        self.fields['notes'] = forms.CharField(widget=forms.Textarea)
+        self.form.notes = forms.CharField(widget=forms.Textarea)
 
         FormControlMixin.__init__(self)
 
@@ -165,90 +161,81 @@ class CompleteTaskForm(forms.Form,  InitialValidationMixin, FormControlMixin):
         return self.cleaned_data
 
     def save(self):
-        task = self.task
-        fund = self.fund
-        author = self.author
+        self.task.is_done = True
 
-        task.is_done = True
-
-        if task.expense:
+        if self.task.expense:
             actual_expense_amount = self.cleaned_data['actual_expense_amount']
-            task.actual_expense_amount = task.expense.amount - actual_expense_amount
+            self.task.actual_expense_amount = actual_expense_amount
 
-            if task.expense.amount > actual_expense_amount:
+            if self.task.expense.amount > actual_expense_amount:
                 payout_excess_contribution = Contribution(
-                    fund=fund, contribution_date=datetime.datetime.utcnow(),
-                    author=author,
+                    fund=self.fund, contribution_date=datetime.datetime.utcnow(),
+                    author=self.author,
                     contributor=self.cleaned_data['contributor'],
                     amount=actual_expense_amount,
                     notes=self.cleaned_data['notes'])
                 payout_excess_contribution.save()
 
-                task.payout_excess_contribution = payout_excess_contribution
+                self.task.payout_excess_contribution = payout_excess_contribution
 
-        task.save()
+        self.task.save()
 
-        return task
+        return self.task
 
 
 class ActivateTaskStateForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+        forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['task', 'author']
 
     field_order = ['state', 'reviewer', 'notes']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
         FormControlMixin.__init__(self)
 
-        task = self.task
-
-        self.fields['state'].queryset = get_available_task_process_states_queryset(
-            task)
+        self.form.state.queryset = get_available_task_process_states_queryset(
+            self.task)
         if self.initial.get('state'):
-            self.fields['state'].disabled = True
+            self.form.state.disabled = True
 
-        self.fields['reviewer'].queryset = get_available_task_rewiewers_queryset(
-            task)
+        self.form.reviewer.queryset = get_available_task_rewiewers_queryset(
+            self.task)
 
     def save(self):
-        author = self.author
-        task = self.task
-        self.instance.author = author
+        self.instance.author = self.author
         self.instance.save()
 
-        if not task.state:
-            task.is_started = True
+        if not self.task.state:
+            self.task.is_started = True
 
-        task.state = self.instance
-        task.states.add(self.instance)
-        task.save()
+        self.task.state = self.instance
+        self.task.states.add(self.instance)
+        self.task.save()
 
         return self.instance
 
     def clean(self):
-        task = self.task
-        if self.instance.reviewer == task.assignee:
+        if self.instance.reviewer == self.task.assignee:
             raise forms.ValidationError(
                 Warnings.REVIEWER_CANNOT_BE_A_TASK_ASSIGNEE)
 
         '''validate if budget of task is approved'''
-        if task.should_be_approved:
-            if task.expense == None:
+        if self.task.should_be_approved:
+            if self.task.expense == None:
                 raise forms.ValidationError(
                     Warnings.TASK_IS_NOT_INCLUDED_IN_BUDGET)
-            elif task.expense.budget.approvement == None:
+            elif self.task.expense.budget.approvement == None:
                 raise forms.ValidationError(
                     Warnings.TASK_IN_A_BUDGET_BUT_BUDGET_IS_NOT_APPROVED)
-            elif task.expense.budget.approvement.is_rejected:
+            elif self.task.expense.budget.approvement.is_rejected:
                 raise forms.ValidationError(
                     Warnings.TASK_IN_A_BUDGET_BUT_BUDGET_IS_REJECTED)
-            elif task.expense.approvement.is_rejected:
+            elif self.task.expense.approvement.is_rejected:
                 raise forms.ValidationError(Warnings.TASK_EXPENSE_IS_REJECTED)
 
         '''validate if current state has approvement'''
-        if task.state and not should_be_approved(task.state):
+        if self.task.state and not should_be_approved(self.task.state):
             raise forms.ValidationError(Warnings.CURRENT_TASK_IS_NOT_APPROVED)
 
         return self.cleaned_data
@@ -262,12 +249,12 @@ class ActivateTaskStateForm(
 
 
 class ApproveTaskStateForm(
-        forms.Form, InitialValidationMixin, FormControlMixin):
+        forms.Form, InitialMixin, FormControlMixin):
     __initial__ = ['fund', 'author', 'state', 'task']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
         FormControlMixin.__init__(self)
 
     is_rejected = forms.BooleanField(label='Reject', required=False)
@@ -275,66 +262,56 @@ class ApproveTaskStateForm(
                             label='Notes', required=False)
 
     def clean(self):
-        author = self.author
-
         if should_be_approved(self.state):
             raise forms.ValidationError(Warnings.TASK_STATE_IS_APPROVED)
 
-        if not author in [self.state.request_review.reviewer]:
+        if not self.author in [self.state.request_review.reviewer]:
             raise forms.ValidationError(
                 Warnings.CURRENT_USER_IS_NOT_TASK_REVIEWER)
 
     def save(self):
-        author = self.author
-        state = self.state
-        fund = self.fund
-
         approvement = Approvement.objects.create(
-            author=author, fund=fund,
+            author=self.author, fund=self.fund,
             notes=self.cleaned_data['notes'],
             is_rejected=self.cleaned_data['is_rejected'])
 
-        state.approvement = approvement
-        state.is_review_requested = False
+        self.state.approvement = approvement
+        self.state.is_review_requested = False
 
         if approvement.is_rejected == False:
-            state.completion_date = datetime.datetime.utcnow()
-            state.is_done = True
+            self.state.completion_date = datetime.datetime.utcnow()
+            self.state.is_done = True
 
-        state.approvements.add(approvement)
-        state.save()
+        self.state.approvements.add(approvement)
+        self.state.save()
 
-        return state
+        return self.state
 
 
-class TaskCreateAttachmentForm(CreateAttachmentForm, InitialValidationMixin):
+class TaskCreateAttachmentForm(CreateAttachmentForm, InitialMixin):
     __initial__ = ['fund', 'author', 'task']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
     def save(self):
-        task = self.task
-        author = self.author
-        fund = self.fund
-
-        self.instance.author = author
-        self.instance.fund = fund
+        self.instance.author = self.author
+        self.instance.fund = self.fund
         self.instance.save()
 
-        task.attachments.add(self.instance)
+        self.task.attachments.add(self.instance)
 
         return self.instance
 
 
 class TaskStateReviewRequestForm(
-        forms.Form, InitialValidationMixin, FormControlMixin):
+        forms.Form, InitialMixin, FormControlMixin):
     __initial__ = ['fund', 'author', 'state', 'task']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
         FormControlMixin.__init__(self)
 
     notes = forms.CharField(widget=forms.Textarea(), min_length=10,
@@ -355,13 +332,12 @@ class TaskStateReviewRequestForm(
         return self.cleaned_data
 
     def save(self):
-        state = self.state
-        state.is_review_requested = True
-        state.save()
+        self.state.is_review_requested = True
+        self.state.save()
 
         review_request_created.send(
             sender=TaskState,
-            instance=state,
+            instance=self.state,
             fund=self.und,
             task=self.task,
             message=self.cleaned_data['notes']

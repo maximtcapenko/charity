@@ -1,7 +1,7 @@
 from django import forms
 
 from commons.functional import resolve_many_2_many_attr, resolve_rel_attr_path
-from commons.mixins import FormControlMixin, FileUploadMixin, InitialValidationMixin
+from commons.mixins import FormControlMixin, FileUploadMixin, InitialMixin
 
 from funds.models import Fund
 
@@ -9,15 +9,16 @@ from .models import Attachment
 
 
 class CreateAttachmentForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin,
+        forms.ModelForm, InitialMixin, FormControlMixin,
         FileUploadMixin):
     __initial__ = ['target_id', 'target_content_type', 'author', 'fund']
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialMixin.__init__(self)
         FormControlMixin.__init__(self)
 
-        self.fields['author'].widget = forms.HiddenInput()
+        self.form.author.widget = forms.HiddenInput()
 
     def clean(self):
         content_type = self.target_content_type
