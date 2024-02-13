@@ -5,9 +5,8 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from commons.mixins import InitialMixin, FormControlMixin, SearchByNameMixin
-from commons.functional import validate_modelform_field, should_be_approved, \
-    get_reviewer_label
-from commons.forms import ApprovedOnlySearchForm, CustomLabeledModelChoiceField
+from commons.functional import validate_modelform_field, should_be_approved
+from commons.forms import ApprovedOnlySearchForm, user_model_choice_field
 
 from funds.models import Approvement, Contributor
 from funds.forms import CreateContributionForm
@@ -29,12 +28,8 @@ class CreateBudgetForm(
         InitialMixin.__init__(self)
 
         self.form.fund.widget = forms.HiddenInput()
-        self.form.manager = CustomLabeledModelChoiceField(
-            label_func=get_reviewer_label,
-            queryset=User.objects
-            .filter(volunteer_profile__fund=self.fund)
-            .select_related('volunteer_profile')
-            .only('id', 'username'), label='Manager', required=True)
+        self.form.manager = user_model_choice_field(
+            fund=self.fund, label='Manager')
 
         FormControlMixin.__init__(self, *args, **kwargs)
 
@@ -94,6 +89,7 @@ class SearchBudgetForm(ApprovedOnlySearchForm, SearchByNameMixin):
 class CreatePayoutExcessContributionForm(CreateContributionForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.form.amount.disabled = True
         self.fields.pop('contribution_date')
         self.form.contributor.queryset = Contributor.objects \
@@ -147,9 +143,8 @@ class CreateIncomeForm(
                     'amount', 'reserved_amount'), label='Contribution')
 
         self.form.budget.widget = forms.HiddenInput()
-        self.form.reviewer = CustomLabeledModelChoiceField(
-            label_func=get_reviewer_label,
-            queryset=self.budget.reviewers, label='Reviewer', required=True)
+        self.form.reviewer = user_model_choice_field(
+            queryset=self.budget.reviewers, label='Reviewer')
 
         FormControlMixin.__init__(self)
 
@@ -195,9 +190,8 @@ class CreateExpenseForm(
         self.form.project.widget = forms.HiddenInput()
         self.form.amount.initial = self.task.estimated_expense_amount
         self.form.amount.disabled = True
-        self.form.reviewer = CustomLabeledModelChoiceField(
-            label_func=get_reviewer_label,
-            queryset=self.budget.reviewers, label='Reviewer', required=True)
+        self.form.reviewer = user_model_choice_field(
+            queryset=self.budget.reviewers, label='Reviewer')
 
         FormControlMixin.__init__(self)
 
@@ -330,16 +324,14 @@ class AddBudgetReviewerForm(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialMixin.__init__(self)
-        FormControlMixin.__init__(self)
 
         self.form.budget.widget = forms.HiddenInput()
-        self.form.reviewer.queryset = User.objects.filter(
-            models.Q(volunteer_profile__fund__id=self.budget.fund_id) &
-            ~models.Q(id__in=self.budget.reviewers.values('id')))
+        self.form.reviewer = user_model_choice_field(queryset=User.objects.filter(
+            models.Q(volunteer_profile__fund=self.budget.fund) &
+            ~models.Q(id__in=self.budget.reviewers.values('id'))), label='Reviewer')
 
-    reviewer = CustomLabeledModelChoiceField(
-        label_func=get_reviewer_label,
-        queryset=User.objects, label='Reviewer', required=True)
+        FormControlMixin.__init__(self)
+
     budget = forms.ModelChoiceField(Budget.objects, required=True)
 
     def clean(self):
@@ -367,10 +359,8 @@ class EditBudgetItemForm(
         InitialMixin.__init__(self)
 
         self.form.notes.initial = self.target.notes
-        self.form.reviewer = CustomLabeledModelChoiceField(
-            label_func=get_reviewer_label,
-            queryset=self.budget.reviewers, label='Reviewer',
-            required=True, initial=self.target.reviewer)
+        self.form.reviewer = user_model_choice_field(
+            queryset=self.budget.reviewers, label='Reviewer', initial=self.target.reviewer)
 
         FormControlMixin.__init__(self)
 

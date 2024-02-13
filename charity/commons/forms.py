@@ -1,6 +1,8 @@
 from django import forms
+from django.contrib.auth.models import User
 from django.db.models import Q
 
+from .functional import get_reviewer_label
 from .mixins import FormControlMixin, SearchFormMixin
 
 
@@ -26,7 +28,15 @@ class ApprovedOnlySearchForm(forms.Form, FormControlMixin, SearchFormMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         FormControlMixin.__init__(self)
-        
+
         self.fields['approved_only'].widget.attrs.update({
             'onchange': 'javascript:this.form.submit()'
         })
+
+
+def user_model_choice_field(fund=None, required=None, queryset=None, **kwargs):
+    return CustomLabeledModelChoiceField(
+        label_func=get_reviewer_label,
+        queryset=User.objects.select_related(
+            'volunteer_profile').filter(volunteer_profile__fund=fund) if queryset is None else queryset,
+        required=True if required is None else required, **kwargs)
