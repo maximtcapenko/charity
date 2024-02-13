@@ -80,31 +80,6 @@ class SearchProjetForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchFo
         self.order_fields(['active_only', 'name'])
 
 
-class AddWardToProjectForm(
-        forms.Form, InitialValidationMixin, FormControlMixin):
-    __initial__ = ['project']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
-        FormControlMixin.__init__(self)
-
-        self.fields['ward'].queryset = Ward.active_objects.filter(
-            Q(fund__id=self.initial['project'].fund_id) &
-            Q(projects__isnull=True) | Q(projects__is_closed=True)
-        ).only('id', 'name')
-
-    ward = forms.ModelChoiceField(Ward.objects, required=True, label='Ward')
-
-    def save(self):
-        project = self.initial['project']
-        ward = self.cleaned_data['ward']
-        project.wards.add(ward)
-        project.save()
-
-        return project
-
-
 class AddProcessToProjectForm(
         forms.Form, InitialValidationMixin, FormControlMixin):
     class ProcessModelChoiceField(forms.ModelChoiceField):

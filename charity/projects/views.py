@@ -15,8 +15,9 @@ from funds.models import Approvement
 from processes.models import Process
 from tasks.models import TaskState
 from wards.models import Ward
+from wards.forms import AttachWardToTargetForm
 
-from .forms import CreateProjectForm, AddWardToProjectForm, \
+from .forms import CreateProjectForm, \
     AddProcessToProjectForm, SearchProjetForm, UpdateProjectForm, AddProjectReviewerForm
 from .functional import get_project_or_404, validate_pre_requirements
 from .querysets import get_project_processes_with_tasks_queryset, \
@@ -203,15 +204,16 @@ def add_project_ward(request, id):
 
     validate_pre_requirements(request, project, return_url)
 
-    return render_generic_form(
-        request=request, form_class=AddWardToProjectForm,
-        context={
-            'return_url': return_url,
-            'title': 'Include ward to project',
-            'initial': {
-                'project': project
-            }
-        })
+    if request.method == 'POST':
+        form = AttachWardToTargetForm(request.POST, initial={'target': project})
+        if form.is_valid():
+            form.save()
+        request.method = 'GET'
+
+    return render(request, 'add_project_ward.html', {
+        'project': project,
+        'model_name': 'project'
+    })
 
 
 @user_passes_test(user_should_be_volunteer)

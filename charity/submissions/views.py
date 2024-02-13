@@ -8,7 +8,9 @@ from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
 from commons.functional import user_should_be_volunteer, render_generic_form
 
-from .forms import AddSubmissionForm, AddSubmissionWard
+from wards.forms import AttachWardToTargetForm
+
+from .forms import AddSubmissionForm
 from .models import Submission
 from .requirements import submission_can_be_edited
 from .tasks import send_submssions
@@ -99,9 +101,8 @@ def add_submission_ward(request, id):
             reverse('submissions:get_submission_details', args=[id]))
 
     if request.method == 'POST':
-        form = AddSubmissionWard(request.POST, initial={
-            'submission': submission
-        })
+        form = AttachWardToTargetForm(request.POST, initial={
+            'target': submission})
         if form.is_valid():
             form.save()
 

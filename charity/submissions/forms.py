@@ -29,23 +29,10 @@ class AddSubmissionForm(
     class Meta:
         model = Submission
         exclude = ['id', 'date_created', 'wards', 'is_draft', 'status']
-    
+
     def save(self):
         if self.instance._state.adding:
             self.instance.is_draft = True
             self.instance.status = SubmissionSentStatus.DRAFT
 
         return super().save(True)
-
-
-class AddSubmissionWard(forms.Form, InitialValidationMixin):
-    __initial__ = ['submission']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
-
-    ward = forms.ModelChoiceField(Ward.objects)
-
-    def save(self):
-        self.submission.wards.add(self.cleaned_data['ward'])

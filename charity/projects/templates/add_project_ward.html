@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load customtags %}
+<h2 class="mt-4">Add ward to {{ project.name }}</h2>
+<ol class="breadcrumb mb-4">
+  <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_details' project.fund_id %}">{{ project.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'projects:get_list' %}">Projects</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'projects:get_details' project.id %}?tab=wards">{{ project.name }}</a>
+  </li>
+  <li class="breadcrumb-item active">Adding ward</li>
+</ol>
+{% render_partial 'wards.views.get_filter_list_partial' model=model_name target_id=project.id %}
+{% endblock %}
