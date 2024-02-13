@@ -1,0 +1,50 @@
+{% load customtags %}
+{% load submissionfilters %}
+<div>
+  <a {% if submission|submission_can_be_edited:user %}
+       href="{% url 'submissions:add_submission_ward' submission.id %}" class="btn btn-link"
+     {% else %}
+       class="btn btn-link disabled"
+     {% endif %}>Add ward</a>
+</div>
+<div class="card mb-4">
+  <div class="card-header">
+    {{ items_count }} <i class="fa-solid fa-leaf"></i>
+    Wards
+  </div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <tbody>
+        {% for ward in page %}
+          <tr>
+            <td>
+              <div>
+                <h6>
+                  {{ ward|thumbnail:50 }}
+                  <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
+                </h6>
+                {{ ward.date_created }}
+                {% if ward.is_inactive %}
+                  <span class="badge bg-secondary">inactive</span>
+                {% else %}
+                  <span class="badge bg-primary">active</span>
+                {% endif %}
+              </div>
+            </td>
+            <td class="align-middle">
+              <a {% if submission|submission_can_be_edited:user %}
+                    href="{% url 'submissions:remove_submission_ward' submission.id ward.id %}" 
+                    class="post-request"
+                 {% else %}
+                    class="link-disabled"
+                 {% endif %}>
+                Remove</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% include 'paginator.html' with obj_page=page %}
+    {% include "partials/js.html" %}
+  </div>
+</div>

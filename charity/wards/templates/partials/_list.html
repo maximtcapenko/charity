@@ -1,0 +1,46 @@
+{% load customtags %}
+<div class="card mb-4">
+  <div class="card-header">
+    {{ items_count }} <i class="fa-solid fa-leaf"></i>
+    Wards
+  </div>
+  <div class="card-body">
+    <div>
+      <form action="" method="get">
+        <div class="row">
+          {% for field in search_form %}
+            <div class="col">{{ field }}</div>
+          {% endfor %}
+        </div>
+      </form>
+    </div>
+    <table class="table table-striped">
+      <tbody>
+        {% for ward in page %}
+          <tr>
+            <td>
+              <div>
+                <h6>
+                  {{ ward|thumbnail:50 }}
+                  <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
+                </h6>
+                {{ ward.date_created }}
+                {% if ward.is_inactive %}
+                  <span class="badge bg-secondary">inactive</span>
+                {% else %}
+                  <span class="badge bg-primary">active</span>
+                {% endif %}
+              </div>
+            </td>
+            <td class="align-middle">
+              <a href="#" data-input-name="ward" data-input-value="{{ward.id}}"
+              class="post-request">Add ward</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% include 'paginator.html' with obj_page=page %}
+    {% include 'partials/js.html' %}
+  </div>
+</div>

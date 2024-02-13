@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load customtags %}
+{% render_partial 'funds.views.get_get_current_details_partial' title='Wards submission' %}
+<div>
+  <a href="{% url 'submissions:add_submission' %}" class="btn btn-link">Add submission</a>
+</div>
+<div class="card mb-4">
+  <div class="card-header">
+    {{ items_count }} <i class="fa-regular fa-paper-plane"></i>
+    Submission lists
+  </div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <tbody>
+        {% for submission in page %}
+        <tr>
+          <td class="col-3 align-middle">
+            <h6>
+              <a href="{% url 'submissions:get_submission_details' submission.id %}">{{submission.name}}</a>
+            </h6>
+            {{submission.date_created}}
+            <span class="badge bg-primary">
+              {{submission.status}}
+            </span>
+          </td>
+          <td class="col-3 align-middle">
+            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Mail group">
+              <i class="fa-solid fa-at fa-xs"></i>
+              <a href="{% url 'mailings:get_group_details' submission.mailing_group.id %}">
+                {{submission.mailing_group.name}}
+              </a>
+            </span>
+          </td>
+          <td class="align-middle">
+            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Mail template">
+              <i class="fa-solid fa-book-open"></i>
+              <a href="{% url 'mailings:edit_template' submission.mailing_template.id %}">
+                {{submission.mailing_template.name}}
+              </a>
+            </span>
+          </td>
+          <td class="align-middle">
+            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Author">
+              {% include 'partials/user_image_part.html' with user=submission.author %}
+            </span>
+          </td>
+          <td class="align-middle">
+            <a href="#">Remove</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

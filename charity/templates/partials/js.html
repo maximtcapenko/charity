@@ -5,12 +5,23 @@
 for(var l = 0; l < links.length; l++) {
   links[l].addEventListener('click', function(e) {
     e.preventDefault();
-    var url = this.href.split('?');
+    var valueAttr = this.getAttribute('data-input-value');
+    var url = ''
     var form = document.createElement('form');
-    
-    form.setAttribute('method','post');
-    form.setAttribute('action', url[0]);
     form.innerHTML = csrf_token;
+    
+    if(valueAttr != null) {
+      var nameAttr = this.getAttribute('data-input-name');
+      var input = document.createElement('input');
+      input.type = "text"
+      input.name = nameAttr
+      input.value = valueAttr
+      form.appendChild(input)
+    } else {
+      url = this.href.split('?')[0];
+    }
+    form.setAttribute('method','post');
+    form.setAttribute('action', url);
     document.getElementsByTagName('body')[0].appendChild(form);
     form.submit();
   });

@@ -1,12 +1,13 @@
 from django.db import models
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
-from django.views.decorators.http import require_http_methods, require_GET
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
-from commons.functional import user_should_be_volunteer, render_generic_form
+from commons.functional import resolve_many_2_many_attr, user_should_be_volunteer, render_generic_form
 from projects.models import Project
 
 from .forms import CreateWardForm, SearchWardForm
@@ -14,7 +15,7 @@ from .models import Ward
 
 
 @user_passes_test(user_should_be_volunteer)
-@require_http_methods(['POST'])
+@require_POST
 def add_ward_cover(request, id):
     cover = request.FILES['cover']
     if cover:
@@ -29,7 +30,6 @@ def add_ward_cover(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def create(request):
     return render_generic_form(
@@ -43,7 +43,6 @@ def create(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_http_methods(['GET', 'POST'])
 def edit_details(request, id):
     ward = get_object_or_404(Ward.objects.filter(
@@ -61,7 +60,6 @@ def edit_details(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_GET
 def get_list(request):
     queryset = Ward.objects.filter(fund=request.user.fund)
@@ -81,7 +79,6 @@ def get_list(request):
 
 
 @user_passes_test(user_should_be_volunteer)
-@login_required
 @require_GET
 def get_details(request, id):
     default_tab = 'comments'
@@ -104,4 +101,27 @@ def get_details(request, id):
         'selected_tab': tab,
         'model_name': ward._meta.model_name,
         'title': 'Ward'
+    })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_GET
+def get_filter_list_partial(request, model, target_id):
+    content_type = ContentType.objects.get(model=model)
+    wards = resolve_many_2_many_attr(Ward, content_type, target_id)
+
+    queryset = Ward.objects.filter(fund=request.user.fund).filter(
+        ~models.Exists(wards.filter(id=models.OuterRef('pk'))))
+
+    search_form = SearchWardForm(request.user.fund, request.GET)
+    queryset = search_form.get_search_queryset(queryset)
+
+    paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
+
+    return render(request, 'partials/_list.html', {
+        'model_name': model,
+        'target_id': target_id,
+        'search_form': search_form,
+        'page': paginator.get_page(request.GET.get('page')),
+        'items_count': paginator.count
     })

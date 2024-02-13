@@ -1,3 +1,4 @@
+from typing import Any
 from django import forms
 from django.db.models import Q
 from django.forms.utils import ErrorList
@@ -60,6 +61,12 @@ class FormControlMixin:
 
 
 class InitialValidationMixin:
+    def __getattr__(self, name):
+        if name in self.__initial__:
+            return self.initial[name]
+        else:
+            raise AttributeError(f'Attribute {name} does not exusts.')
+
     def __init__(self, *args, **kwargs):
         if not hasattr(self, '__initial__'):
             raise ValueError(

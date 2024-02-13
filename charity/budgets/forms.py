@@ -28,13 +28,12 @@ class CreateBudgetForm(
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self, *args, **kwargs)
 
-        fund = self.initial['fund']
-
         self.fields['fund'].widget = forms.HiddenInput()
         self.fields['manager'] = CustomLabeledModelChoiceField(
             label_func=get_reviewer_label,
             queryset=User.objects
-            .filter(volunteer_profile__fund=fund)
+            .filter(volunteer_profile__fund=self.fund)
+            .select_related('volunteer_profile')
             .only('id', 'username'), label='Manager', required=True)
 
         FormControlMixin.__init__(self, *args, **kwargs)
@@ -44,7 +43,7 @@ class CreateBudgetForm(
         return self.cleaned_data
 
     def save(self):
-        self.instance.author = self.initial['author']
+        self.instance.author = self.author
         return super().save()
 
     class Meta:

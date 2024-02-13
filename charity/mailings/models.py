@@ -16,6 +16,9 @@ class MailingGroup(Base):
         User, on_delete=models.PROTECT, related_name='mailing_groups')
     recipients = models.ManyToManyField(Contributor)
 
+    def __str__(self):
+        return self.name
+
 
 class MailingTemplate(Base):
     name = models.CharField(max_length=256)
@@ -26,3 +29,6 @@ class MailingTemplate(Base):
     template = models.TextField(blank=False, null=False)
     subject = models.CharField(max_length=256)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
