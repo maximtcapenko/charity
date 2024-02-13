@@ -67,21 +67,22 @@ class AddMailingTemplateForm(forms.ModelForm, FormControlMixin, InitialValidatio
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
+        
         self.fields['fund'].widget = forms.HiddenInput()
         self.fields['author'].widget = forms.HiddenInput()
         self.fields['content_type'].queryset = ContentType.objects.filter(
             model__in=[
                 'ward'])
 
-        notes = TemplateFieldsField(
+        info = TemplateFieldsField(
             required=False,
             relation_id='id_content_type',
             fetch_url=reverse('mailings:get_content_type_details'))
 
         if hasattr(self.instance, 'content_type'):
-            notes.content_type = self.instance.content_type
+            info.content_type = self.instance.content_type
 
-        self.fields['notes'] = notes
+        self.fields['info'] = info
         self.fields['template'].widget = CKEditorWidget(
             config_name='basic_ckeditor')
 

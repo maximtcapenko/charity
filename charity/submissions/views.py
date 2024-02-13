@@ -11,6 +11,7 @@ from commons.functional import user_should_be_volunteer, render_generic_form
 from .forms import AddSubmissionForm, AddSubmissionWard
 from .models import Submission
 from .requirements import submission_can_be_edited
+from .tasks import send_submssions
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -57,13 +58,14 @@ def get_submission_details(request, id):
 def edit_submission(request, id):
     submission = get_object_or_404(
         Submission.objects.filter(fund=request.user.fund), pk=id)
-    
-    if submission_can_be_edited(submission, request.user):
-        raise ApplicationError('Submission cannot be edited.')
-    
+
+    return_url = reverse('submissions:get_submission_details', args=[id])
+    if not submission_can_be_edited(submission, request.user):
+        raise ApplicationError('Submission cannot be edited.', return_url)
+
     return render_generic_form(request, form_class=AddSubmissionForm, context={
         'title': 'Edit submission',
-        'return_url': reverse('submissions:get_submission_details', args=[id]),
+        'return_url': return_url,
         'instance': submission,
         'initial': {
             'fund': request.user.fund,
@@ -71,16 +73,19 @@ def edit_submission(request, id):
         }
     })
 
+
 @user_passes_test(user_should_be_volunteer)
 @require_POST
 def send_submission(request, id):
     submission = get_object_or_404(
         Submission.objects.filter(fund=request.user.fund), pk=id)
-    
+
     submission.is_draft = False
     submission.save()
+    send_submssions.delay(submission.id)
 
     return redirect(reverse('submissions:get_submission_details', args=[id]))
+
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
@@ -88,9 +93,11 @@ def add_submission_ward(request, id):
     submission = get_object_or_404(
         Submission.objects.filter(fund=request.user.fund), pk=id)
 
-    if submission_can_be_edited(submission, request.user):
-        raise ApplicationError('Ward cannot be added to submission.')
-    
+    if not submission_can_be_edited(submission, request.user):
+        raise ApplicationError(
+            'Ward cannot be added to submission.',
+            reverse('submissions:get_submission_details', args=[id]))
+
     if request.method == 'POST':
         form = AddSubmissionWard(request.POST, initial={
             'submission': submission
