@@ -30,7 +30,7 @@ class CreateTaskForm(
 
         self.fields['project'].widget = forms.HiddenInput()
 
-        project = self.initial['project']
+        project = self.project
         self.fields['assignee'] = CustomLabeledModelChoiceField(
             label_func=get_reviewer_label,
             queryset=User.objects
@@ -60,7 +60,7 @@ class CreateTaskForm(
             raise forms.ValidationError(
                 Warnings.ASSIGNEE_CANNOT_BE_A_TASK_REVIEWER)
 
-        if not self.initial['project'].reviewers.contains(reviewer):
+        if not self.project.reviewers.contains(reviewer):
             raise forms.ValidationError(
                 Warnings.REVIEWER_IS_NOT_PROJECT_REVIEWER)
 
@@ -75,7 +75,7 @@ class CreateTaskForm(
             .aggregate(result=Max('order_position'))['result']
         self.instance.order_position = last_order_position + 1 if last_order_position else 1
         if not self.instance.author_id:
-            self.instance.author = self.initial['author']
+            self.instance.author = self.author
 
         return super().save()
 
@@ -122,8 +122,8 @@ class CompleteTaskForm(forms.Form,  InitialValidationMixin, FormControlMixin):
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
 
-        task = self.initial['task']
-        fund = self.initial['fund']
+        task = self.task
+        fund = self.fund
 
         if task.expense:
             self.fields['expense_amount'] = forms.DecimalField(
@@ -140,7 +140,7 @@ class CompleteTaskForm(forms.Form,  InitialValidationMixin, FormControlMixin):
         FormControlMixin.__init__(self)
 
     def clean(self):
-        task = self.initial['task']
+        task = self.task
         if task.expense:
             actual_expense_amount = self.cleaned_data.get(
                 'actual_expense_amount')
@@ -165,9 +165,9 @@ class CompleteTaskForm(forms.Form,  InitialValidationMixin, FormControlMixin):
         return self.cleaned_data
 
     def save(self):
-        task = self.initial['task']
-        fund = self.initial['fund']
-        author = self.initial['author']
+        task = self.task
+        fund = self.fund
+        author = self.author
 
         task.is_done = True
 
@@ -202,7 +202,7 @@ class ActivateTaskStateForm(
         InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
-        task = self.initial['task']
+        task = self.task
 
         self.fields['state'].queryset = get_available_task_process_states_queryset(
             task)
@@ -213,8 +213,8 @@ class ActivateTaskStateForm(
             task)
 
     def save(self):
-        author = self.initial['author']
-        task = self.initial['task']
+        author = self.author
+        task = self.task
         self.instance.author = author
         self.instance.save()
 
@@ -228,7 +228,7 @@ class ActivateTaskStateForm(
         return self.instance
 
     def clean(self):
-        task = self.initial['task']
+        task = self.task
         if self.instance.reviewer == task.assignee:
             raise forms.ValidationError(
                 Warnings.REVIEWER_CANNOT_BE_A_TASK_ASSIGNEE)
@@ -275,19 +275,19 @@ class ApproveTaskStateForm(
                             label='Notes', required=False)
 
     def clean(self):
-        author = self.initial['author']
+        author = self.author
 
-        if should_be_approved(self.initial['state']):
+        if should_be_approved(self.state):
             raise forms.ValidationError(Warnings.TASK_STATE_IS_APPROVED)
 
-        if not author in [self.initial['state'].request_review.reviewer]:
+        if not author in [self.state.request_review.reviewer]:
             raise forms.ValidationError(
                 Warnings.CURRENT_USER_IS_NOT_TASK_REVIEWER)
 
     def save(self):
-        author = self.initial['author']
-        state = self.initial['state']
-        fund = self.initial['fund']
+        author = self.author
+        state = self.state
+        fund = self.fund
 
         approvement = Approvement.objects.create(
             author=author, fund=fund,
@@ -315,9 +315,9 @@ class TaskCreateAttachmentForm(CreateAttachmentForm, InitialValidationMixin):
         InitialValidationMixin.__init__(self)
 
     def save(self):
-        task = self.initial['task']
-        author = self.initial['author']
-        fund = self.initial['fund']
+        task = self.task
+        author = self.author
+        fund = self.fund
 
         self.instance.author = author
         self.instance.fund = fund
@@ -341,30 +341,30 @@ class TaskStateReviewRequestForm(
                             label='Message', required=True)
 
     def clean(self):
-        if self.initial['author'] != self.initial['task'].assignee:
+        if self.author != self.task.assignee:
             raise forms.ValidationError(
                 Warnings.CURRENT_USER_IS_NOT_TASK_ASSIGNEE)
 
-        if self.initial['state'].is_review_requested:
+        if self.state.is_review_requested:
             raise forms.ValidationError(
                 Warnings.TASK_STATE_REVIEW_REQUEST_HAS_BEEN_SENT)
 
-        if should_be_approved(self.initial['state']):
+        if should_be_approved(self.state):
             raise forms.ValidationError(Warnings.TASK_STATE_IS_APPROVED)
 
         return self.cleaned_data
 
     def save(self):
-        state = self.initial['state']
+        state = self.state
         state.is_review_requested = True
         state.save()
 
         review_request_created.send(
             sender=TaskState,
             instance=state,
-            fund=self.initial['fund'],
-            task=self.initial['task'],
+            fund=self.und,
+            task=self.task,
             message=self.cleaned_data['notes']
         )
 
-        return self.initial['state']
+        return self.state

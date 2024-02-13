@@ -20,13 +20,13 @@ class CreateAttachmentForm(
         self.fields['author'].widget = forms.HiddenInput()
 
     def clean(self):
-        content_type = self.initial['target_content_type']
+        content_type = self.target_content_type
         fund_attr_path = resolve_rel_attr_path(
             Fund, content_type.model_class())
 
         filter = {
-            fund_attr_path: self.initial['fund'],
-            'pk': self.initial['target_id']
+            fund_attr_path: self.fund,
+            'pk': self.target_id
         }
 
         if not content_type.model_class().objects.filter(**filter).exists():
@@ -36,12 +36,12 @@ class CreateAttachmentForm(
         return self.cleaned_data
 
     def save(self):
-        self.instance.fund = self.initial['fund']
-        self.instance.author = self.initial['author']
+        self.instance.fund = self.fund
+        self.instance.author = self.author
         self.instance.save()
         
         files = resolve_many_2_many_attr(Attachment,
-            self.initial['target_content_type'], self.initial['target_id'])
+            self.target_content_type, self.target_id)
         files.add(self.instance)
         return self.instance
 

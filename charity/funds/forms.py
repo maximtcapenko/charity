@@ -25,14 +25,14 @@ class CreateContributionForm(
 
         self.fields['fund'].widget = forms.HiddenInput()
         self.fields['contributor'].queryset = Contributor.objects \
-            .filter(fund=self.initial['fund'], is_internal=False)
+            .filter(fund=self.fund, is_internal=False)
 
     def clean(self):
         validate_modelform_field('fund', self.initial, self.cleaned_data)
         return self.cleaned_data
 
     def save(self):
-        self.instance.author = self.initial['author']
+        self.instance.author = self.author
 
         return super().save()
 

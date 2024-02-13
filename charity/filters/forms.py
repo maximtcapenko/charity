@@ -23,9 +23,9 @@ class CreateFilterForm(
         FormControlMixin.__init__(self)
 
     def save(self):
-        self.instance.fund = self.initial['fund']
-        self.instance.author = self.initial['author']
-        self.instance.content_type = self.initial['content_type']
+        self.instance.fund = self.fund
+        self.instance.author = self.author
+        self.instance.content_type = self.content_type
         self.instance.save()
 
         return self.instance
@@ -96,7 +96,7 @@ class AddExpressionValueForm(
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
 
-        expression = self.initial['expression']
+        expression = self.expression
         attribute = expression.field.attribute
         field = BaseCustomFieldsModelForm.FIELD_CLASSES.get(
             attribute.datatype)()
@@ -114,7 +114,7 @@ class AddExpressionValueForm(
 
     
     def save(self):
-        instance = ExpressionValue(expression=self.initial['expression'])
+        instance = ExpressionValue(expression=self.expression)
         value = self.cleaned_data['value']
         instance.value = value
         instance.save()

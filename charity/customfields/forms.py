@@ -79,7 +79,7 @@ class CustomFieldCreateForm(forms.ModelForm, InitialValidationMixin, FormControl
                     self.cleaned_data['label'],
                     self.cleaned_data['name'],
                     self.cleaned_data['required'],
-                    self.initial['content_type'],
+                    self.content_type,
                     self.cleaned_data['enum_choices'])
             else:
                 attribute = self._create_attribute(
@@ -87,9 +87,9 @@ class CustomFieldCreateForm(forms.ModelForm, InitialValidationMixin, FormControl
                     self.cleaned_data['name'],
                     self.cleaned_data['required'],
                     self.cleaned_data['field_type'],
-                    self.initial['content_type'])
+                    self.content_type)
             self.instance.attribute = attribute
-            self.instance.content_type = self.initial['content_type']
+            self.instance.content_type = self.content_type
         else:
             self.instance.attribute.name = self.cleaned_data['label']
             self.instance.attribute.required = self.cleaned_data['required']

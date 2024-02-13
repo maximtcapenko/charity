@@ -27,14 +27,14 @@ class CreateCommentForm(
             self.fields.pop('reply')
 
     def clean(self):
-        content_type = self.initial['target_content_type']
+        content_type = self.target_content_type
         fund_attr_path = resolve_rel_attr_path(
             Fund, content_type.model_class())
 
         """Check if author and commented item are in the same fund"""
         filter = {
-            fund_attr_path: self.initial['fund'],
-            'pk': self.initial['target_id']
+            fund_attr_path: self.fund,
+            'pk': self.target_id
         }
 
         if not content_type.model_class().objects.filter(**filter).exists():
@@ -52,8 +52,8 @@ class CreateCommentForm(
 
     def save(self):
         self.instance.save()
-        comments = resolve_many_2_many_attr(Comment,
-                                            self.initial['target_content_type'], self.initial['target_id'])
+        comments = resolve_many_2_many_attr(
+            Comment, self.target_content_type, self.target_id)
         comments.add(self.instance)
         return self.instance
 

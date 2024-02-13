@@ -29,7 +29,7 @@ class CreateProcessStateForm(
 
         if self.instance._state.adding:
             self.fields['after_state'] = forms.ModelChoiceField(
-                self.initial['process'].states.order_by(
+                self.process.states.order_by(
                     'order_position'), required=False, label='Insert after state', empty_label='Select state')
 
         FormControlMixin.__init__(self)

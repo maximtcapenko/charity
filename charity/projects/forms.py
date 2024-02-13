@@ -24,14 +24,12 @@ class CreateProjectForm(
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
 
-        fund = self.initial['fund']
-
         self.fields['author'].widget = forms.HiddenInput()
         self.fields['fund'].widget = forms.HiddenInput()
         self.fields['leader'] = CustomLabeledModelChoiceField(
             label_func=get_reviewer_label,
-            queryset=User.objects
-            .filter(volunteer_profile__fund_id=fund.id),
+            queryset=User.objects.select_related('volunteer_profile')
+            .filter(volunteer_profile__fund_id=self.fund.id),
             label='Leader', required=True)
 
         FormControlMixin.__init__(self)
@@ -104,7 +102,7 @@ class AddProcessToProjectForm(
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
 
-        project = self.initial['project']
+        project = self.project
         self.fields['process'] = AddProcessToProjectForm.ProcessModelChoiceField(
             queryset=Process.objects.filter(
                 Exists(ProcessState.objects.filter(process=OuterRef('pk'))) &
@@ -127,7 +125,7 @@ class AddProcessToProjectForm(
         return process
 
     def save(self):
-        project = self.initial['project']
+        project = self.project
         process = self.cleaned_data['process']
         project.processes.add(process)
         project.save()
@@ -143,7 +141,7 @@ class AddProjectReviewerForm(
         super().__init__(*args, **kwargs)
         InitialValidationMixin.__init__(self)
 
-        project = self.initial['project']
+        project = self.project
 
         self.fields['project'].widget = forms.HiddenInput()
         self.fields['reviewer'] = CustomLabeledModelChoiceField(
@@ -161,7 +159,7 @@ class AddProjectReviewerForm(
         return self.cleaned_data
 
     def save(self):
-        project = self.initial['project']
+        project = self.project
         reviewer = self.cleaned_data['reviewer']
         project.reviewers.add(reviewer)
 
