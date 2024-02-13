@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load submissionfilters %}
 <h2 class="mt-4">{{ submission.name }}</h2>
 <ol class="breadcrumb mb-4">
   <li class="breadcrumb-item">
@@ -40,6 +41,27 @@
                 {{submission.status}}
               </span>
           </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="row">
+        <div class="col-1">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <a {% if submission|submission_can_be_edited:user %}
+              href="{% url 'submissions:edit_submission' submission.id %}"
+             {% else %}
+              class="link-disabled"
+             {% endif %}>Edit</a>
+        </div>
+        <div class="col-2">
+          <i class="fa-solid fa-paper-plane"></i>
+          <a {% if submission|submission_can_be_edited:user %}
+                href="{% url 'submissions:send_submission' submission.id %}" 
+                class="post-request"
+             {% else %}
+                class="link-disabled"
+             {% endif %}>Send</a>
         </div>
       </div>
     </div>

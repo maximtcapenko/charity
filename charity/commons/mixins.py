@@ -65,7 +65,7 @@ class InitialValidationMixin:
         if name in self.__initial__:
             return self.initial[name]
         else:
-            return super().__getattr__(name)
+            raise AttributeError(f'Attribute {name} does not exusts.')
 
     def __init__(self, *args, **kwargs):
         if not hasattr(self, '__initial__'):

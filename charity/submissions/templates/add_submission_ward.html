@@ -4,6 +4,12 @@
 <h2 class="mt-4">Add ward to {{ submission.name }}</h2>
 <ol class="breadcrumb mb-4">
   <li class="breadcrumb-item">
+    <a href="{% url 'funds:get_details' submission.fund_id %}">{{ submission.fund.name }}</a>
+  </li>
+  <li class="breadcrumb-item">
+    <a href="{% url 'submissions:get_list' %}">Submission list</a>
+  </li>
+  <li class="breadcrumb-item">
     <a href="{% url 'submissions:get_submission_details' submission.id %}">{{ submission.name }}</a>
   </li>
   <li class="breadcrumb-item active">Adding ward</li>
