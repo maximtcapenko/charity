@@ -4,7 +4,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.db import models
 
-from commons.mixins import InitialValidationMixin, FormControlMixin, SearchByNameMixin
+from commons.mixins import InitialMixin, FormControlMixin, SearchByNameMixin
 from commons.functional import validate_modelform_field, should_be_approved, \
     get_reviewer_label
 from commons.forms import ApprovedOnlySearchForm, CustomLabeledModelChoiceField
@@ -20,16 +20,16 @@ from .signals import exprense_created, budget_item_reviewer_assigned
 
 
 class CreateBudgetForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+        forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['fund', 'author']
     field_order = ['name', 'manager']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self, *args, **kwargs)
+        InitialMixin.__init__(self)
 
-        self.fields['fund'].widget = forms.HiddenInput()
-        self.fields['manager'] = CustomLabeledModelChoiceField(
+        self.form.fund.widget = forms.HiddenInput()
+        self.form.manager = CustomLabeledModelChoiceField(
             label_func=get_reviewer_label,
             queryset=User.objects
             .filter(volunteer_profile__fund=self.fund)
@@ -110,7 +110,7 @@ class CreatePayoutExcessContributionForm(CreateContributionForm):
 
 
 class CreateIncomeForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+        forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['budget', 'author']
 
     class ContributionModelChoiceField(forms.ModelChoiceField):
@@ -132,9 +132,9 @@ class CreateIncomeForm(
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
-        self.fields['contribution'] = CreateIncomeForm.ContributionModelChoiceField(
+        self.form.contribution = CreateIncomeForm.ContributionModelChoiceField(
             queryset=Contribution.objects.filter(
                 fund__id=self.budget.fund_id).annotate(
                 reserved_amount=models.Sum('incomes__amount', default=0))
@@ -147,8 +147,8 @@ class CreateIncomeForm(
                 'id', 'contributor__name', 'contribution_date',
                     'amount', 'reserved_amount'), label='Contribution')
 
-        self.fields['budget'].widget = forms.HiddenInput()
-        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+        self.form.budget.widget = forms.HiddenInput()
+        self.form.reviewer = CustomLabeledModelChoiceField(
             label_func=get_reviewer_label,
             queryset=self.budget.reviewers, label='Reviewer', required=True)
 
@@ -183,20 +183,20 @@ class CreateIncomeForm(
 
 
 class CreateExpenseForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+        forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['budget', 'project', 'author', 'task']
 
     field_order = ['task', 'amount', 'reviewer', 'notes']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
-        self.fields['budget'].widget = forms.HiddenInput()
-        self.fields['project'].widget = forms.HiddenInput()
-        self.fields['amount'].initial = self.task.estimated_expense_amount
-        self.fields['amount'].disabled = True
-        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+        self.form.budget.widget = forms.HiddenInput()
+        self.form.project.widget = forms.HiddenInput()
+        self.form.amount.initial = self.task.estimated_expense_amount
+        self.form.amount.disabled = True
+        self.form.reviewer = CustomLabeledModelChoiceField(
             label_func=get_reviewer_label,
             queryset=self.budget.reviewers, label='Reviewer', required=True)
 
@@ -244,12 +244,12 @@ class CreateExpenseForm(
 
 
 class BaseApproveForm(
-        forms.Form, InitialValidationMixin, FormControlMixin):
+        forms.Form, InitialMixin, FormControlMixin):
     __initial__ = ['author', 'fund', 'target']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
         FormControlMixin.__init__(self)
 
     is_rejected = forms.BooleanField(label='Reject', required=False)
@@ -325,16 +325,16 @@ class ApproveBudgetForm(BaseApproveForm):
 
 
 class AddBudgetReviewerForm(
-        forms.Form, InitialValidationMixin, FormControlMixin):
+        forms.Form, InitialMixin, FormControlMixin):
     __initial__ = ['budget']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
         FormControlMixin.__init__(self)
 
-        self.fields['budget'].widget = forms.HiddenInput()
-        self.fields['reviewer'].queryset = User.objects.filter(
+        self.form.budget.widget = forms.HiddenInput()
+        self.form.reviewer.queryset = User.objects.filter(
             models.Q(volunteer_profile__fund__id=self.budget.fund_id) &
             ~models.Q(id__in=self.budget.reviewers.values('id')))
 
@@ -360,15 +360,15 @@ class AddBudgetReviewerForm(
 
 
 class EditBudgetItemForm(
-        forms.Form, InitialValidationMixin, FormControlMixin):
+        forms.Form, InitialMixin, FormControlMixin):
     __initial__ = ['target', 'budget']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
-        self.fields['notes'].initial = self.target.notes
-        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+        self.form.notes.initial = self.target.notes
+        self.form.reviewer = CustomLabeledModelChoiceField(
             label_func=get_reviewer_label,
             queryset=self.budget.reviewers, label='Reviewer',
             required=True, initial=self.target.reviewer)

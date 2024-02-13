@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import Exists, OuterRef
 
-from commons.mixins import FormControlMixin, InitialValidationMixin, \
+from commons.mixins import FormControlMixin, InitialMixin, \
     SearchByNameMixin, SearchFormMixin
 from commons.functional import resolve_many_2_many_attr_path
 from filters.models import Filter
@@ -55,12 +55,12 @@ class SearchWardForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchForm
 
 
 class AttachWardToTargetForm(
-        forms.Form, InitialValidationMixin):
+        forms.Form, InitialMixin):
     __initial__ = ['target']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
     ward = forms.ModelChoiceField(Ward.objects, required=True, label='Ward')
 

@@ -2,7 +2,7 @@ from django import forms
 from django.db.models import Count, Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
-from commons.mixins import InitialValidationMixin, FormControlMixin, \
+from commons.mixins import InitialMixin, FormControlMixin, \
     SearchByNameMixin, SearchFormMixin
 from commons.forms import CustomLabeledModelChoiceField
 from commons.functional import validate_modelform_field, get_reviewer_label
@@ -15,18 +15,18 @@ from .models import Project
 
 
 class CreateProjectForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+        forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['fund', 'author']
 
     field_order = ['name', 'leader']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
-        self.fields['author'].widget = forms.HiddenInput()
-        self.fields['fund'].widget = forms.HiddenInput()
-        self.fields['leader'] = CustomLabeledModelChoiceField(
+        self.form.author.widget = forms.HiddenInput()
+        self.form.fund.widget = forms.HiddenInput()
+        self.form.leader = CustomLabeledModelChoiceField(
             label_func=get_reviewer_label,
             queryset=User.objects.select_related('volunteer_profile')
             .filter(volunteer_profile__fund_id=self.fund.id),
@@ -79,7 +79,7 @@ class SearchProjetForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchFo
 
 
 class AddProcessToProjectForm(
-        forms.Form, InitialValidationMixin, FormControlMixin):
+        forms.Form, InitialMixin, FormControlMixin):
     class ProcessModelChoiceField(forms.ModelChoiceField):
         def clean(self, value):
             if value:
@@ -100,14 +100,13 @@ class AddProcessToProjectForm(
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
-        project = self.project
-        self.fields['process'] = AddProcessToProjectForm.ProcessModelChoiceField(
+        self.form.process = AddProcessToProjectForm.ProcessModelChoiceField(
             queryset=Process.objects.filter(
                 Exists(ProcessState.objects.filter(process=OuterRef('pk'))) &
-                Q(is_inactive=False, fund__id=project.fund_id) &
-                ~Q(projects__in=[project]))
+                Q(is_inactive=False, fund__id=self.project.fund_id) &
+                ~Q(projects__in=[self.project]))
             .annotate(states_count=Count('states', distinct=True))
             .values('id', 'name', 'states_count'), label='Process')
 
@@ -134,21 +133,19 @@ class AddProcessToProjectForm(
 
 
 class AddProjectReviewerForm(
-        forms.Form, InitialValidationMixin, FormControlMixin):
+        forms.Form, InitialMixin, FormControlMixin):
     __initial__ = ['project']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
-        project = self.project
-
-        self.fields['project'].widget = forms.HiddenInput()
-        self.fields['reviewer'] = CustomLabeledModelChoiceField(
+        self.form.project.widget = forms.HiddenInput()
+        self.form.reviewer = CustomLabeledModelChoiceField(
             label_func=get_reviewer_label,
             queryset=User.objects.filter(
-                Q(volunteer_profile__fund__id=project.fund_id) &
-                ~Q(id__in=project.reviewers.values('id'))), label='Reviewer', required=True)
+                Q(volunteer_profile__fund__id=self.project.fund_id) &
+                ~Q(id__in=self.project.reviewers.values('id'))), label='Reviewer', required=True)
 
         FormControlMixin.__init__(self)
 

@@ -5,7 +5,7 @@ from django.urls import reverse
 from eav.models import Attribute
 
 from commons.forms import CustomLabeledModelChoiceField
-from commons.mixins import FormControlMixin, InitialValidationMixin
+from commons.mixins import FormControlMixin, InitialMixin
 from customfields.forms import DATATYPE_DICT, BaseCustomFieldsModelForm
 
 from .models import TYPE_OPERAND_MAPPING, Expression, Filter, ExpressionValue
@@ -14,12 +14,12 @@ from .widgets import ExpressionFieldValue
 
 class CreateFilterForm(
         forms.ModelForm,
-        InitialValidationMixin, FormControlMixin):
+        InitialMixin, FormControlMixin):
     __initial__ = ['fund', 'author', 'content_type']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
         FormControlMixin.__init__(self)
 
     def save(self):
@@ -37,25 +37,25 @@ class CreateFilterForm(
 
 class CreateFilterExpressionForm(
         forms.ModelForm,
-        InitialValidationMixin, FormControlMixin):
+        InitialMixin, FormControlMixin):
     __initial__ = ['fund', 'filter']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
         fund = self.initial['fund']
         filter = self.initial['filter']
 
-        self.fields['field'] = CustomLabeledModelChoiceField(queryset=fund.custom_fields.filter(
+        self.form.field = CustomLabeledModelChoiceField(queryset=fund.custom_fields.filter(
             Q(is_searchable=True) &
             ~Exists(Expression.objects.filter(filter=filter, field=OuterRef('pk')))),
             label_func=lambda field: f'{field.attribute.name} ({DATATYPE_DICT[field.attribute.datatype]})',
             label='Field', required=True)
 
-        self.fields['operand'] = forms.CharField(
+        self.form.operand = forms.CharField(
             max_length=10, widget=forms.HiddenInput(), required=True)
-        self.fields['value'] = ExpressionFieldValue(relation_id='id_field', operand_id='id_operand', fetch_url=reverse(
+        self.form.value = ExpressionFieldValue(relation_id='id_field', operand_id='id_operand', fetch_url=reverse(
             'filters:get_filed_value_input_details'), label=False)
 
         FormControlMixin.__init__(self)
@@ -89,12 +89,12 @@ class CreateFilterExpressionForm(
 
 
 class AddExpressionValueForm(
-        forms.Form, InitialValidationMixin, FormControlMixin):
+        forms.Form, InitialMixin, FormControlMixin):
     __initial__ = ['expression']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
         expression = self.expression
         attribute = expression.field.attribute
@@ -108,7 +108,7 @@ class AddExpressionValueForm(
         elif attribute.datatype == Attribute.TYPE_DATE:
             field.widget.attrs.update({'type': 'date'})
 
-        self.fields['value'] = field
+        self.form.value = field
 
         FormControlMixin.__init__(self)
 

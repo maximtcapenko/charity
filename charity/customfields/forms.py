@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from eav.forms import BaseDynamicEntityForm
 from eav.models import Attribute, EnumGroup, EnumValue
-from commons.mixins import FormControlMixin, InitialValidationMixin
+from commons.mixins import FormControlMixin, InitialMixin
 
 from .models import CustomField
 from .widgets import EAVEnumListGroupField
@@ -36,25 +36,25 @@ def validate_field_name(value):
             _('Name of the field cannot contain white spaces.'))
 
 
-class CustomFieldCreateForm(forms.ModelForm, InitialValidationMixin, FormControlMixin):
+class CustomFieldCreateForm(forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['fund', 'content_type']
 
     field_order = ['label', 'name', 'field_type', 'required']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        InitialMixin.__init__(self)
 
-        self.fields['fund'].widget = forms.HiddenInput()
+        self.form.fund.widget = forms.HiddenInput()
         if self.instance.attribute_id:
-            self.fields['name'].initial = self.instance.attribute.slug
-            self.fields['name'].disabled = True
-            self.fields['label'].initial = self.instance.attribute.name
-            self.fields['field_type'].initial = self.instance.attribute.datatype
-            self.fields['field_type'].disabled = True
-            self.fields['required'].initial = self.instance.attribute.required
-            self.fields['enum_choices'].attribute = self.instance.attribute
+            self.form.name.initial = self.instance.attribute.slug
+            self.form.name.disabled = True
+            self.form.label.initial = self.instance.attribute.name
+            self.form.field_type.initial = self.instance.attribute.datatype
+            self.form.field_type.disabled = True
+            self.form.required.initial = self.instance.attribute.required
+            self.form.enum_choices.attribute = self.instance.attribute
 
-        InitialValidationMixin.__init__(self)
         FormControlMixin.__init__(self)
 
     label = forms.CharField(required=True, max_length=50, label='Label')

@@ -60,7 +60,24 @@ class FormControlMixin:
                 })
 
 
-class InitialValidationMixin:
+class FormFieldsWrapper:
+    def __init__(self, fields):
+        self._fields = fields
+
+    def __getattr__(self, name):
+        if name not in self._fields:
+            raise AttributeError(f'Form does not contain attribute {name}')
+
+        return self._fields[name]
+
+    def __setattr__(self, name, value):
+        if name == '_fields':
+            self.__dict__[name] = value
+        else:
+            self._fields[name] = value
+
+
+class InitialMixin:
     def __getattr__(self, name):
         if name in self.__initial__:
             return self.initial[name]
@@ -81,6 +98,8 @@ class InitialValidationMixin:
 
         if len(params) > 0:
             raise ValueError(f'Missing required parameters: {params}')
+
+        self.form = FormFieldsWrapper(self.fields)
 
 
 class SearchFormMixin:
@@ -114,11 +133,3 @@ class SearchByNameMixin:
         self.fields['name'] = forms.CharField(
             max_length=256, min_length=self.min_length,
             required=False, help_text='Search by name', widget=widget)
-
-
-def require_initial(*args):
-    def decorator(func):
-        def wrapper(self, *args, **kwargs):
-            func(self, *args, **kwargs)
-        return wrapper
-    return decorator

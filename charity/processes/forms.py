@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import Max, F
 from .models import Process, ProcessState
-from commons.mixins import FormControlMixin, InitialValidationMixin
+from commons.mixins import FormControlMixin, InitialMixin
 
 
 class CreateProcessForm(forms.ModelForm, FormControlMixin):
@@ -17,15 +17,15 @@ class CreateProcessForm(forms.ModelForm, FormControlMixin):
 
 
 class CreateProcessStateForm(
-        forms.ModelForm, InitialValidationMixin,
+        forms.ModelForm, InitialMixin,
         FormControlMixin):
     __initial__ = ['process']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
 
-        self.fields['process'].widget = forms.HiddenInput()
+        self.form.process.widget = forms.HiddenInput()
 
         if self.instance._state.adding:
             self.fields['after_state'] = forms.ModelChoiceField(

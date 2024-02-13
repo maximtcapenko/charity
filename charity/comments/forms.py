@@ -2,22 +2,22 @@ from django import forms
 from funds.models import Fund
 
 from commons.functional import get_argument_or_error, resolve_many_2_many_attr, resolve_rel_attr_path
-from commons.mixins import FormControlMixin, InitialValidationMixin
+from commons.mixins import FormControlMixin, InitialMixin
 
 from .models import Comment
 
 
 class CreateCommentForm(
-        forms.ModelForm, InitialValidationMixin, FormControlMixin):
+        forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['target_id', 'target_content_type', 'author', 'fund']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        InitialValidationMixin.__init__(self)
+        InitialMixin.__init__(self)
         FormControlMixin.__init__(self)
 
-        self.fields['author'].widget = forms.HiddenInput()
-        self.fields['notes'].label = False
+        self.form.author.widget = forms.HiddenInput()
+        self.form.notes.label = False
 
         reply = self.initial.get('reply')
 
