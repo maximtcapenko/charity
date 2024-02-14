@@ -1,5 +1,5 @@
 from django import forms
-from django.db.models import Count, Q, Exists, OuterRef
+from django.db.models import Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
 from commons.mixins import InitialMixin, FormControlMixin, \
@@ -38,8 +38,6 @@ class CreateProjectForm(
 
 
 class UpdateProjectForm(CreateProjectForm):
-    __initial__ = ['fund']
-
     def clean_leader(self):
         leader = self.cleaned_data.get('leader')
         if leader is None and self.instance.leader:
@@ -53,26 +51,23 @@ class SearchProjetForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchFo
         'active_only': lambda field: Q(is_closed=False)
     }
 
-    active_only = forms.BooleanField(label='Active', required=False)
-    leader = forms.ModelChoiceField(
-        queryset=User.objects, label='Leader', required=False)
-
     def __init__(self, fund, *args, **kwargs):
         super().__init__(*args, **kwargs)
         SearchByNameMixin.__init__(self)
-        FormControlMixin.__init__(self)
 
-        self.fields['active_only'].widget.attrs.update({
-            'onchange': 'javascript:this.form.submit()'
-        })
+        self.fields['active_only'] = forms.BooleanField(
+            label='Active', required=False, widget=forms.CheckboxInput(attrs={'onchange': 'javascript:this.form.submit()'}))
 
-        self.fields['leader'].queryset = User.objects.filter(
-            Q(volunteer_profile__fund=fund) & Exists(Project.objects.filter(fund=fund, leader=OuterRef('pk'))))
+        self.fields['leader'] = forms.ModelChoiceField(label='Leader', required=False, queryset=User.objects.filter(
+            Q(volunteer_profile__fund=fund) & Exists(Project.objects.filter(fund=fund, leader=OuterRef('pk')))))
         self.fields['leader'].widget.attrs.update({
             'onchange': 'javascript:this.form.submit()'
         })
+
         self.__resolvers__['leader'] = lambda field: Q(leader=field)
         self.order_fields(['active_only', 'name'])
+        
+        FormControlMixin.__init__(self)
 
 
 class AddProcessToProjectForm(
@@ -90,9 +85,6 @@ class AddProcessToProjectForm(
             queryset=get_avaliable_for_select_queryset(self.project), label='Process')
 
         FormControlMixin.__init__(self)
-
-    process = forms.ModelChoiceField(
-        Process.objects, required=True, label='Process')
 
     def clean_process(self):
         process = self.cleaned_data['process']

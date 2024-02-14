@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
-from commons.functional import render_generic_form, user_should_be_volunteer, \
+from commons.functional import append_to_url_query, render_generic_form, user_should_be_volunteer, \
     wrap_dicts_page_to_objects_page, get_wrapped_page, get_page
 
 from funds.models import Approvement
@@ -201,13 +201,23 @@ def add_project_ward(request, id):
     project = get_project_or_404(request=request, project_id=id)
     return_url = reverse('projects:get_details', args=[
         project.id]) + '?tab=wards'
-
     validate_pre_requirements(request, project, return_url)
 
+    def validate_ward(ward):
+        from django import forms
+        if Project.objects.filter(is_closed=False, fund=ward.fund, wards__in=[ward]).exists():
+            raise forms.ValidationError(
+                'Ward is alredy used in another project')
+
     if request.method == 'POST':
-        form = AttachWardToTargetForm(request.POST, initial={'target': project})
+        form = AttachWardToTargetForm(request.POST, validators=[
+                                      validate_ward], initial={'target': project})
         if form.is_valid():
             form.save()
+        else:
+            raise ApplicationError(
+                'Ward is alredy used in another project',
+                f'{reverse("projects:add_ward_to_project", args=[id])}{append_to_url_query(request)}')
         request.method = 'GET'
 
     return render(request, 'add_project_ward.html', {

@@ -29,7 +29,7 @@ class Notification(Base):
 
 
 def get_not_viewed_notifications(self):
-    return self.notifications.filter(is_viewed=False)[:9]
+    return self.notifications.filter(is_viewed=False)
 
 
 User.add_to_class('not_viewed_notifications', property(

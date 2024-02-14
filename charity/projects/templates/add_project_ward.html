@@ -15,4 +15,5 @@
   <li class="breadcrumb-item active">Adding ward</li>
 </ol>
 {% render_partial 'wards.views.get_filter_list_partial' model=model_name target_id=project.id %}
+{% include 'generic_errormodal.html' %}
 {% endblock %}

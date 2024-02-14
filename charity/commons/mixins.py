@@ -107,15 +107,14 @@ class SearchFormMixin:
         self.full_clean()
         for field in self.fields:
             value = self.cleaned_data.get(field)
-            if value:
-                resolver = self.__resolvers__.get(field)
-                if resolver:
-                    filter = resolver(value)
-                    if hasattr(filter, '__iter__'):
-                        for expression in filter:
-                            queryset = queryset.filter(expression)
-                    else:
-                        queryset = queryset.filter(filter)
+            resolver = self.__resolvers__.get(field)
+            if resolver and value:
+                filter = resolver(value)
+                if hasattr(filter, '__iter__'):
+                    for expression in filter:
+                        queryset = queryset.filter(expression)
+                else:
+                    queryset = queryset.filter(filter)
 
         return queryset
 

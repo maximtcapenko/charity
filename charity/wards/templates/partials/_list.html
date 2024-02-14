@@ -9,7 +9,11 @@
       <form action="" method="get">
         <div class="row">
           {% for field in search_form %}
-            <div class="col">{{ field }}</div>
+            <div {% if field.field.widget.attrs.div_class %} 
+                  class="{{field.field.widget.attrs.div_class}}"
+                {% else %}
+                  class="col"
+                {% endif %}>{{ field }}</div>
           {% endfor %}
         </div>
       </form>

@@ -7,6 +7,7 @@ from commons.functional import resolve_many_2_many_attr_path
 from filters.models import Filter
 
 from customfields.forms import BaseCustomFieldsModelForm
+from projects.models import Project
 from tasks.models import Task
 
 from .models import Ward
@@ -27,25 +28,36 @@ class CreateWardForm(BaseCustomFieldsModelForm, FormControlMixin):
 class SearchWardForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchFormMixin):
     __resolvers__ = {}
 
-    in_work_only = forms.BooleanField(label='In work', required=False)
-
     def __init__(self, fund, *args, **kwargs):
         super().__init__(*args, **kwargs)
         SearchByNameMixin.__init__(self)
+
+        self.fields['in_work_only'] = forms.BooleanField(
+            label='In work', required=False,
+            widget=forms.CheckboxInput(attrs={
+                'div_class': 'col-2',
+                'onchange': 'javascript:this.form.submit()'}))
+        self.fields['not_in_work'] = forms.BooleanField(
+            label='Available', required=False,
+            widget=forms.CheckboxInput(attrs={
+                'div_class': 'col-2',
+                'onchange': 'javascript:this.form.submit()'}))
+
         filter = forms.ModelChoiceField(queryset=Filter.objects.filter(
             fund=fund, content_type__model='ward'), required=False, label='Filter')
         filter.widget.attrs.update({
             'onchange': 'javascript:this.form.submit()'
         })
+
         self.fields['filter'] = filter
-        self.fields['in_work_only'].widget.attrs.update({
-            'onchange': 'javascript:this.form.submit()'
-        })
 
         self.__resolvers__['filter'] = self.apply_customfields_filter
         self.__resolvers__['in_work_only'] = lambda field: Exists(
-            Task.objects.filter(ward=OuterRef('pk')))
+            Task.objects.filter(is_done=False, ward=OuterRef('pk')))
+        self.__resolvers__['not_in_work'] = lambda field: ~Exists(
+            Project.objects.filter(is_closed=False, wards__in=OuterRef('pk')))
 
+        self.order_fields(['in_work_only', 'not_in_work'])
         FormControlMixin.__init__(self)
 
     def apply_customfields_filter(self, filter):
@@ -58,11 +70,19 @@ class AttachWardToTargetForm(
         forms.Form, InitialMixin):
     __initial__ = ['target']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, validators=None, **kwargs):
         super().__init__(*args, **kwargs)
         InitialMixin.__init__(self)
+        self.validators = validators
 
     ward = forms.ModelChoiceField(Ward.objects, required=True, label='Ward')
+
+    def clean(self):
+        if self.validators:
+            for validator in self.validators:
+                validator(self.cleaned_data['ward'])
+
+        return self.cleaned_data
 
     def save(self):
         target = self.target

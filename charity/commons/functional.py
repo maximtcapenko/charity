@@ -182,3 +182,12 @@ def resolve_many_2_many_attr(attr_model, content_type, id):
         attr_model, content_type.model_class())
     instance = content_type.model_class().objects.get(pk=id)
     return getattr(instance, target_attr)
+
+
+def append_to_url_query(request, **kwargs):
+    from django.http import QueryDict
+    query = QueryDict(request.GET.urlencode(), mutable=True)
+    for key in kwargs:
+        query[key] = kwargs[key]
+
+    return f'?{query.urlencode()}'

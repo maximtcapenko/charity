@@ -4,6 +4,8 @@ from django import template
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
+from commons import functional
+
 from .nodes import ViewNode
 
 register = template.Library()
@@ -131,10 +133,4 @@ def get_context_values(context, *keys):
 
 @register.simple_tag(takes_context=True)
 def append_to_url_query(context, **kwargs):
-    from urllib import parse
-    from django.http import QueryDict
-    query = QueryDict(context.request.GET.urlencode(), mutable=True)
-    for key in kwargs:
-        query[key] = kwargs[key]
-
-    return f'?{query.urlencode()}'
+    return functional.append_to_url_query(context.request, **kwargs)
