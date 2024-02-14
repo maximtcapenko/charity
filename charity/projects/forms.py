@@ -11,7 +11,7 @@ from processes.models import Process
 
 from .messages import Warnings
 from .models import Project
-from .querysets import get_avaliable_for_select_queryset
+from .querysets import get_avaliable_processes_for_select_queryset
 
 
 class CreateProjectForm(
@@ -82,7 +82,7 @@ class AddProcessToProjectForm(
             label_func=lambda value: '%s (%s %s)' % (
                 value.name, value.states_count, 'states' if value.states_count > 1 else 'state'),
             model=Process,
-            queryset=get_avaliable_for_select_queryset(self.project), label='Process')
+            queryset=get_avaliable_processes_for_select_queryset(self.project), label='Process')
 
         FormControlMixin.__init__(self)
 

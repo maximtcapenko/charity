@@ -71,7 +71,7 @@ def get_project_rewiewers_with_tasks_queryset(project):
         .values('id', 'username', 'volunteer_profile__title', 'volunteer_profile__cover', 'project_tasks_exists')
 
 
-def get_avaliable_for_select_queryset(project):
+def get_avaliable_processes_for_select_queryset(project):
     return Process.objects.filter(
         Exists(ProcessState.objects.filter(process=OuterRef('pk'))) &
         Q(is_inactive=False, fund=project.fund) &

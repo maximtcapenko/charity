@@ -178,9 +178,9 @@ class CreateExpenseForm(
     def save(self):
         self.instance.author = self.author
         self.instance.save()
-        task = self.task
-        task.expense = self.instance
-        task.save()
+        
+        self.task.expense = self.instance
+        self.task.save()
 
         exprense_created.send(sender=Expense, instance=self.instance)
 
@@ -299,18 +299,16 @@ class AddBudgetReviewerForm(
         super().__init__(*args, **kwargs)
         InitialMixin.__init__(self)
 
-        self.form.budget.widget = forms.HiddenInput()
+        self.form.budget = forms.ModelChoiceField(
+            Budget.objects, widget=forms.HiddenInput(), required=True)
         self.form.reviewer = user_model_choice_field(queryset=User.objects.filter(
             models.Q(volunteer_profile__fund=self.budget.fund) &
             ~models.Q(id__in=self.budget.reviewers.values('id'))), label='Reviewer')
 
         FormControlMixin.__init__(self)
 
-    budget = forms.ModelChoiceField(Budget.objects, required=True)
-
     def clean(self):
         validate_modelform_field('budget', self.initial, self.cleaned_data)
-
         if should_be_approved(self.cleaned_data['budget']):
             raise forms.ValidationError(
                 Warnings.BUDGET_CANNOT_BE_CHANGED_IT_HAS_BEEN_APPROVED)
@@ -332,16 +330,13 @@ class EditBudgetItemForm(
         super().__init__(*args, **kwargs)
         InitialMixin.__init__(self)
 
-        self.form.notes.initial = self.target.notes
+        self.form.notes = forms.CharField(widget=forms.Textarea(),
+                                          label='Notes', required=False, initial=self.target.notes)
         self.form.reviewer = user_model_choice_field(
             queryset=self.budget.reviewers, label='Reviewer', initial=self.target.reviewer)
+        self.order_fields(['reviewer'])
 
         FormControlMixin.__init__(self)
-
-    reviewer = forms.ModelChoiceField(
-        User.objects, label='Reviewer', required=False)
-    notes = forms.CharField(widget=forms.Textarea(),
-                            label='Notes', required=False)
 
     def clean(self):
         reviewer = self.cleaned_data['reviewer']
