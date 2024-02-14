@@ -5,9 +5,8 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from commons.mixins import InitialMixin, FormControlMixin, SearchByNameMixin
-from commons.functional import validate_modelform_field, should_be_approved, \
-    get_reviewer_label
-from commons.forms import ApprovedOnlySearchForm, CustomLabeledModelChoiceField
+from commons.functional import validate_modelform_field, should_be_approved
+from commons.forms import ApprovedOnlySearchForm, CustomLabeledModelChoiceField, user_model_choice_field
 
 from funds.models import Approvement, Contributor
 from funds.forms import CreateContributionForm
@@ -16,6 +15,7 @@ from tasks.models import Expense, Task
 from .functional import get_budget_available_income
 from .messages import Warnings
 from .models import Budget, Income, Contribution
+from .querysets import get_avaliable_for_select_contributions_queryset
 from .signals import exprense_created, budget_item_reviewer_assigned
 
 
@@ -29,12 +29,8 @@ class CreateBudgetForm(
         InitialMixin.__init__(self)
 
         self.form.fund.widget = forms.HiddenInput()
-        self.form.manager = CustomLabeledModelChoiceField(
-            label_func=get_reviewer_label,
-            queryset=User.objects
-            .filter(volunteer_profile__fund=self.fund)
-            .select_related('volunteer_profile')
-            .only('id', 'username'), label='Manager', required=True)
+        self.form.manager = user_model_choice_field(
+            fund=self.fund, label='Manager')
 
         FormControlMixin.__init__(self, *args, **kwargs)
 
@@ -94,6 +90,7 @@ class SearchBudgetForm(ApprovedOnlySearchForm, SearchByNameMixin):
 class CreatePayoutExcessContributionForm(CreateContributionForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.form.amount.disabled = True
         self.fields.pop('contribution_date')
         self.form.contributor.queryset = Contributor.objects \
@@ -113,43 +110,19 @@ class CreateIncomeForm(
         forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['budget', 'author']
 
-    class ContributionModelChoiceField(forms.ModelChoiceField):
-        def clean(self, value):
-            if value:
-                return Contribution.objects.get(pk=value)
-            return super().clean(value)
-
-        def prepare_value(self, value):
-            if value and isinstance(value, dict):
-                return value['id']
-            return super().prepare_value(value)
-
-        def label_from_instance(self, obj):
-            amount = obj['amount'] - obj['reserved_amount']
-            return '%s - %s (%s)' % (
-                obj['contribution_date'].strftime('%b. %d, %Y'),
-                obj['contributor__name'], "{:2,}".format(amount))
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialMixin.__init__(self)
 
-        self.form.contribution = CreateIncomeForm.ContributionModelChoiceField(
-            queryset=Contribution.objects.filter(
-                fund__id=self.budget.fund_id).annotate(
-                reserved_amount=models.Sum('incomes__amount', default=0))
-            .annotate(avaliable_amount=models.ExpressionWrapper(
-                models.F('amount') - models.F('reserved_amount'),
-                output_field=models.DecimalField()))
-            .filter(avaliable_amount__gt=0)
-            .order_by('contribution_date')
-            .values('id', 'contributor__name', 'contribution_date',
-                    'amount', 'reserved_amount'), label='Contribution')
+        self.form.contribution = CustomLabeledModelChoiceField(lambda value: '%s - %s (%s)' % (
+            value.contribution_date.strftime('%b. %d, %Y'),
+            value.contributor.name, "{:2,}".format(value.amount - value.reserved_amount)),
+            model=Contribution,
+            queryset=get_avaliable_for_select_contributions_queryset(self.budget.fund), label='Contribution')
 
         self.form.budget.widget = forms.HiddenInput()
-        self.form.reviewer = CustomLabeledModelChoiceField(
-            label_func=get_reviewer_label,
-            queryset=self.budget.reviewers, label='Reviewer', required=True)
+        self.form.reviewer = user_model_choice_field(
+            queryset=self.budget.reviewers, label='Reviewer')
 
         FormControlMixin.__init__(self)
 
@@ -195,9 +168,8 @@ class CreateExpenseForm(
         self.form.project.widget = forms.HiddenInput()
         self.form.amount.initial = self.task.estimated_expense_amount
         self.form.amount.disabled = True
-        self.form.reviewer = CustomLabeledModelChoiceField(
-            label_func=get_reviewer_label,
-            queryset=self.budget.reviewers, label='Reviewer', required=True)
+        self.form.reviewer = user_model_choice_field(
+            queryset=self.budget.reviewers, label='Reviewer')
 
         FormControlMixin.__init__(self)
 
@@ -206,7 +178,7 @@ class CreateExpenseForm(
     def save(self):
         self.instance.author = self.author
         self.instance.save()
-        task = self.cleaned_data['task']
+        task = self.task
         task.expense = self.instance
         task.save()
 
@@ -215,22 +187,18 @@ class CreateExpenseForm(
         return self.instance
 
     def clean(self):
-        budget = self.budget
-        if budget.approvement_id:
+        if should_be_approved(self.budget):
             forms.ValidationError(
                 Warnings.EXPENSE_CANNOT_BE_ADDED_BUDGET_HAS_BEEN_APPROVED)
 
-        validate_modelform_field('task', self.initial, self.cleaned_data)
+        avaliable_income_amount = get_budget_available_income(self.budget)
 
-        task = self.cleaned_data['task']
-        avaliable_income_amount = get_budget_available_income(budget)
-
-        if task.estimated_expense_amount > avaliable_income_amount:
+        if self.task.estimated_expense_amount > avaliable_income_amount:
             raise forms.ValidationError(
                 f'Budget avaliabe amount is {avaliable_income_amount:,.2f}. \
-                Can not create expense with amount {task.estimated_expense_amount:,.2f}')
+                Can not create expense with amount {self.task.estimated_expense_amount:,.2f}')
 
-        elif task.estimated_expense_amount <= 0:
+        elif self.task.estimated_expense_amount <= 0:
             raise forms.ValidationError(Warnings.EXPENSE_SHOULD_BE_POSITIVE)
 
         return self.cleaned_data
@@ -330,16 +298,14 @@ class AddBudgetReviewerForm(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialMixin.__init__(self)
-        FormControlMixin.__init__(self)
 
         self.form.budget.widget = forms.HiddenInput()
-        self.form.reviewer.queryset = User.objects.filter(
-            models.Q(volunteer_profile__fund__id=self.budget.fund_id) &
-            ~models.Q(id__in=self.budget.reviewers.values('id')))
+        self.form.reviewer = user_model_choice_field(queryset=User.objects.filter(
+            models.Q(volunteer_profile__fund=self.budget.fund) &
+            ~models.Q(id__in=self.budget.reviewers.values('id'))), label='Reviewer')
 
-    reviewer = CustomLabeledModelChoiceField(
-        label_func=get_reviewer_label,
-        queryset=User.objects, label='Reviewer', required=True)
+        FormControlMixin.__init__(self)
+
     budget = forms.ModelChoiceField(Budget.objects, required=True)
 
     def clean(self):
@@ -367,10 +333,8 @@ class EditBudgetItemForm(
         InitialMixin.__init__(self)
 
         self.form.notes.initial = self.target.notes
-        self.form.reviewer = CustomLabeledModelChoiceField(
-            label_func=get_reviewer_label,
-            queryset=self.budget.reviewers, label='Reviewer',
-            required=True, initial=self.target.reviewer)
+        self.form.reviewer = user_model_choice_field(
+            queryset=self.budget.reviewers, label='Reviewer', initial=self.target.reviewer)
 
         FormControlMixin.__init__(self)
 

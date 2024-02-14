@@ -2,10 +2,9 @@ import datetime
 
 from django import forms
 from django.db.models import Max
-from django.contrib.auth.models import User
 
-from commons.forms import CustomLabeledModelChoiceField
-from commons.functional import should_be_approved, get_reviewer_label
+from commons.forms import user_model_choice_field
+from commons.functional import should_be_approved
 from commons.mixins import FormControlMixin, InitialMixin
 
 from files.forms import CreateAttachmentForm
@@ -30,15 +29,11 @@ class CreateTaskForm(
 
         self.form.project.widget = forms.HiddenInput()
 
-        self.form.assignee = CustomLabeledModelChoiceField(
-            label_func=get_reviewer_label,
-            queryset=User.objects
-            .filter(volunteer_profile__fund_id=self.project.fund_id),
-            label='Assignee', required=True)
+        self.form.assignee = user_model_choice_field(
+            fund=self.project.fund, label='Assignee')
 
-        self.form.reviewer = CustomLabeledModelChoiceField(
-            label_func=get_reviewer_label,
-            queryset=self.project.reviewers, label='Reviewer', required=True)
+        self.form.reviewer = user_model_choice_field(
+            queryset=self.project.reviewers, label='Reviewer')
 
         self.form.ward.queryset = get_available_project_wards_queryset(
             self.project).only('id', 'name')
@@ -70,7 +65,7 @@ class CreateTaskForm(
         return self.cleaned_data
 
     def save(self):
-        last_order_position = Task.objects.filter(project__id=self.instance.project_id) \
+        last_order_position = Task.objects.filter(project=self.instance.project) \
             .aggregate(result=Max('order_position'))['result']
         self.instance.order_position = last_order_position + 1 if last_order_position else 1
         if not self.instance.author_id:
@@ -172,7 +167,7 @@ class CompleteTaskForm(forms.Form,  InitialMixin, FormControlMixin):
                     fund=self.fund, contribution_date=datetime.datetime.utcnow(),
                     author=self.author,
                     contributor=self.cleaned_data['contributor'],
-                    amount=actual_expense_amount,
+                    amount=self.task.expense.amount - actual_expense_amount,
                     notes=self.cleaned_data['notes'])
                 payout_excess_contribution.save()
 
