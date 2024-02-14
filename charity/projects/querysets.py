@@ -1,8 +1,8 @@
 from django.db.models import Count, DecimalField, Exists, Q, OuterRef, Subquery, Sum, Value
 from django.db.models.functions import Coalesce
 
+from processes.models import Process, ProcessState
 from tasks.models import Task
-from wards.models import Ward
 
 from .models import Project
 
@@ -64,8 +64,17 @@ def get_project_rewiewers_with_tasks_queryset(project):
     Returns projection `{'id', 'username', 'volunteer_profile__title', 'volunteer_profile__cover', 'project_tasks_exists'}`
     """
     project_task_queryset = project.tasks.filter(
-            Q(states__approvement__author=OuterRef('pk')) | Q(state__approvement__author=OuterRef('pk')) |
-            Q(reviewer__id=OuterRef('pk'))).values('id')
+        Q(states__approvement__author=OuterRef('pk')) | Q(state__approvement__author=OuterRef('pk')) |
+        Q(reviewer__id=OuterRef('pk'))).values('id')
 
     return project.reviewers.annotate(project_tasks_exists=Exists(project_task_queryset)) \
         .values('id', 'username', 'volunteer_profile__title', 'volunteer_profile__cover', 'project_tasks_exists')
+
+
+def get_avaliable_for_select_queryset(project):
+    return Process.objects.filter(
+        Exists(ProcessState.objects.filter(process=OuterRef('pk'))) &
+        Q(is_inactive=False, fund=project.fund) &
+        ~Q(projects__in=[project])) \
+        .annotate(states_count=Count('states', distinct=True)) \
+        .values('id', 'name', 'states_count')

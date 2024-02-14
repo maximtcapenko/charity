@@ -56,7 +56,11 @@ class DictObjectWrapper:
         else:
             if self._meta.model:
                 try:
-                    field = self._meta.model._meta.get_field(name)
+                    if name == 'pk':
+                        field = self._meta.model._meta.pk
+                        value = self.dict.get(field.name)
+                    else:
+                        field = self._meta.model._meta.get_field(name)
                     if field:
                         for getter in DictObjectWrapper.field_value_getters:
                             instance = getter(field, value)

@@ -106,6 +106,9 @@ def validate_modelform_field(field, initial, cleaned_data):
 
 
 def should_be_approved(target):
+    """
+    Validates if target object is approved
+    """
     return target.approvement and \
         target.approvement.is_rejected == False
 
