@@ -37,6 +37,8 @@
               {{ ward.date_created }}
               {% if ward.is_inactive %}
                 <span class="badge bg-secondary">inactive</span>
+              {% elif ward.projects.count > 0 %}
+                <span class="badge bg-primary">in work</span>
               {% else %}
                 <span class="badge bg-primary">active</span>
               {% endif %}

@@ -24,13 +24,18 @@
                   {{ ward|thumbnail:50 }}
                   <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
                 </h6>
+                {{ ward.date_created }}
               {% if ward.is_inactive %}
                 <span class="badge bg-secondary">inactive</span>
+              {% elif ward.project_tasks_exists %}
+                <span class="badge bg-primary">in work</span>
               {% else %}
                 <span class="badge bg-primary">active</span>
               {% endif %}
               </div>
-              {{ ward.date_created }}
+                {% if ward.task.id %}
+                  <a href="{% url 'tasks:get_details' ward.task.id %}">{{ ward.task.name }}</a>
+                {% endif %}
             </td>
             <td class="align-middle">
               <a {% if project|validate_pre_requirements:user and ward|ward_should_not_be_used_by_any_tasks:project %}

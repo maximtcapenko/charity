@@ -50,7 +50,7 @@ def render_task_states_board(context, task):
     if not current_task_state:
         if task.expense:
             current_state_is_approved = should_be_approved(
-                task.expense)
+                task.expense) and should_be_approved(task.expense.budget)
         else:
             current_state_is_approved = False
     else:
