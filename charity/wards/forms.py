@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import Exists, OuterRef
 
-from commons.mixins import FormControlMixin, InitialMixin, \
+from commons.mixins import FormControlMixin, FormFieldsWrapperMixin, InitialMixin, \
     SearchByNameMixin, SearchFormMixin
 from commons.functional import resolve_many_2_many_attr_path
 from filters.models import Filter
@@ -25,19 +25,20 @@ class CreateWardForm(BaseCustomFieldsModelForm, FormControlMixin):
         exclude = ['id', 'attachments', 'cover', 'comments']
 
 
-class SearchWardForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchFormMixin):
+class SearchWardForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchFormMixin, FormFieldsWrapperMixin):
     __resolvers__ = {}
 
     def __init__(self, fund, *args, **kwargs):
         super().__init__(*args, **kwargs)
         SearchByNameMixin.__init__(self)
+        FormFieldsWrapperMixin.__init__(self)
 
-        self.fields['in_work_only'] = forms.BooleanField(
+        self.form.in_work_only = forms.BooleanField(
             label='In work', required=False,
             widget=forms.CheckboxInput(attrs={
                 'div_class': 'col-2',
                 'onchange': 'javascript:this.form.submit()'}))
-        self.fields['not_in_work'] = forms.BooleanField(
+        self.form.not_in_work = forms.BooleanField(
             label='Available', required=False,
             widget=forms.CheckboxInput(attrs={
                 'div_class': 'col-2',

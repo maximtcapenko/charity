@@ -2,7 +2,7 @@ from django import forms
 from django.db.models import Q, Exists, OuterRef
 from django.contrib.auth.models import User
 
-from commons.mixins import InitialMixin, FormControlMixin, \
+from commons.mixins import FormFieldsWrapperMixin, InitialMixin, FormControlMixin, \
     SearchByNameMixin, SearchFormMixin
 from commons.forms import user_model_choice_field, CustomLabeledModelChoiceField
 from commons.functional import validate_modelform_field
@@ -46,7 +46,8 @@ class UpdateProjectForm(CreateProjectForm):
         return leader
 
 
-class SearchProjetForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchFormMixin):
+class SearchProjetForm(
+    forms.Form, FormControlMixin, SearchByNameMixin, SearchFormMixin, FormFieldsWrapperMixin):
     __resolvers__ = {
         'active_only': lambda field: Q(is_closed=False)
     }
@@ -54,13 +55,14 @@ class SearchProjetForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchFo
     def __init__(self, fund, *args, **kwargs):
         super().__init__(*args, **kwargs)
         SearchByNameMixin.__init__(self)
+        FormFieldsWrapperMixin.__init__(self)
 
-        self.fields['active_only'] = forms.BooleanField(
+        self.form.active_only = forms.BooleanField(
             label='Active', required=False, widget=forms.CheckboxInput(attrs={'onchange': 'javascript:this.form.submit()'}))
 
-        self.fields['leader'] = forms.ModelChoiceField(label='Leader', required=False, queryset=User.objects.filter(
+        self.form.leader = forms.ModelChoiceField(label='Leader', required=False, queryset=User.objects.filter(
             Q(volunteer_profile__fund=fund) & Exists(Project.objects.filter(fund=fund, leader=OuterRef('pk')))))
-        self.fields['leader'].widget.attrs.update({
+        self.form.leader.widget.attrs.update({
             'onchange': 'javascript:this.form.submit()'
         })
 

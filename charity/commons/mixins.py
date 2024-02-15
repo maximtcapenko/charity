@@ -77,14 +77,20 @@ class FormFieldsWrapper:
             self._fields[name] = value
 
 
-class InitialMixin:
+class FormFieldsWrapperMixin:
+    def __init__(self):
+        self.form = FormFieldsWrapper(self.fields)
+
+
+class InitialMixin(FormFieldsWrapperMixin):
     def __getattr__(self, name):
         if name in self.__initial__:
             return self.initial[name]
         else:
             raise AttributeError(f'Attribute {name} does not exusts.')
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
+        super().__init__()
         if not hasattr(self, '__initial__'):
             raise ValueError(
                 'Form requires initial fields, but __initial__ is not defined')
@@ -98,8 +104,6 @@ class InitialMixin:
 
         if len(params) > 0:
             raise ValueError(f'Missing required parameters: {params}')
-
-        self.form = FormFieldsWrapper(self.fields)
 
 
 class SearchFormMixin:
