@@ -51,12 +51,15 @@ def get_project_wards_with_tasks_queryset(project):
     """
     Returns projections `{'id', 'name', 'date_created', 'is_inactive', 'cover', 'project_tasks_count'}`
     """
-    project_task_queryset = Task.objects.filter(
-        project=project,
-        ward=OuterRef('pk')).values('ward_id').annotate(tasks_count=Count('id')).values('tasks_count')
+    project_task_queryset = Task.objects.filter(project=project, ward=OuterRef('pk'))
+    
+    ward_active_task_queryset = Task.objects.filter(is_done=False, ward=OuterRef('pk')).values('id', 'name')[:1]
 
-    return project.wards.annotate(project_tasks_count=Coalesce(Subquery(project_task_queryset), Value(0))) \
-        .values('id', 'name', 'date_created', 'is_inactive', 'cover', 'project_tasks_count')
+    return project.wards \
+        .annotate(project_tasks_exists=Exists(project_task_queryset),
+                  task__id=Subquery(ward_active_task_queryset.values('id')),
+                  task__name=Subquery(ward_active_task_queryset.values('name'))) \
+        .values('id', 'name', 'date_created', 'is_inactive', 'cover', 'project_tasks_exists', 'task__id', 'task__name')
 
 
 def get_project_rewiewers_with_tasks_queryset(project):

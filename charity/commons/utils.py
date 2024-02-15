@@ -48,9 +48,12 @@ class DictObjectWrapper:
         if isinstance(value, dict):
             model = None
             if self._meta.model:
-                field = self._meta.model._meta.get_field(name)
-                if field.is_relation:
-                    model = field.related_model
+                try:
+                    field = self._meta.model._meta.get_field(name)
+                    if field.is_relation:
+                        model = field.related_model
+                except:
+                    pass
 
             return DictObjectWrapper(value, is_init=True, model=model)
         else:
