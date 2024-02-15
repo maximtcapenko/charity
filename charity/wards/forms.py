@@ -25,7 +25,8 @@ class CreateWardForm(BaseCustomFieldsModelForm, FormControlMixin):
         exclude = ['id', 'attachments', 'cover', 'comments']
 
 
-class SearchWardForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchFormMixin, FormFieldsWrapperMixin):
+class SearchWardForm(
+    forms.Form, FormControlMixin, SearchByNameMixin, SearchFormMixin, FormFieldsWrapperMixin):
     __resolvers__ = {}
 
     def __init__(self, fund, *args, **kwargs):
@@ -50,15 +51,15 @@ class SearchWardForm(forms.Form, FormControlMixin, SearchByNameMixin, SearchForm
             'onchange': 'javascript:this.form.submit()'
         })
 
-        self.fields['filter'] = filter
+        self.form.filter = filter
 
-        self.__resolvers__['filter'] = self.apply_customfields_filter
-        self.__resolvers__['in_work_only'] = lambda field: Exists(
+        self.__resolvers__[self.form.filter.name] = self.apply_customfields_filter
+        self.__resolvers__[self.form.in_work_only.name] = lambda field: Exists(
             Task.objects.filter(is_done=False, ward=OuterRef('pk')))
-        self.__resolvers__['not_in_work'] = lambda field: ~Exists(
+        self.__resolvers__[self.form.not_in_work.name] = lambda field: ~Exists(
             Project.objects.filter(is_closed=False, wards__in=OuterRef('pk')))
 
-        self.order_fields(['in_work_only', 'not_in_work'])
+        self.order_fields([self.form.in_work_only.name, self.form.not_in_work.name])
         FormControlMixin.__init__(self)
 
     def apply_customfields_filter(self, filter):

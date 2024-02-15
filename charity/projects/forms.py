@@ -66,8 +66,8 @@ class SearchProjetForm(
             'onchange': 'javascript:this.form.submit()'
         })
 
-        self.__resolvers__['leader'] = lambda field: Q(leader=field)
-        self.order_fields(['active_only', 'name'])
+        self.__resolvers__[self.form.leader.name] = lambda field: Q(leader=field)
+        self.order_fields([self.form.active_only.name, self.form.name.name])
         
         FormControlMixin.__init__(self)
 

@@ -68,7 +68,9 @@ class FormFieldsWrapper:
         if name not in self._fields:
             raise AttributeError(f'Form does not contain attribute {name}')
 
-        return self._fields[name]
+        field = self._fields[name]
+        field.name = name
+        return field
 
     def __setattr__(self, name, value):
         if name == '_fields':
