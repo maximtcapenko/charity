@@ -44,12 +44,9 @@ class CreateFilterExpressionForm(
         super().__init__(*args, **kwargs)
         InitialMixin.__init__(self)
 
-        fund = self.initial['fund']
-        filter = self.initial['filter']
-
-        self.form.field = CustomLabeledModelChoiceField(queryset=fund.custom_fields.filter(
+        self.form.field = CustomLabeledModelChoiceField(queryset=self.fund.custom_fields.filter(
             Q(is_searchable=True) &
-            ~Exists(Expression.objects.filter(filter=filter, field=OuterRef('pk')))),
+            ~Exists(Expression.objects.filter(filter=self.filter, field=OuterRef('pk')))),
             label_func=lambda field: f'{field.attribute.name} ({DATATYPE_DICT[field.attribute.datatype]})',
             label='Field', required=True)
 

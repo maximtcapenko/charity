@@ -334,7 +334,7 @@ class TaskStateReviewRequestForm(
         review_request_created.send(
             sender=TaskState,
             instance=self.state,
-            fund=self.und,
+            fund=self.fund,
             task=self.task,
             message=self.cleaned_data['notes']
         )

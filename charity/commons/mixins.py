@@ -1,4 +1,3 @@
-from typing import Any
 from django import forms
 from django.db.models import Q
 from django.forms.utils import ErrorList
@@ -89,7 +88,7 @@ class InitialMixin(FormFieldsWrapperMixin):
         if name in self.__initial__:
             return self.initial[name]
         else:
-            raise AttributeError(f'Attribute {name} does not exusts.')
+            raise AttributeError(f'Attribute {name} does not exists.')
 
     def __init__(self):
         super().__init__()

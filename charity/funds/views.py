@@ -100,8 +100,7 @@ def add_contributor(request):
 def get_contributor_details(request, id):
     contributor = get_object_or_404(
         Contributor.objects.filter(
-            fund_id=request.user.fund.id),
-        pk=id)
+            fund=request.user.fund), pk=id)
 
     queryset = get_contributor_budgets_queryset(contributor)
 
@@ -126,7 +125,7 @@ def edit_contributor_details(request, id):
         },
         'instance': get_object_or_404(
             Contributor.objects.filter(
-                fund_id=request.user.fund.id),
+                fund=request.user.fund),
             pk=id)
     })
 
@@ -152,7 +151,7 @@ def add_contribution(request):
 def get_contribution_details(request, id):
     contribution = get_object_or_404(
         Contribution.objects.filter(
-            fund_id=request.user.fund.id),
+            fund=request.user.fund),
         pk=id)
     queryset = get_contribution_details_queryset(contribution)
 
@@ -205,7 +204,7 @@ def add_volunteer(request):
 def get_volunteer_details(request, id):
     volunteer = get_object_or_404(
         VolunteerProfile.objects.filter(
-            fund__id=request.user.fund.id),
+            fund=request.user.fund),
         pk=id)
     return render(request, 'fund_volunteer_details.html', {
         'volunteer': volunteer
@@ -219,8 +218,7 @@ def add_volunteer_cover(request, id):
     if cover:
         volunteer = get_object_or_404(
             VolunteerProfile.objects.filter(
-                fund__id=request.user.fund.id),
-            pk=id)
+                fund=request.user.fund), pk=id)
         volunteer.cover = cover
         volunteer.save()
 
@@ -232,8 +230,7 @@ def add_volunteer_cover(request, id):
 def edit_volunteer_profile(request, id):
     volunteer = get_object_or_404(
         VolunteerProfile.objects.filter(
-            fund__id=request.user.fund.id),
-        pk=id)
+            fund__id=request.user.fund.id), pk=id)
 
     return render_generic_form(
         request=request, form_class=UpdateVolunteerProfile,
