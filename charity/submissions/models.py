@@ -23,7 +23,7 @@ class Submission(Base):
     fund = models.ForeignKey(Fund, on_delete=models.PROTECT)
     wards = models.ManyToManyField(Ward)
     mailing_template = models.ForeignKey(
-        MailingTemplate, on_delete=models.PROTECT)
+        MailingTemplate, on_delete=models.PROTECT, related_name='submissions')
     mailing_group = models.ForeignKey(MailingGroup, on_delete=models.PROTECT, related_name='submissions')
     status = models.CharField(
         choices=SubmissionSentStatus.choices, max_length=16)

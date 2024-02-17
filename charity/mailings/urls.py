@@ -18,6 +18,7 @@ urlpatterns = [
     path('templates/', views.get_templates_list, name='get_templates_list'),
     path('templates/add/', views.add_template, name='add_template'),
     path('templates/<uuid:id>/edit/', views.edit_template, name='edit_template'),
+    path('templates/<uuid:id>/remove/', views.remove_template, name='remove_template'),
     path('content_fields', views.get_content_type_details,
          name='get_content_type_details')
 ]
