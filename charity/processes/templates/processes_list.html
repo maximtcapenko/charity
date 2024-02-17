@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-{% render_partial 'funds.views.get_get_current_details_partial' title='Processes' %}
+{% render_partial 'funds.views.get_current_details_partial' title='Processes' %}
   <div>
     <a href="{% url 'processes:create' %}" class="btn btn-link" >Add process</a>
   </div>

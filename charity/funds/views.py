@@ -66,7 +66,7 @@ def get_details(request, id):
 
 @user_passes_test(user_should_be_volunteer)
 @require_GET
-def get_get_current_details_partial(request,  *args, **kwargs):
+def get_current_details_partial(request,  *args, **kwargs):
     return render(request, 'partials/fund_details.html', {
         'title': kwargs.get('title'),
         'fund': get_object_or_404(Fund, pk=request.user.fund.id)

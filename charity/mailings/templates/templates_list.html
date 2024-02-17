@@ -2,7 +2,7 @@
 {% block content %}
 {% load customtags %}
 {% load mailingfilters %}
-{% render_partial 'funds.views.get_get_current_details_partial' title='Mailing templates' %}
+{% render_partial 'funds.views.get_current_details_partial' title='Mailing templates' %}
 <div>
   <a href="{% url 'mailings:add_template'%}" class="btn btn-link">Add template</a>
 </div>

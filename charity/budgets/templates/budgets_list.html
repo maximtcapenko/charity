@@ -2,7 +2,7 @@
 {% block content %}
 {% load customtags %}
 {% load budgetfilters %}
-{% render_partial 'funds.views.get_get_current_details_partial' title='Budgets' %}
+{% render_partial 'funds.views.get_current_details_partial' title='Budgets' %}
 <div>
   <a href="{% url 'budgets:create' %}" class="btn btn-link">Add budget</a>
 </div>

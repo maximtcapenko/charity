@@ -2,7 +2,7 @@
 {% block content %}
 {% load customtags %}
 {% load mailingfilters %}
-{% render_partial 'funds.views.get_get_current_details_partial' title='Mailing groups' %}
+{% render_partial 'funds.views.get_current_details_partial' title='Mailing groups' %}
 <div>
   <a href="{% url 'mailings:add_group'%}" class="btn btn-link">Add group</a>
 </div>

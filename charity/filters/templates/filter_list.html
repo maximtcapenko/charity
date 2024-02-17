@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-{% render_partial 'funds.views.get_get_current_details_partial' title='Filters' %}
+{% render_partial 'funds.views.get_current_details_partial' title='Filters' %}
 <div>
   <a href="{% url 'filters:add_filter' content_type.model %}" class="btn btn-link">Add filter</a>
 </div>
