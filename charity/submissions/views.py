@@ -78,6 +78,21 @@ def edit_submission(request, id):
 
 @user_passes_test(user_should_be_volunteer)
 @require_POST
+def remove_submission(request, id):
+    submission = get_object_or_404(
+        Submission.objects.filter(fund=request.user.fund), pk=id)
+    return_url = reverse('submissions:get_list')
+
+    if not submission_can_be_edited(submission, request.user):
+        raise ApplicationError('Submission cannot be removed. It is in progress', return_url)
+    
+    submission.delete()
+
+    return redirect(return_url)
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_POST
 def send_submission(request, id):
     submission = get_object_or_404(
         Submission.objects.filter(fund=request.user.fund), pk=id)
