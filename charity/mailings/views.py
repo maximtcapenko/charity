@@ -3,15 +3,18 @@ import json
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import user_passes_test
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from django.views.decorators.http import require_http_methods, require_GET
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
+
 from commons import DEFAULT_PAGE_SIZE
+from commons.exceptions import ApplicationError
 from commons.functional import render_generic_form, user_should_be_volunteer
 
 from .forms import AddMailingGroupForm, AddMailingRecipientForm, AddMailingTemplateForm
 from .models import MailingGroup, MailingTemplate
+from .requirements import mailing_group_is_ready_to_be_removed
 from .widgets import TemplateFieldsWidget
 
 
@@ -28,6 +31,20 @@ def add_group(request):
                 'author': request.user
             }
         })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_POST
+def remove_group(request, id):
+    group = get_object_or_404(
+        MailingGroup.objects.filter(fund=request.user.fund), pk=id)
+    return_url = f'{reverse("mailings:get_gorups_list")}'
+    if not mailing_group_is_ready_to_be_removed(group):
+        raise ApplicationError('Group cannot be removed it is used in existing submissions.', return_url)
+
+    group.delete()
+
+    return redirect(return_url)
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -91,6 +108,17 @@ def add_recipient(request, id):
 
 
 @user_passes_test(user_should_be_volunteer)
+@require_POST
+def remove_recipient(request, id, recipient_id):
+    group = get_object_or_404(
+        MailingGroup.objects.filter(fund=request.user.fund), pk=id)
+    recipient = get_object_or_404(group.recipients, pk=recipient_id)
+
+    group.recipients.remove(recipient)
+    return redirect(f'{reverse("mailings:get_group_details", args=[id])}')
+
+
+@user_passes_test(user_should_be_volunteer)
 @require_GET
 def get_templates_list(request):
     paginator = Paginator(MailingTemplate.objects.filter(
@@ -143,8 +171,8 @@ def get_content_type_details(request):
     content_type_id = request.GET.get('content_type_id')
     contet_type = get_object_or_404(ContentType, pk=content_type_id)
     widget = TemplateFieldsWidget()
-    widget.content_type=contet_type
-    widget.template_name='partials/fields.html'
+    widget.content_type = contet_type
+    widget.template_name = 'partials/fields.html'
 
     return HttpResponse(json.dumps({
         'html': widget.render(None, None)

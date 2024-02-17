@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
+{% load mailingfilters %}
 {% render_partial 'funds.views.get_get_current_details_partial' title='Mailing groups' %}
 <div>
   <a href="{% url 'mailings:add_group'%}" class="btn btn-link">Add group</a>
@@ -15,11 +16,18 @@
     <tbody>
         {% for group in page %}
         <tr>
-          <td class="col-3">
+          <td class="align-middle">
             <h6>
               <a href="{% url 'mailings:get_group_details' group.id %}">{{ group.name }}</a>
             </h6>
               {{ group.date_created }}
+          </td>
+          <td class="align-middle">
+            <a {% if group|mailing_group_is_ready_to_be_removed:user %}
+              href="{% url 'mailings:remove_group' group.id %}" class="post-request"
+            {% else %}
+              class="link-disabled"
+            {% endif %} >Remove</a>
           </td>
         </tr>
         {% endfor %}
@@ -28,4 +36,6 @@
     {% include 'paginator.html' with obj_page=page %}
   </div>
 </div>
+{% include 'partials/js.html' %}
+{% include 'generic_errormodal.html' %}
 {% endblock %}
