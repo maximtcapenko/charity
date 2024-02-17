@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
+{% load submissionfilters %}
 {% render_partial 'funds.views.get_get_current_details_partial' title='Wards submission' %}
 <div>
   <a href="{% url 'submissions:add_submission' %}" class="btn btn-link">Add submission</a>
@@ -46,7 +47,12 @@
             </span>
           </td>
           <td class="align-middle">
-            <a href="#">Remove</a>
+            <a {% if submission|submission_can_be_edited:user %}
+                 href="{% url 'submissions:remove_submission' submission.id %}"
+                 class="post-request"
+               {% else %}
+                 class="link-disabled"
+               {% endif %}>Remove</a>
           </td>
         </tr>
         {% endfor %}
@@ -54,4 +60,6 @@
     </table>
   </div>
 </div>
+{% include 'partials/js.html' %}
+{% include 'generic_errormodal.html' %}
 {% endblock %}
