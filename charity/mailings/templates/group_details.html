@@ -56,10 +56,15 @@
           <td class="align-middle">
             {{ recipient.date_created }}
           </td>
+          <td class="align-middle">
+            <a href="{% url 'mailings:remove_recipient' group.id recipient.id%}" class="post-request">Remove</a>
+          </td>
         </tr>
         {% endfor %}    
       </tbody>
     </table>
   </div>
 </div>
+{% include 'partials/js.html' %}
+{% include 'generic_errormodal.html' %}
 {% endblock %}
