@@ -27,3 +27,7 @@ def task_is_ready_to_be_completed(task, user):
     completed_states_ids = list(task.states.filter(approvement__is_rejected=False).values_list('state_id', flat=True))
 
     return process_state_ids == completed_states_ids and not task.is_done
+
+
+def task_file_is_ready_to_be_removed(task, file):
+    return not task.is_done

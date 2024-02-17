@@ -1,5 +1,7 @@
+{% load filefilters %}
+{% load customtags %}
 <div>
-  <a href="{% url 'files:attach_file' model_name target_id %}" class="btn btn-link">Upload file</a>
+  <a href="{% url 'files:attach_file' content_type.model target.id %}" class="btn btn-link">Upload file</a>
 </div>
 <div class="card mb-4">
   <div class="card-header">
@@ -34,6 +36,15 @@
                 {% include 'partials/user_image_part.html' with user=file.author %}
               </span>
             </td>
+            {% get_context_values 'content_type' 'target' as context %}
+            <td class="align-middle">
+              <a {% if file|file_is_ready_to_be_removed:context %}
+                   href="{% url 'files:remove_file' file.id content_type.model target.id %}" 
+                   class="post-request"
+                 {% else %}
+                   class="link-disabled"
+                 {% endif %}>Remove</a>
+            </td>
           </tr>
         {% endfor %}
       </tbody>
@@ -41,3 +52,5 @@
     {% include 'paginator.html' with obj_page=page %}
   </div>
 </div>
+{% include 'partials/js.html' %}
+{% include 'generic_errormodal.html' %}
