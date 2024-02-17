@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
+{% load mailingfilters %}
 {% render_partial 'funds.views.get_get_current_details_partial' title='Mailing templates' %}
 <div>
   <a href="{% url 'mailings:add_template'%}" class="btn btn-link">Add template</a>
@@ -15,11 +16,19 @@
     <tbody>
     {% for template in page %}
       <tr>
-        <td class="col-3">
+        <td class="align-middle">
           <h6>
             <a href="{% url 'mailings:edit_template' template.id %}">{{ template.name }}</a>
           </h6>
           {{ template.date_created }}
+        </td>
+        <td class="align-middle">
+          <a {% if template|template_is_ready_to_be_removed:user %}
+            href="{% url 'mailings:remove_template' template.id %}" 
+            class="post-request"
+          {% else %}
+            class="link-disabled"
+          {% endif %}>Remove</a>
         </td>
       </tr>
     {% endfor %}
@@ -28,4 +37,6 @@
     {% include 'paginator.html' with obj_page=page %}
   </div>
 </div>
+{% include 'partials/js.html' %}
+{% include 'generic_errormodal.html' %}
 {% endblock %}

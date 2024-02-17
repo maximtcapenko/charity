@@ -14,7 +14,7 @@ from commons.functional import render_generic_form, user_should_be_volunteer
 
 from .forms import AddMailingGroupForm, AddMailingRecipientForm, AddMailingTemplateForm
 from .models import MailingGroup, MailingTemplate
-from .requirements import mailing_group_is_ready_to_be_removed
+from .requirements import mailing_group_is_ready_to_be_removed, template_is_ready_to_be_removed
 from .widgets import TemplateFieldsWidget
 
 
@@ -40,7 +40,8 @@ def remove_group(request, id):
         MailingGroup.objects.filter(fund=request.user.fund), pk=id)
     return_url = f'{reverse("mailings:get_gorups_list")}'
     if not mailing_group_is_ready_to_be_removed(group):
-        raise ApplicationError('Group cannot be removed it is used in existing submissions.', return_url)
+        raise ApplicationError(
+            'Group cannot be removed it is used in existing submissions.', return_url)
 
     group.delete()
 
@@ -162,6 +163,23 @@ def edit_template(request, id):
                 'fund': request.user.fund,
             }
         })
+
+
+@user_passes_test(user_should_be_volunteer)
+@require_POST
+def remove_template(request, id):
+    template = get_object_or_404(
+        MailingTemplate.objects.filter(fund=request.user.fund), pk=id)
+    return_url = f'{reverse("mailings:get_templates_list")}'
+
+    if not template_is_ready_to_be_removed(template):
+        raise ApplicationError(
+            'Template cannot be removed it is used in existing submissions.',
+            return_url)
+
+    template.delete()
+
+    return redirect(return_url)
 
 
 @user_passes_test(user_should_be_volunteer)
