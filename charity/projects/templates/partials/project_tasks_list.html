@@ -2,4 +2,4 @@
 <div>
   <a href="{% url 'tasks:create'%}?project_id={{ project.id }}" class="btn btn-link" >Add task</a>
 </div>
-  {% render_tasks_board project=project tasks=page%}
+{% render_tasks_board project=project tasks=page%}
