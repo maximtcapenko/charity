@@ -72,6 +72,7 @@ def get_details(request, id):
             project.tasks.
             select_related(
                 'assignee', 'expense',
+                'state',
                 'expense__approvement',
                 'assignee__volunteer_profile')
             .order_by('order_position'), page_number),

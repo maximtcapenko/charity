@@ -17,16 +17,18 @@
         {% include 'partials/user_image_part.html' with user=task.assignee %}
         <p class="card-text">
           {% if  task.expense %}
-              <i class="fa-solid fa-dollar-sign fa-sm"></i>
-              <a href="{% url 'budgets:get_expense_details' task.expense.budget_id task.expense.id %}">{{ task.estimated_expense_amount|floatformat:'2g' }}</a>
+            <i class="fa-solid fa-dollar-sign fa-sm"></i>
+            <a href="{% url 'budgets:get_expense_details' task.expense.budget_id task.expense.id %}">{{ task.estimated_expense_amount|floatformat:'2g' }}</a>
           {% else %}
-              <i class="fa-solid fa-dollar-sign fa-sm"></i>
-              {{ task.estimated_expense_amount|floatformat:'2g' }}
+            <i class="fa-solid fa-dollar-sign fa-sm"></i>
+            {{ task.estimated_expense_amount|floatformat:'2g' }}
           {% endif %}
           {% include 'partials/td_approvement_part.html' with approvement=task.expense.approvement %}
         </p>
         <p class="card-text">
-            {% include 'partials/task_status.html' %}
+          <i class="fa-regular fa-circle-check"></i>
+          {{ progress.task_states_count }}/{{ progress.task_process_states_count }}
+          {% include 'partials/task_status.html' %}
         </p>
         {{task.date_created}}
         <p class="card-text"></p>
