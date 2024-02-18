@@ -13,7 +13,7 @@ from commons.functional import resolve_many_2_many_attr, resolve_many_2_many_att
 
 from .forms import CreateAttachmentForm
 from .models import Attachment
-from .requirements import file_is_ready_to_be_removed
+from .requirements import file_is_ready_to_be_removed, file_is_ready_to_be_added
 
 
 @user_passes_test(user_should_be_volunteer)
@@ -21,10 +21,15 @@ from .requirements import file_is_ready_to_be_removed
 def attach_file(request, model, target_id):
     content_type = ContentType.objects.get(model=model)
     return_url = f"{reverse('%s:get_details' % content_type.app_label, args=[target_id])}?tab=files"
+    target = content_type.get_object_for_this_type(pk=target_id)
+
+    if not file_is_ready_to_be_added(target, content_type):
+        raise ApplicationError('File cannot be attached.', return_url)
+
     initial = {
         'author': request.user,
         'fund': request.user.fund,
-        'target_id': target_id,
+        'target': target,
         'target_content_type': content_type
     }
     return render_generic_form(

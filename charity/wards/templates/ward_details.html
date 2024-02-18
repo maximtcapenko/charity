@@ -79,9 +79,9 @@
   </ul>
   <div>
     {% for tab in tabs %}
-    {% if selected_tab == tab %}
-      {% include 'partials/ward_'|add:tab|add:'_list.html' %}
-    {% endif %}
+      {% if selected_tab == tab %}
+        {% include 'partials/ward_'|add:tab|add:'_list.html' %}
+      {% endif %}
     {% endfor %}
   </div>
 {% endblock %}
