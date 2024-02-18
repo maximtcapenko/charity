@@ -3,7 +3,8 @@ from django import template
 from django.template import loader
 
 from commons.functional import wrap_dict_set_to_objects_list
-from tasks.querysets import get_project_tasks_comments_count_queryset
+from tasks.querysets import get_project_tasks_comments_count_queryset, \
+    get_project_tasks_states_count_queryset
 
 register = template.Library()
 
@@ -23,30 +24,40 @@ def render_tasks_board(context, project, tasks):
         comments = wrap_dict_set_to_objects_list(
             get_project_tasks_comments_count_queryset(project))
 
+        progresses = wrap_dict_set_to_objects_list(
+            get_project_tasks_states_count_queryset(project))
+
         for task in tasks:
             comments_count = next(
-                filter(lambda x: x.id == task.id, comments), None)
+                filter(lambda x: x.id == task.id, comments))
+            progress = next(
+                filter(lambda x: x.id == task.id, progresses))
+
             if not task.is_started and not task.is_done:
                 todo_tasks += loader.render_to_string(task_template_name, {
                     'task': task,
-                    'comments_count': comments_count.comments_count if comments_count else 0
+                    'comments_count': comments_count.comments_count,
+                    'progress': progress
                 }, request, using=None)
 
             elif task.is_started and not task.is_on_review and not task.is_done:
                 in_progress_tasks += loader.render_to_string(task_template_name, {
                     'task': task,
-                    'comments_count': comments_count.comments_count if comments_count else 0
+                    'comments_count': comments_count.comments_count,
+                    'progress': progress
                 }, request, using=None)
             elif task.is_on_review:
                 on_review_tasks += loader.render_to_string(task_template_name, {
                     'task': task,
-                    'comments_count': comments_count.comments_count if comments_count else 0
+                    'comments_count': comments_count.comments_count,
+                    'progress': progress
                 }, request, using=None)
 
             elif task.is_done:
                 done_tasts += loader.render_to_string(task_template_name, {
                     'task': task,
-                    'comments_count': comments_count.comments_count if comments_count else 0
+                    'comments_count': comments_count.comments_count,
+                    'progress': progress
                 }, request, using=None)
 
         return {
