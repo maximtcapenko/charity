@@ -2,6 +2,7 @@
 {% block content %}
 {% load customtags %}
 {% load projectfilters %}
+{% load projectstags %}
 {% render_partial 'funds.views.get_current_details_partial' title='Projects' %}
 <div>
   <a href="{% url 'projects:create' %}" class="btn btn-link">Add project</a>
@@ -40,10 +41,7 @@
               </span>
             </td>
             <td class="col-2 align-middle">
-              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Active tasks">
-                <i class="fa-solid fa-list-check fa-xs"></i>
-                {{ project.active_tasks_count }}
-              </span>
+              {% render_project_progress project=project %}
             </td>
             <td class="col-1 align-middle">
               {% if project.is_closed %}
