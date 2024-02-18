@@ -11,6 +11,9 @@ def get_projects_with_tasks_queryset(fund):
     active_budget_queryset = Task.objects.filter(project=OuterRef('pk'), expense__approvement__is_rejected=False) \
         .values('project_id').annotate(budget=Sum('expense__amount', default=0)).values('budget')
 
+    done_task_count_queryset = Task.objects.filter(is_done=True, project=OuterRef('pk')) \
+        .values('project_id').annotate(done_tasks=Count('id')).values('done_tasks')
+    
     active_task_count_queryset = Task.objects.filter(
         is_done=False, is_started=True, project=OuterRef('pk')) \
         .values('project_id').annotate(active_tasks=Count('id')).values('active_tasks')
@@ -20,6 +23,7 @@ def get_projects_with_tasks_queryset(fund):
         .annotate(all_tasks=Count('id')).values('all_tasks')
 
     return Project.objects.filter(fund=fund).annotate(
+        done_tasks_count=Coalesce(Subquery(done_task_count_queryset), Value(0)),
         active_tasks_count=Coalesce(
             Subquery(active_task_count_queryset), Value(0)),
         tasks_count=Coalesce(Subquery(total_task_count_queryset), Value(0)),
@@ -28,6 +32,7 @@ def get_projects_with_tasks_queryset(fund):
                 'leader__username',
                 'approved_budget',
                 'is_closed',
+                'done_tasks_count',
                 'active_tasks_count',
                 'tasks_count',
                 'author__id',

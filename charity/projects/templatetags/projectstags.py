@@ -59,3 +59,17 @@ def render_tasks_board(context, project, tasks):
         }
 
     return _get_context()
+
+
+@register.inclusion_tag('partials/project_progress.html', takes_context=True)
+def render_project_progress(context, project):
+    complete_in_percents = 0
+
+    if project.tasks_count > 0:
+        complete_in_percents = round(
+            project.done_tasks_count / project.tasks_count * 100)
+
+    return {
+        'project': project,
+        'complete_in_percents': complete_in_percents
+    }
