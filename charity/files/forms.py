@@ -27,6 +27,10 @@ class CreateAttachmentForm(
         fund_attr_path = resolve_rel_attr_path(
             Fund, content_type.model_class())
 
+        if not fund_attr_path:
+            raise forms.ValidationError(
+                'Target object cannot be used because it does not belong to any fund.')
+        
         filter = {
             fund_attr_path: self.fund,
             'pk': self.target.pk
@@ -46,8 +50,9 @@ class CreateAttachmentForm(
         target_attr = resolve_many_2_many_attr_path(
             Attachment, self.target_content_type.model_class())
 
-        files = getattr(self.target, target_attr)
-        files.add(self.instance)
+        if target_attr:
+            files = getattr(self.target, target_attr)
+            files.add(self.instance)
 
         return self.instance
 
