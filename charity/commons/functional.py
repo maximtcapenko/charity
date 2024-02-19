@@ -189,5 +189,7 @@ def append_to_url_query(request, **kwargs):
     query = QueryDict(request.GET.urlencode(), mutable=True)
     for key in kwargs:
         query[key] = kwargs[key]
-
-    return f'?{query.urlencode()}'
+    if len(query) > 0:
+        return f'?{query.urlencode()}'
+    
+    return ''
