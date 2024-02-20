@@ -95,7 +95,7 @@ class UpdateTaskForm(CreateTaskForm):
             if self.instance.expense and \
                     should_be_approved(self.instance.expense):
                 self.fields.pop('estimated_expense_amount')
-                self.fields['ward'].disabled = True
+                self.form.ward.disabled = True
 
             if self.instance.state_id:
                 self.fields.pop('process')

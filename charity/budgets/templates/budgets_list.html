@@ -51,7 +51,11 @@
               <span data-bs-toggle="tooltip" data-bs-placement="top" title="Expense">
                 <i class="fa-solid fa-arrow-up"></i>
                 <i class="fa-solid fa-dollar-sign fa-xs"></i>
-                {{ budget.avaliable_expense_amount|floatformat:'2g'}}
+                {% if budget.payout_excess_contribution.amount %}
+                  {{ budget.avaliable_expense_amount|add:budget.payout_excess_contribution.amount|floatformat:'2g'}}
+                {% else %}
+                  {{ budget.avaliable_expense_amount|floatformat:'2g'}}
+                {% endif %}
               </span>
             </td>
             <td class="col-1 align-middle">

@@ -34,6 +34,7 @@ def get_budget_with_avaliable_amounts_queryset(fund):
                 'manager__username',
                 'manager__volunteer_profile__cover',
                 'manager__volunteer_profile__id',
+                'payout_excess_contribution__amount',
                 'avaliable_income_amount', 'avaliable_expense_amount',
                 'incomes_exist').all()
 
