@@ -1,3 +1,5 @@
+import importlib
+
 from django import forms
 from django.http import HttpResponseNotAllowed
 from django.contrib.auth.models import User
@@ -191,5 +193,18 @@ def append_to_url_query(request, **kwargs):
         query[key] = kwargs[key]
     if len(query) > 0:
         return f'?{query.urlencode()}'
-    
+
     return ''
+
+
+imports = {}
+
+
+def get_requirements_module(content_type):
+    try:
+        key = f'{content_type.app_label}.requirements'
+        if not key in imports.keys():
+            imports[key] = importlib.import_module(key)
+        return imports[key]
+    except:
+        return None

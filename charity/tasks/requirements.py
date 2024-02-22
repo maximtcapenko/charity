@@ -37,3 +37,7 @@ def task_file_is_ready_to_be_removed(task, file):
 
 def task_file_is_ready_to_be_added(task):
     return not task.is_done
+
+
+def task_comment_is_ready_to_be_added(task):
+    return not task.is_done
