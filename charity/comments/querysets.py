@@ -1,4 +1,3 @@
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count
 
 from commons.functional import resolve_many_2_many_attr_path
