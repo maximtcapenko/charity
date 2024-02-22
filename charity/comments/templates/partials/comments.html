@@ -1,6 +1,13 @@
+{% load commentfilters %}
 {% load customtags %}
+{% get_context_values 'content_type' 'target' as context %}
 <div>
-  <a href="{% url 'comments:add_generic_comment' model_name target_id %}" class="btn btn-link">Add new comment</a>
+  <a {% if context|comment_is_ready_to_be_added %}
+       href="{% url 'comments:add_generic_comment' content_type.model target.pk %}" 
+       class="btn btn-link"
+     {% else %}
+     class="btn btn-link disabled"
+     {% endif %}>Add new comment</a>
 </div>
 <div class="card mb-4">
   <div class="card-header">
@@ -14,7 +21,7 @@
           {% include 'partials/user_image_part.html' with user=comment.author %}
           <span class="badge bg-danger rounded">topic</span>
           <span data-bs-toggle="tooltip" data-bs-placement="top" title="Reply">
-            <a href="{% url 'comments:add_reply_to_comment' model_name target_id comment.id %}">
+            <a href="{% url 'comments:add_reply_to_comment' content_type.model target.pk comment.id %}">
               <i class="fa-solid fa-reply"></i>
             </a>
           </span>

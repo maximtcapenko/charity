@@ -1,7 +1,8 @@
 from django import forms
 from funds.models import Fund
 
-from commons.functional import get_argument_or_error, resolve_many_2_many_attr, resolve_rel_attr_path
+from commons.functional import get_argument_or_error, resolve_many_2_many_attr_path, \
+    resolve_rel_attr_path
 from commons.mixins import FormControlMixin, InitialMixin
 
 from .models import Comment
@@ -9,7 +10,7 @@ from .models import Comment
 
 class CreateCommentForm(
         forms.ModelForm, InitialMixin, FormControlMixin):
-    __initial__ = ['target_id', 'target_content_type', 'author', 'fund']
+    __initial__ = ['target', 'target_content_type', 'author', 'fund']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -34,7 +35,7 @@ class CreateCommentForm(
         """Check if author and commented item are in the same fund"""
         filter = {
             fund_attr_path: self.fund,
-            'pk': self.target_id
+            'pk': self.target.pk
         }
 
         if not content_type.model_class().objects.filter(**filter).exists():
@@ -52,8 +53,10 @@ class CreateCommentForm(
 
     def save(self):
         self.instance.save()
-        comments = resolve_many_2_many_attr(
-            Comment, self.target_content_type, self.target_id)
+        target_attr = resolve_many_2_many_attr_path(
+            Comment, self.target_content_type.model_class())
+
+        comments = getattr(self.target, target_attr)
         comments.add(self.instance)
         return self.instance
 
