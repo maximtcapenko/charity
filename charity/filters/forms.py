@@ -53,9 +53,10 @@ class CreateFilterExpressionForm(
         self.form.operand = forms.CharField(
             max_length=10, widget=forms.HiddenInput(), required=True)
         self.form.value = ExpressionFieldValue(relation_id='id_field', operand_id='id_operand', fetch_url=reverse(
-            'filters:get_filed_value_input_details'), label=False)
+            'filters:get_filed_value_input_details'), attr_resolver=lambda: self.cleaned_data['field'].attribute, label=False)
 
         FormControlMixin.__init__(self)
+
 
     def clean(self):
         operand = self.cleaned_data['operand']
@@ -109,11 +110,10 @@ class AddExpressionValueForm(
 
         FormControlMixin.__init__(self)
 
-    
     def save(self):
         instance = ExpressionValue(expression=self.expression)
         value = self.cleaned_data['value']
         instance.value = value
         instance.save()
-        
+
         return instance

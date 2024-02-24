@@ -11,6 +11,7 @@ from .models import Task, TaskState
 
 
 review_request_created = signals.Signal()
+task_has_been_completed = signals.Signal()
 
 
 @receiver(signals.post_save, sender=Task)
