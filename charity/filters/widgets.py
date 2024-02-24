@@ -37,10 +37,14 @@ class ExpressionValueWidget(Input):
             values = attribute.get_choices().values_list('value', 'value')
             choices = [('', f'Select {attribute.name}')] + list(values)
             input = field.widget(
-                attrs={'class': 'form-control'}, choices=choices).render('value', None)
+                attrs={'class': 'form-select'}, choices=choices).render('value', None)
         elif attribute.datatype == Attribute.TYPE_DATE:
             input = field.widget(
                 attrs={'class': 'form-control', 'type': 'date'}).render('value', None)
+        elif attribute.datatype == Attribute.TYPE_BOOLEAN:
+            field.widget.template_name = 'partials/form-switch.html'
+            input = field.widget({
+                'class': 'form-check-input'}).render('value', None)
         else:
             input = field.widget(
                 attrs={'class': 'form-control'}).render('value', None)
@@ -58,9 +62,16 @@ class ExpressionFieldValue(Field):
             self,
             relation_id=None,
             fetch_url=None,
+            attr_resolver=None,
             operand_id=None, **kwargs):
+        self.attr_resolver = attr_resolver
         self.widget = ExpressionValueWidget
         self.widget.relation_id = relation_id
         self.widget.fetch_url = fetch_url
         self.widget.operand_id = operand_id
         super().__init__(**kwargs)
+
+    def to_python(self, value):
+        attribute = self.attr_resolver()
+        return BaseCustomFieldsModelForm.FIELD_CLASSES.get(
+            attribute.datatype)().to_python(value)

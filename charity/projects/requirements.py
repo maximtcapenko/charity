@@ -4,7 +4,7 @@ from django.db.models import Exists, Q, OuterRef
 def project_is_ready_to_be_completed(project):
     all_tasks_count = project.tasks.count()
     done_tasks_count = project.tasks.filter(is_done=True).count()
-    return all_tasks_count == done_tasks_count
+    return all_tasks_count == done_tasks_count and not project.is_closed
 
 
 def user_should_be_project_author_or_leader(user, project):

@@ -15,7 +15,7 @@ from .querysets import get_available_task_process_states_queryset, \
     get_available_task_rewiewers_queryset, get_available_project_wards_queryset
 from .messages import Warnings
 from .models import Task, TaskState
-from .signals import review_request_created
+from .signals import review_request_created, task_has_been_completed
 
 
 class CreateTaskForm(
@@ -174,6 +174,10 @@ class CompleteTaskForm(forms.Form,  InitialMixin, FormControlMixin):
                 self.task.payout_excess_contribution = payout_excess_contribution
 
         self.task.save()
+        task_has_been_completed.send(
+            sender=Task,
+            instance=self.task,
+        )
 
         return self.task
 

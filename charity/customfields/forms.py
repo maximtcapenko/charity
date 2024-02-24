@@ -4,7 +4,9 @@ from django.utils.translation import gettext_lazy as _
 
 from eav.forms import BaseDynamicEntityForm
 from eav.models import Attribute, EnumGroup, EnumValue
+
 from commons.mixins import FormControlMixin, InitialMixin
+from processes.models import Process
 
 from .models import CustomField
 from .widgets import EAVEnumListGroupField
@@ -39,14 +41,15 @@ def validate_field_name(value):
 class CustomFieldCreateForm(forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['fund', 'content_type']
 
-    field_order = ['label', 'name', 'field_type', 'required']
+    field_order = ['label', 'name', 'linked_process', 'field_type', 'required']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialMixin.__init__(self)
 
         self.form.fund.widget = forms.HiddenInput()
-        if self.instance.attribute_id:
+        self.form.linked_process.queryset = Process.objects.filter(fund=self.fund)
+        if not self.instance._state.adding:
             self.form.name.initial = self.instance.attribute.slug
             self.form.name.disabled = True
             self.form.label.initial = self.instance.attribute.name
