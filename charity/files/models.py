@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.functional import cached_property
 
 from commons.models import Base
 from commons import storagers
@@ -22,6 +23,7 @@ class Attachment(Base):
     author = models.ForeignKey(User, on_delete=models.PROTECT)
     fund = models.ForeignKey(Fund, on_delete=models.PROTECT)
 
+    @cached_property
     def size(self):
         return round(self.file.size / 1000)
 

@@ -2,6 +2,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q
+from django.utils.functional import cached_property
 
 from eav.models import Attribute
 
@@ -86,7 +87,7 @@ class Expression(Base):
     def __str__(self):
         return self.field.attribute.name
 
-    @property
+    @cached_property
     def is_searchable(self):
         return self.field.is_searchable
 

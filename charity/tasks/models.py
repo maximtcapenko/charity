@@ -2,6 +2,7 @@ import datetime
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.functional import cached_property
 
 from comments.models import Comment
 from commons.models import Base
@@ -95,7 +96,7 @@ class Task(Base):
     def __str__(self):
         return self.name
 
-    @property
+    @cached_property
     def is_on_review(self):
         return self.is_started and self.state_id and self.state.is_review_requested and not self.is_done
 
