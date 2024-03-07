@@ -1,0 +1,9 @@
+{% load taskfilters %}
+<a {% if state|task_state_is_ready_for_review:context %}
+     href="{% url 'tasks:approve_task_state' task.id state.id %}" 
+     class="btn btn-link"
+    {% else %}
+        class="btn btn-link disabled"
+        href=""
+    {% endif %}>Add review </a>
+{% include 'approvements_list.html' %}

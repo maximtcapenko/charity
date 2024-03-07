@@ -1,3 +1,5 @@
+from commons.functional import should_be_approved
+
 
 def task_state_is_ready_for_review_request(state, user, task):
     if not user or not task:
@@ -41,3 +43,11 @@ def task_file_is_ready_to_be_added(task):
 
 def task_comment_is_ready_to_be_added(task):
     return not task.is_done
+
+
+def taskstate_comment_is_ready_to_be_added(taskstate):
+    return not should_be_approved(taskstate)
+
+
+def taskstate_file_is_ready_to_be_added(taskstate):
+    return not should_be_approved(taskstate)

@@ -1,6 +1,9 @@
+from django.urls import reverse
 import eav
 
 from django.db import models
+from django.utils.functional import cached_property
+
 from commons.models import Base
 
 from comments.models import Comment
@@ -31,6 +34,10 @@ class Ward(Base):
 
     def __str__(self):
         return self.name
+
+    @cached_property
+    def url(self):
+        return reverse('wards:get_details', args=[self.pk])
 
 
 eav.register(Ward, CustomFieldsEvaConfig)

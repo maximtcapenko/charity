@@ -24,7 +24,6 @@
       <div class="row">
         <div class="col">
           <div class="bg-light text-dark">
-            <i class="fa-regular fa-clipboard"></i>
             <strong>Description</strong>: {{ state.state.notes }}
           </div>
         </div>
@@ -92,14 +91,23 @@
     </div>
   </div>
 </div>
-<div>
-  <a {% if state|task_state_is_ready_for_review:context %}
-      href="{% url 'tasks:approve_task_state' task.id state.id %}" 
-      class="btn btn-link"
+<ul class="nav nav-pills mb-3">
+  {% for tab in tabs %}
+  <li class="nav-item" role="presentation">
+    {% if selected_tab == tab %}
+      <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
+      </a>
     {% else %}
-      class="btn btn-link disabled"
-      href=""
-    {% endif %}>Add review </a>
+      <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+<div>
+  {% for tab in tabs %}
+    {% if selected_tab == tab %}
+      {% include 'partials/task_state_'|add:tab|add:'_list.html' %}
+    {% endif %}
+  {% endfor %}
 </div>
-{% include 'approvements_list.html' %}
 {% endblock %}
