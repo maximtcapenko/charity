@@ -186,6 +186,17 @@ def request_task_state_review(request, task_id, id):
 @user_passes_test(user_should_be_volunteer)
 @require_GET
 def get_state_details(request, task_id, id):
+    default_tab = 'comments'
+    tabs = [
+        'comments',
+        'reviews',
+        'files'
+    ]
+    tab = request.GET.get('tab', default_tab)
+
+    if not tab in tabs:
+        tab = default_tab
+
     task = get_task_or_404(request, task_id)
     state = get_object_or_404(task.states, pk=id)
 
@@ -193,6 +204,11 @@ def get_state_details(request, task_id, id):
                           per_page=DEFAULT_PAGE_SIZE)
 
     return render(request, 'task_state_details.html', {
+        'title': 'Task step',
+        'tabs': tabs,
+        'model_name': state._meta.model_name,
+        'items_count': paginator.count,
+        'selected_tab': tab,
         'task': task,
         'state': state,
         'page': paginator.get_page(request.GET.get('page'))

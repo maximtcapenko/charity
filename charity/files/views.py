@@ -20,9 +20,9 @@ from .requirements import file_is_ready_to_be_removed, file_is_ready_to_be_added
 @require_http_methods(['GET', 'POST'])
 def attach_file(request, model, target_id):
     content_type = ContentType.objects.get(model=model)
-    return_url = f"{reverse('%s:get_details' % content_type.app_label, args=[target_id])}?tab=files"
     target = content_type.get_object_for_this_type(pk=target_id)
-
+    return_url = f"{target.url}?tab=files"
+    
     if not file_is_ready_to_be_added(target, content_type):
         raise ApplicationError('File cannot be attached.', return_url)
 

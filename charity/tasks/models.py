@@ -2,8 +2,10 @@ import datetime
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 from django.utils.functional import cached_property
 
+from commons.functional import DictObjectWrapper
 from comments.models import Comment
 from commons.models import Base
 
@@ -47,6 +49,7 @@ class TaskState(Base):
     is_review_requested = models.BooleanField(default=False, null=False)
     request_review = models.ForeignKey(
         RequestReview, on_delete=models.SET_NULL, null=True)
+    attachments = models.ManyToManyField(Attachment)
     comments = models.ManyToManyField(
         Comment, related_name='commented_task_states')
 
@@ -55,6 +58,11 @@ class TaskState(Base):
 
     def __str__(self):
         return self.state.name
+
+    @cached_property
+    def url(self):
+        task = DictObjectWrapper(self.state_tasks.values('pk').first())
+        return reverse('tasks:get_state_details', args=[task.pk, self.pk])
 
 
 class Task(Base):
@@ -107,6 +115,10 @@ class Task(Base):
     @property
     def is_expired(self):
         return self.is_started and self.end_date is not None and self.end_date < datetime.date.today()
+
+    @cached_property
+    def url(self):
+        return reverse('tasks:get_details', args=[self.pk])
 
 
 def user_assigned_active_tasks(self):

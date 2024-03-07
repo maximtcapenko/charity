@@ -17,7 +17,7 @@ from .models import Comment
 def add_comment(request, model, id):
     content_type = ContentType.objects.get(model=model)
     target = content_type.get_object_for_this_type(pk=id)
-    return_url = f"{reverse('%s:get_details' % content_type.app_label, args=[id])}?tab=comments"
+    return_url = f"{target.url}?tab=comments"
     initial = {
         'author': request.user,
         'fund': request.user.fund,
