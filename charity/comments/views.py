@@ -47,7 +47,7 @@ def add_comment(request, model, id):
 def add_reply_to_comment(request, model, id, comment_id):
     target_content_type = ContentType.objects.get(model=model)
     target = target_content_type.get_object_for_this_type(pk=id)
-    return_url = f"{reverse('%s:get_details' % target_content_type.app_label, args=[id])}?tab=comments#{comment_id}"
+    return_url = f"{target.url}?tab=comments#{comment_id}"
     comment = get_object_or_404(Comment, pk=comment_id)
 
     initial = {
