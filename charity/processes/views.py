@@ -87,6 +87,7 @@ def get_list(request):
 
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
     return render(request, 'processes_list.html', {
+        'title': 'Processes',
         'items_count': paginator.count,
         'page': paginator.get_page(request.GET.get('page'))
     })

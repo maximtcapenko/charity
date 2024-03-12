@@ -24,6 +24,7 @@ def get_list(request):
         .select_related('mailing_template', 'mailing_group', 'author__volunteer_profile').filter(
             fund=request.user.fund), DEFAULT_PAGE_SIZE)
     return render(request, 'submissions_list.html', {
+        'title': 'Submissions',
         'items_count': paginator.count,
         'page': paginator.get_page(request.GET.get('page')),
     })

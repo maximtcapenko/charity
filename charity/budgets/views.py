@@ -42,6 +42,7 @@ def get_budgets_list(request):
         paginator.get_page(request.GET.get('page')), model=Budget)
 
     return render(request, 'budgets_list.html', {
+        'title': 'Budgets',
         'page': page,
         'search_form': search_form,
         'items_count': paginator.count

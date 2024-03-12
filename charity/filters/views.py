@@ -155,6 +155,7 @@ def get_list(request, model_name):
         fund=fund, content_type=content_type), DEFAULT_PAGE_SIZE)
 
     return render(request, 'filter_list.html', {
+        'title': 'Filters',
         'fund': fund,
         'content_type': content_type,
         'page': paginator.get_page(request.GET.get('page')),

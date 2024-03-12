@@ -76,6 +76,7 @@ def get_list(request):
         fund=fund), DEFAULT_PAGE_SIZE)
 
     return render(request, 'fields_list.html', {
+        'title': 'Custom fields',
         'fund': fund,
         'page': paginator.get_page(request.GET.get('page')),
         'items_count': paginator.count

@@ -41,6 +41,7 @@ def get_list(request):
     page = wrap_dicts_page_to_objects_page(
         paginator.get_page(request.GET.get('page')), model=Project)
     return render(request, 'projects_list.html', {
+        'title': 'Projects',
         'page': page,
         'search_form': search_form,
         'items_count': paginator.count

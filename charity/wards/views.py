@@ -72,6 +72,7 @@ def get_list(request):
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
 
     return render(request, 'wards_list.html', {
+        'title': 'Wards',
         'search_form': search_form,
         'page': paginator.get_page(request.GET.get('page')),
         'items_count': paginator.count

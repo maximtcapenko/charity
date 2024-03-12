@@ -55,6 +55,7 @@ def get_gorups_list(request):
         MailingGroup.objects.filter(fund=request.user.fund), DEFAULT_PAGE_SIZE)
 
     return render(request, 'goups_list.html', {
+        'title': 'Groups',
         'page': paginator.get_page(request.GET.get('page')),
         'items_count': paginator.count
     })
@@ -125,6 +126,7 @@ def get_templates_list(request):
     paginator = Paginator(MailingTemplate.objects.filter(
         fund=request.user.fund).all(), DEFAULT_PAGE_SIZE)
     return render(request, 'templates_list.html', {
+        'title': 'Templates',
         'items_count': paginator.count,
         'page': paginator.get_page(request.GET.get('page'))
     })
