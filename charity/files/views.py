@@ -21,7 +21,7 @@ from .requirements import file_is_ready_to_be_removed, file_is_ready_to_be_added
 def attach_file(request, model, target_id):
     content_type = ContentType.objects.get(model=model)
     target = content_type.get_object_for_this_type(pk=target_id)
-    return_url = f"{target.url}?tab=files"
+    return_url = f'{target.url}?tab=files'
     
     if not file_is_ready_to_be_added(target, content_type):
         raise ApplicationError('File cannot be attached.', return_url)
@@ -47,8 +47,8 @@ def attach_file(request, model, target_id):
 def remove_file(request, id, model, target_id):
     content_type = ContentType.objects.get(model=model)
     target = content_type.get_object_for_this_type(pk=target_id)
-    return_url = f"{reverse('%s:get_details' % content_type.app_label, args=[target_id])}?tab=files"
-
+    return_url = f'{target.url}?tab=files'
+    
     files = resolve_many_2_many_attr(Attachment, content_type, target_id)
     file = get_object_or_404(files, pk=id)
     if not file_is_ready_to_be_removed(file, target, content_type):
