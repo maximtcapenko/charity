@@ -19,7 +19,7 @@ def render_tasks_board(context, project, tasks):
         todo_tasks = ''
         in_progress_tasks = ''
         on_review_tasks = ''
-        done_tasts = ''
+        done_tasks = ''
 
         comments = wrap_dict_set_to_objects_list(
             get_project_tasks_comments_count_queryset(project))
@@ -54,7 +54,7 @@ def render_tasks_board(context, project, tasks):
                 }, request, using=None)
 
             elif task.is_done:
-                done_tasts += loader.render_to_string(task_template_name, {
+                done_tasks += loader.render_to_string(task_template_name, {
                     'task': task,
                     'comments_count': comments_count.comments_count,
                     'progress': progress
@@ -64,7 +64,7 @@ def render_tasks_board(context, project, tasks):
             'todo_tasks': mark_safe(todo_tasks),
             'in_progress_tasks': mark_safe(in_progress_tasks),
             'on_review_tasks': mark_safe(on_review_tasks),
-            'done_tasts': mark_safe(done_tasts),
+            'done_tasts': mark_safe(done_tasks),
             'items_count': items_count,
             'page': tasks
         }

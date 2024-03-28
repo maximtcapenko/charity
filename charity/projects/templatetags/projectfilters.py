@@ -7,7 +7,7 @@ register = template.Library()
 
 @register.filter
 def validate_pre_requirements(project, user):
-    return requirements.user_should_be_project_author_or_leader(user, project)
+    return requirements.user_should_be_project_author_or_leader(user, project) and not project.is_closed
 
 
 @register.filter
