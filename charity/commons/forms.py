@@ -9,7 +9,7 @@ from .utils import DictObjectWrapper
 
 class CustomLabeledModelChoiceField(forms.ModelChoiceField):
     def __init__(self, label_func, *args, model=None, **kwargs):
-        self.lable_func = label_func
+        self.label_func = label_func
         self.model = model
         super().__init__(*args, **kwargs)
 
@@ -26,11 +26,11 @@ class CustomLabeledModelChoiceField(forms.ModelChoiceField):
         return super().prepare_value(value)
 
     def label_from_instance(self, obj):
-        if self.lable_func:
+        if self.label_func:
             if isinstance(obj, dict):
                 obj = DictObjectWrapper(obj)
 
-            return self.lable_func(obj)
+            return self.label_func(obj)
 
         return super().label_from_instance(obj)
 
