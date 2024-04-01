@@ -108,13 +108,14 @@ class Task(Base):
     def is_on_review(self):
         return self.is_started and self.state_id and self.state.is_review_requested and not self.is_done
 
-    @property
+    @cached_property
     def should_be_approved(self):
         return self.estimated_expense_amount > 0
 
-    @property
+    @cached_property
     def is_expired(self):
-        return self.is_started and self.end_date is not None and self.end_date < datetime.date.today()
+        return self.is_started and self.end_date is not None and self.end_date < datetime.date.today() \
+            and not self.is_done
 
     @cached_property
     def url(self):
