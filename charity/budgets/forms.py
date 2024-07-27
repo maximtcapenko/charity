@@ -88,6 +88,8 @@ class SearchBudgetForm(ApprovedOnlySearchForm, SearchByNameMixin):
 
 
 class CreatePayoutExcessContributionForm(CreateContributionForm):
+    __initial__ = ['fund', 'author', 'budget']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
