@@ -34,6 +34,7 @@ class WrappedContext:
 @shared_task
 def send_submssions(submission_id):
     submission = Submission.objects.get(pk=submission_id)
+    submission.is_draft = False
     submission.status = SubmissionSentStatus.IN_PROGRESS
     submission.save()
 

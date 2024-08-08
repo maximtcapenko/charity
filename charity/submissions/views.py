@@ -98,7 +98,6 @@ def send_submission(request, id):
     submission = get_object_or_404(
         Submission.objects.filter(fund=request.user.fund), pk=id)
 
-    submission.is_draft = False
     submission.save()
     send_submssions.delay(submission.id)
 
