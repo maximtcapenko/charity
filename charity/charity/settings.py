@@ -54,7 +54,8 @@ INSTALLED_APPS = [
     'eav',
     'ckeditor',
     'django_celery_results',
-    'django_celery_beat'
+    'django_celery_beat',
+    'telemetry.apps.TelemetryConfig'
 ]
 
 MIDDLEWARE = [
@@ -123,15 +124,13 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+APP_NAME = 'charity'
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
