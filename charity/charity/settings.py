@@ -92,6 +92,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'charity.wsgi.application'
 
+ATOMIC_REQUESTS = True
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
