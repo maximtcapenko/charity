@@ -11,7 +11,16 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
 
+from dotenv import load_dotenv
+from kombu import Queue, Exchange
 from pathlib import Path
+
+load_dotenv()
+
+
+default_queue_name = os.environ['CELERY_BROKER_QUEUE']
+default_periodic_queue_name = os.environ['CELEREY_PERIODIC_BROKER_QUEUE']
+storage_account_name = os.environ['AZURE_STORAGE_NAME']
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -53,8 +62,6 @@ INSTALLED_APPS = [
     'wards.apps.WardsConfig',
     'eav',
     'ckeditor',
-    'django_celery_results',
-    'django_celery_beat',
     'telemetry.apps.TelemetryConfig'
 ]
 
@@ -145,7 +152,6 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGGING = {
     'version': 1,
@@ -184,20 +190,15 @@ CKEDITOR_CONFIGS = {
     },
 }
 
-CELERY_CACHE_BACKEND = 'django-cache'
-CELERY_RESULT_BACKEND = 'django-db'
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_RESULT_SERIALIZER = 'json'
+CELERY_BROKER_URL = f'azurestoragequeues://DefaultAzureCredential@{storage_account_name}.queue.core.windows.net/'
+CELERY_TASK_QUEUES = (
+    Queue(name=default_queue_name),
+    Queue(name=default_periodic_queue_name),
+)
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_RESULT_BACKEND = 'charity.custom_celery_backend:CustomAzureBlockBlobBackend'
 CELERY_TASK_SERIALIZER = 'json'
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://127.0.0.1:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
-    }
-}
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TIMEZONE = 'UTC'
+CELERY_ENABLE_UTC = True

@@ -53,3 +53,5 @@ def send_submssions(submission_id):
 
     name = f'emails/{get_random_string(10)}.html'
     storagers.private.save(name, ContentFile(result.encode(), name))
+    submission.status = SubmissionSentStatus.SENT
+    submission.save()

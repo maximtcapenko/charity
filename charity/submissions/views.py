@@ -85,8 +85,9 @@ def remove_submission(request, id):
     return_url = reverse('submissions:get_list')
 
     if not submission_can_be_edited(submission, request.user):
-        raise ApplicationError('Submission cannot be removed. It is in progress', return_url)
-    
+        raise ApplicationError(
+            'Submission cannot be removed. It is in progress', return_url)
+
     submission.delete()
 
     return redirect(return_url)
@@ -99,7 +100,9 @@ def send_submission(request, id):
         Submission.objects.filter(fund=request.user.fund), pk=id)
 
     submission.save()
-    send_submssions.delay(submission.id)
+    
+    from charity.settings import default_queue_name
+    send_submssions.apply_async(args=[submission.id], queue=default_queue_name)
 
     return redirect(reverse('submissions:get_submission_details', args=[id]))
 
