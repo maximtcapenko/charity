@@ -27,5 +27,9 @@ jobs:
         echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
         echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
     - name: Run Tests
+      env:
+        CELERY_BROKER_QUEUE: django-celery
+        CELEREY_PERIODIC_BROKER_QUEUE: django-celery-periodic
+        AZURE_STORAGE_NAME: testaccountname
       run: |
        python charity/manage.py test charity

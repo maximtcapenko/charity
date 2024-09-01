@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 
 from dotenv import load_dotenv
-from kombu import Queue, Exchange
+from kombu import Queue
 from pathlib import Path
 
 load_dotenv()
