@@ -84,12 +84,6 @@ class FormFieldsWrapperMixin:
 
 
 class InitialMixin(FormFieldsWrapperMixin):
-    def __getattr__(self, name):
-        if name in self.__initial__:
-            return self.initial[name]
-        else:
-            raise AttributeError(f'Attribute {name} does not exists.')
-
     def __init__(self):
         super().__init__()
         if not hasattr(self, '__initial__'):

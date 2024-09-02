@@ -101,8 +101,8 @@ def send_submission(request, id):
 
     submission.save()
     
-    from charity.settings import default_queue_name
-    send_submssions.apply_async(args=[submission.id], queue=default_queue_name)
+    from django.conf import settings
+    send_submssions.apply_async(args=[submission.id], queue=settings.DEFAULT_QUEUE_NAME)
 
     return redirect(reverse('submissions:get_submission_details', args=[id]))
 

@@ -18,9 +18,9 @@ from pathlib import Path
 load_dotenv()
 
 
-default_queue_name = os.environ['CELERY_BROKER_QUEUE']
-default_periodic_queue_name = os.environ['CELEREY_PERIODIC_BROKER_QUEUE']
-storage_account_name = os.environ['AZURE_STORAGE_NAME']
+DEFAULT_QUEUE_NAME = os.environ['CELERY_BROKER_QUEUE']
+DEFAULT_PERIODIC_QUEUE_NAME = os.environ['CELEREY_PERIODIC_BROKER_QUEUE']
+STORAGE_ACCOUNT_NAME = os.environ['AZURE_STORAGE_NAME']
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -190,10 +190,10 @@ CKEDITOR_CONFIGS = {
     },
 }
 
-CELERY_BROKER_URL = f'azurestoragequeues://DefaultAzureCredential@{storage_account_name}.queue.core.windows.net/'
+CELERY_BROKER_URL = f'azurestoragequeues://DefaultAzureCredential@{STORAGE_ACCOUNT_NAME}.queue.core.windows.net/'
 CELERY_TASK_QUEUES = (
-    Queue(name=default_queue_name),
-    Queue(name=default_periodic_queue_name),
+    Queue(name=DEFAULT_QUEUE_NAME),
+    Queue(name=DEFAULT_PERIODIC_QUEUE_NAME),
 )
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_RESULT_BACKEND = 'charity.custom_celery_backend:CustomAzureBlockBlobBackend'

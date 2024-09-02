@@ -5,8 +5,7 @@ from django.template import Template, Context, loader
 from django.utils.crypto import get_random_string
 from django.core.files.base import ContentFile
 
-from commons import storagers
-
+from commons.storagers import private
 from .models import Submission, SubmissionSentStatus
 
 
