@@ -3,7 +3,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_GET, require_POST
 
 from commons import DEFAULT_PAGE_SIZE

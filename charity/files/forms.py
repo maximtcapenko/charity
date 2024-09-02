@@ -58,4 +58,4 @@ class CreateAttachmentForm(
 
     class Meta:
         model = Attachment
-        exclude = ['id', 'date_created', 'fund']
+        exclude = ['id', 'date_created', 'fund', 'size', 'storage_provider']

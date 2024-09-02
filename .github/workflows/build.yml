@@ -31,5 +31,6 @@ jobs:
         CELERY_BROKER_QUEUE: django-celery
         CELEREY_PERIODIC_BROKER_QUEUE: django-celery-periodic
         AZURE_STORAGE_NAME: testaccountname
+        DEFAULT_STORAGE_PROVIDER: LOCAL
       run: |
        python charity/manage.py test charity

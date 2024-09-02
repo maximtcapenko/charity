@@ -84,12 +84,6 @@ class FormFieldsWrapperMixin:
 
 
 class InitialMixin(FormFieldsWrapperMixin):
-    def __getattr__(self, name):
-        if name in self.__initial__:
-            return self.initial[name]
-        else:
-            raise AttributeError(f'Attribute {name} does not exists.')
-
     def __init__(self):
         super().__init__()
         if not hasattr(self, '__initial__'):
@@ -106,6 +100,11 @@ class InitialMixin(FormFieldsWrapperMixin):
         if len(params) > 0:
             raise ValueError(f'Missing required parameters: {params}')
 
+    def __getattr__(self, name):
+        if name in self.__initial__:
+            return self.initial[name]
+        
+        return object.__getattribute__(self, name)
 
 class SearchFormMixin:
     def get_search_queryset(self, queryset):

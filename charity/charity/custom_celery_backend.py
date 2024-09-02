@@ -1,5 +1,3 @@
-import os
-
 from azure.core.exceptions import ResourceExistsError, ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob._blob_service_client import BlobServiceClient
@@ -7,7 +5,7 @@ from azure.storage.blob._blob_service_client import BlobServiceClient
 from celery.backends.base import KeyValueStoreBackend
 from celery.utils.log import get_logger
 
-from dotenv import load_dotenv
+from django.conf import settings
 
 from kombu.utils import cached_property
 from kombu.utils.encoding import bytes_to_str
@@ -15,19 +13,15 @@ from kombu.utils.encoding import bytes_to_str
 
 LOGGER = get_logger(__name__)
 
-load_dotenv()
-
-storage_account_name = os.environ['AZURE_STORAGE_NAME']
-
 
 class CustomAzureBlockBlobBackend(KeyValueStoreBackend):
-    def __init__(self, url=None, container_name=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         conf = self.app.conf
 
         self._credential = DefaultAzureCredential()
-        self._connection_string = f"https://{storage_account_name}.blob.core.windows.net"
+        self._connection_string = f"https://{settings.STORAGE_ACCOUNT_NAME}.blob.core.windows.net"
         self._container_name = 'django-celery'
         self._connection_timeout = conf.get(
             'azureblockblob_connection_timeout', 20
@@ -55,7 +49,8 @@ class CustomAzureBlockBlobBackend(KeyValueStoreBackend):
 
     def get(self, key):
         key = bytes_to_str(key)
-        LOGGER.debug('Getting Azure Block Blob %s/%s', self._container_name, key)
+        LOGGER.debug('Getting Azure Block Blob %s/%s',
+                     self._container_name, key)
 
         blob_client = self._blob_service_client.get_blob_client(
             container=self._container_name,
