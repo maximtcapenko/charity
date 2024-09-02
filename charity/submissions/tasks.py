@@ -1,11 +1,12 @@
 from celery import shared_task
 
-from django.utils.safestring import mark_safe
-from django.template import Template, Context, loader
-from django.utils.crypto import get_random_string
+from django.conf import settings
 from django.core.files.base import ContentFile
+from django.template import Template, Context, loader
+from django.utils.safestring import mark_safe
+from django.utils.crypto import get_random_string
 
-from commons.storagers import private
+from commons.storagers import storage_provider_resolver
 from .models import Submission, SubmissionSentStatus
 
 
@@ -51,6 +52,8 @@ def send_submssions(submission_id):
     })
 
     name = f'emails/{get_random_string(10)}.html'
-    storagers.private.save(name, ContentFile(result.encode(), name))
+    storage_provider = storage_provider_resolver(settings.DEFAULT_STORAGE_PROVIDER)
+    storage = storage_provider(submission.fund)
+    storage.save(name, ContentFile(result.encode(), name))
     submission.status = SubmissionSentStatus.SENT
     submission.save()

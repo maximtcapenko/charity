@@ -22,6 +22,8 @@ DEFAULT_QUEUE_NAME = os.environ['CELERY_BROKER_QUEUE']
 DEFAULT_PERIODIC_QUEUE_NAME = os.environ['CELEREY_PERIODIC_BROKER_QUEUE']
 STORAGE_ACCOUNT_NAME = os.environ['AZURE_STORAGE_NAME']
 
+DEFAULT_STORAGE_PROVIDER = os.environ['DEFAULT_STORAGE_PROVIDER']
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='attachment',
             name='file',
-            field=commons.fields.CustomFileField(upload_to='files'),
+            field=commons.fields.FundFileField(upload_to='files'),
         ),
     ]
