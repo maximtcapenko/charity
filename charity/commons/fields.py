@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models.fields.files import FieldFile
 
 
-from .storagers import storage_provider_resolver
+from .storages import storage_provider_resolver
 
 
 class FundStorageFieldFile(FieldFile):
