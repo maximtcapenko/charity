@@ -30,3 +30,20 @@ def storage_provider_resolver(type):
             f'Storage with type {type} is not implemented')
 
     return storage
+
+
+class AzureStaticStorage(AzureStorage):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.account_name = settings.STORAGE_ACCOUNT_NAME
+        self.token_credential = DefaultAzureCredential()
+        self.azure_container = 'static'
+
+class AzureMediaStorage(AzureStorage):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.account_name = settings.STORAGE_ACCOUNT_NAME
+        self.token_credential = DefaultAzureCredential()
+        self.azure_container = 'media'

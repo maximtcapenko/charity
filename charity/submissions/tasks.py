@@ -6,7 +6,7 @@ from django.template import Template, Context, loader
 from django.utils.safestring import mark_safe
 from django.utils.crypto import get_random_string
 
-from commons.storagers import storage_provider_resolver
+from commons.storages import storage_provider_resolver
 from .models import Submission, SubmissionSentStatus
 
 

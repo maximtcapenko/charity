@@ -34,9 +34,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-60pd&rp^rbbot90kvenmraqi78ei6@hew(6+w4zuipw%thw8**'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+#DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 EAV2_PRIMARY_KEY_FIELD = "django.db.models.UUIDField"
 
@@ -79,10 +79,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'charity.urls'
-
-STATICFILES_DIRS = [
-    BASE_DIR / "staticfiles"
-]
 
 TEMPLATES = [
     {
@@ -145,11 +141,17 @@ USE_TZ = True
 
 
 MEDIA_ROOT = BASE_DIR / "media"
-MEDIA_URL = 'media/'
+MEDIA_URL = f'https://{STORAGE_ACCOUNT_NAME}.blob.core.windows.net/media/'
+DEFAULT_FILE_STORAGE = 'commons.storages.AzureMediaStorage'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "staticfiles"
+]
+STATICFILES_STORAGE = 'commons.storages.AzureStaticStorage'
+STATIC_URL = f'https://{STORAGE_ACCOUNT_NAME}.blob.core.windows.net/static/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
