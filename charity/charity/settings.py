@@ -10,19 +10,26 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
+import environ
 
 from dotenv import load_dotenv
 from kombu import Queue
 from pathlib import Path
 
 load_dotenv()
+env = environ.Env()
 
+AZURE_AD_CLIENT_ID = env.get_value('AZURE_CLIENT_ID')
+AZURE_AD_AUTHORITY = env.get_value('AZURE_AD_AUTHORITY')
+AZURE_AD_CLIENT_SECRET = env.get_value('AZURE_CLIENT_SECRET')
+AZURE_AD_REDIRECT_URI = env.get_value('AZURE_AD_REDIRECT_URI')
+AZURE_AD_SCOPE = ['email']
 
-DEFAULT_QUEUE_NAME = os.environ['CELERY_BROKER_QUEUE']
-DEFAULT_PERIODIC_QUEUE_NAME = os.environ['CELEREY_PERIODIC_BROKER_QUEUE']
-STORAGE_ACCOUNT_NAME = os.environ['AZURE_STORAGE_NAME']
+DEFAULT_QUEUE_NAME = env.get_value('CELERY_BROKER_QUEUE')
+DEFAULT_PERIODIC_QUEUE_NAME = env.get_value('CELEREY_PERIODIC_BROKER_QUEUE')
+STORAGE_ACCOUNT_NAME = env.get_value('AZURE_STORAGE_NAME')
 
-DEFAULT_STORAGE_PROVIDER = os.environ['DEFAULT_STORAGE_PROVIDER']
+DEFAULT_STORAGE_PROVIDER = env.get_value('DEFAULT_STORAGE_PROVIDER')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,14 +38,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-60pd&rp^rbbot90kvenmraqi78ei6@hew(6+w4zuipw%thw8**'
+SECRET_KEY = env.get_value('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = True
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
 EAV2_PRIMARY_KEY_FIELD = "django.db.models.UUIDField"
+CSRF_TRUSTED_ORIGINS = [env.get_value('CSRF_TRUSTED_ORIGINS')]
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 # Application definition
 
@@ -70,6 +80,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'commons.middlewares.TokenRefreshMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -104,12 +115,12 @@ ATOMIC_REQUESTS = True
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': environ.Env().db('DB_URL')
 }
 
+MIGRATION_MODULES = {
+    'eav': 'customfields.eav_migrations',
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -168,7 +179,7 @@ LOGGING = {
     'loggers': {
         'django.db.backends': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': env.get_value('DJANGO_LOG_LEVEL', default='INFO'),
         },
     },
 }

@@ -7,6 +7,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+*.deployment
 .Python
 *.pid
 build/
@@ -130,6 +131,7 @@ ENV/
 env.bak/
 venv.bak/
 
+.vscode
 media/
 private/
 # Spyder project settings

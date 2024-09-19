@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('eav', '0011_alter_attribute_id_alter_enumgroup_id_and_more'),
+        ('eav', '0009_enchance_naming'),
         ('customfields', '0002_customfield_is_public_alter_customfield_attribute'),
     ]
 

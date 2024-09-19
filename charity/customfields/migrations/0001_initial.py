@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('funds', '0006_contributor_cover'),
-        ('eav', '0011_alter_attribute_id_alter_enumgroup_id_and_more'),
+        ('eav', '0009_enchance_naming'),
         ('contenttypes', '0002_remove_content_type_name'),
     ]
 

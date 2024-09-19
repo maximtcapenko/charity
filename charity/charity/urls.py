@@ -17,14 +17,16 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include, reverse
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
 
 from commons import views as common_views
 
 urlpatterns = [
-    path("accounts/login/", auth_views.LoginView.as_view(template_name="login.html")),
-    path("accounts/logout/", auth_views.LogoutView.as_view(next_page='funds:get_current_details'), name='logout'),
+    path("accounts/login/", common_views.azure_ad_login, name='login'),
+    path('accounts/login/callback/', common_views.azure_ad_callback, name='azure_ad_callback'),
+    path('accounts/approve_waiting', common_views.user_is_not_approved, name='user_is_not_approved'),
+    path("accounts/logout/", common_views.ad_logout, name='logout'),
     path('admin/', admin.site.urls),
     path('budgets/', include('budgets.urls')),
     path('comments/', include('comments.urls')),
