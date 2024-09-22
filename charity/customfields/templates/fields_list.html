@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-{% render_partial 'funds.views.get_current_details_partial' title='Custom fields' %}
+{% include "partials/header.html" with title='Custom fields' %}
 <div>
   <a href="{% url 'customfields:add_custom_field' %}" class="btn btn-link">Add field</a>
 </div>

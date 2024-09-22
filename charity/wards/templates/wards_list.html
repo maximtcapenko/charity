@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-{% render_partial 'funds.views.get_current_details_partial' title='Adoptees' %}
+{% include "partials/header.html" with title=title %}
 <div>
   <a href="{% url 'wards:create' %}" class="btn btn-link">Add ward</a>
 </div>

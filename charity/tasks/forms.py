@@ -244,7 +244,7 @@ class ActivateTaskStateForm(
         exclude = [
             'id', 'date_created', 'is_done', 'is_review_requested',
             'comments', 'request_review',
-            'approvement', 'completion_date', 'author', 'approvements']
+            'approvement', 'completion_date', 'author', 'approvements', 'attachments']
 
 
 class ApproveTaskStateForm(

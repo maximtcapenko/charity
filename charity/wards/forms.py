@@ -2,7 +2,7 @@ from django import forms
 from django.db.models import Exists, OuterRef
 
 from commons.mixins import FormControlMixin, FormFieldsWrapperMixin, InitialMixin, \
-    SearchByNameMixin, SearchFormMixin
+    SearchByNameMixin, SearchFormMixin, FileUploadMixin
 from commons.functional import resolve_many_2_many_attr_path
 from filters.models import Filter
 
@@ -13,7 +13,8 @@ from tasks.models import Task
 from .models import Ward
 
 
-class CreateWardForm(BaseCustomFieldsModelForm, FormControlMixin):
+class CreateWardForm(BaseCustomFieldsModelForm, FormControlMixin,
+                     FileUploadMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         FormControlMixin.__init__(self)
@@ -22,7 +23,7 @@ class CreateWardForm(BaseCustomFieldsModelForm, FormControlMixin):
 
     class Meta:
         model = Ward
-        exclude = ['id', 'attachments', 'cover', 'comments']
+        exclude = ['id', 'attachments', 'comments']
 
 
 class SearchWardForm(

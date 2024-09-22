@@ -2,7 +2,7 @@
 {% block content %}
 {% load customtags %}
 {% load submissionfilters %}
-{% render_partial 'funds.views.get_current_details_partial' title='Wards submission' %}
+{% include "partials/header.html" with title='Wards submission' %}
 <div>
   <a href="{% url 'submissions:add_submission' %}" class="btn btn-link">Add submission</a>
 </div>

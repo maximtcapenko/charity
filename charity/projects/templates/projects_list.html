@@ -3,7 +3,7 @@
 {% load customtags %}
 {% load projectfilters %}
 {% load projectstags %}
-{% render_partial 'funds.views.get_current_details_partial' title='Projects' %}
+{% include "partials/header.html" with title='Projects' %}
 <div>
   <a href="{% url 'projects:create' %}" class="btn btn-link">Add project</a>
 </div>
