@@ -20,11 +20,21 @@
           <tr>
             <td class="col-3 align-middle">
               <h6>
+                <img src="{{file.thumb.url}}" class="rounded"/>
                 <i class="fa-solid fa-paperclip"></i>
                 <a href="{% url 'files:get_file' file.id %}">
                   {{ file.name }} </a>
               </h6>
               {{ file.date_created }}
+            </td>
+            <td class="align-middle">
+              <div class="form-check form-switch">
+                <label class="form-check-label">Public</label>
+                <input type="checkbox"
+                {% if  file.is_public%}
+                    checked
+                {% endif %} class="form-check-input" />
+              </div>
             </td>
             <td class="align-middle">
               <span class="badge bg-primary">
@@ -48,7 +58,9 @@
                    class="post-request"
                  {% else %}
                    class="link-disabled"
-                 {% endif %}>Remove</a>
+                 {% endif %}>
+                 <i class="fa-regular fa-trash-can"></i>
+                </a>
             </td>
           </tr>
         {% endfor %}

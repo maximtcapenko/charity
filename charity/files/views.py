@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods, require_GET, require_POST
 
@@ -57,6 +57,15 @@ def remove_file(request, id, model, target_id):
 
     return redirect(return_url)
 
+@user_passes_test(user_should_be_volunteer)
+@require_POST
+def change_file_access(request, id, model, target_id):
+    content_type = ContentType.objects.get(model=model)
+    files = resolve_many_2_many_attr(Attachment, content_type, target_id)
+    file = get_object_or_404(files, pk=id)
+    file.is_public = not file.is_public
+
+    return HttpResponse()
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
@@ -84,4 +93,4 @@ def get_list(request, model, target_id):
 @require_GET
 def get_file(request, id):
     file = get_object_or_404(Attachment, pk=id)
-    return FileResponse(file.file, as_attachment=True, filename=file.name)
+    return FileResponse(file.file, as_attachment=True, filename=file.file.name)
