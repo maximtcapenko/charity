@@ -9,5 +9,6 @@ urlpatterns = [
     path('content_types/<str:model>/items/<uuid:target_id>/attach/',
          views.attach_file, name='attach_file'),
     path('<uuid:id>/content_types/<str:model>/items/<uuid:target_id>/remove/',
-         views.remove_file, name='remove_file')
+         views.remove_file, name='remove_file'),
+    path('<uuid:id>/content_types/<str:model>/items/<uuid:target_id>/change_access/', views.change_file_access, name='change_file_access')
 ]

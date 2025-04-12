@@ -6,7 +6,7 @@ from django.views.decorators.http import require_http_methods, require_GET
 from django.urls import reverse
 
 from commons import DEFAULT_PAGE_SIZE
-from commons.functional import user_should_be_volunteer, render_generic_form
+from commons.functional import user_should_be_volunteer, render_generic_form, DictObjectWrapper
 
 from .forms import CreateProcessForm, CreateProcessStateForm
 from .models import Process, ProcessState
@@ -71,16 +71,14 @@ def edit_state_details(request, id, state_id):
             'initial':  {
                 'process': process
             }
-        })
+        }, read_only=process.projects.exists())
 
 
 @user_passes_test(user_should_be_volunteer)
 @require_GET
 def get_list(request):
     queryset = Process.objects.filter(
-        models.Q(fund_id=request.user.fund.id),
-        models.Q(projects__isnull=True) |
-        models.Q(projects__is_closed=False)) \
+        models.Q(fund_id=request.user.fund.id)) \
         .annotate(states_count=models.Count('states', distinct=True)) \
         .values('id', 'name', 'date_created', 'is_inactive', 'states_count') \
         .all()
@@ -104,6 +102,6 @@ def get_details(request, id):
                 'is_inactive', 'notes', 'active_project_count'), pk=id)
 
     return render(request, 'process_details.html', {
-        'process': process,
+        'process': DictObjectWrapper(process),
         'states': ProcessState.objects.filter(process__id=process['id']).all()
     })

@@ -89,10 +89,10 @@
     </nav>
     <div id="layoutSidenav">
       <div id="layoutSidenav_nav">
-        <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+        <nav class="sb-sidenav accordion sb-sidenav" id="sidenavAccordion">
           <div class="sb-sidenav-menu">
             <div class="nav">
-              <div class="sb-sidenav-menu-heading">General</div>
+              <div class="sb-sidenav-menu-heading"></div>
               <a class="nav-link" href="{% url 'funds:get_current_details' %}">
                 <div class="sb-nav-link-icon">
                   <i class="fa-solid fa-house"></i>
@@ -169,8 +169,9 @@
               </a>
             </div>
           </div>
-          <div class="sb-sidenav-footer">
-            <div class="small">Logged in at:</div>{{ user.last_login }}
+          <div class="sb-sidenav-footer bg-light">
+            <div class="small text-muted">Logged in at:</div>
+            <div class="text-muted">{{ user.last_login }}</div>
           </div>
         </nav>
       </div>

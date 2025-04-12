@@ -21,7 +21,7 @@ def user_should_be_superuser(user):
     return user.is_superuser
 
 
-def render_generic_form(request, form_class, context):
+def render_generic_form(request, form_class, context, read_only=None):
     params = {}
     return_url = context.get('return_url')
     title = context.get('title')
@@ -60,7 +60,7 @@ def render_generic_form(request, form_class, context):
         else:
             form = form_class(request.POST, **params)
 
-        if form.is_valid():
+        if form.is_valid() and not read_only:
             form.save()
             return redirect(return_url)
         else:
@@ -75,10 +75,16 @@ def render_generic_form(request, form_class, context):
         elif get_form_initial:
             params['initial'] = get_form_initial
 
+        form = form_class(**params)
+        if read_only:
+            for field in form.fields:
+                form.fields[field].disabled = True
+
         return render(request, form_template, {
             'return_url': return_url,
             'title': title,
-            'form': form_class(**params)
+            'form': form,
+            'read_only': read_only
         })
     else:
         return HttpResponseNotAllowed([request.method])

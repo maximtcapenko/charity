@@ -43,8 +43,10 @@ class CreateAttachmentForm(
         return self.cleaned_data
 
     def save(self):
+        
         self.instance.fund = self.fund
         self.instance.author = self.author
+
         self.instance.save()
 
         target_attr = resolve_many_2_many_attr_path(
@@ -58,4 +60,4 @@ class CreateAttachmentForm(
 
     class Meta:
         model = Attachment
-        exclude = ['id', 'date_created', 'fund', 'size', 'storage_provider']
+        exclude = ['id', 'date_created', 'fund', 'size', 'storage_provider', 'thumb']
