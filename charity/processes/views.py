@@ -71,7 +71,7 @@ def edit_state_details(request, id, state_id):
             'initial':  {
                 'process': process
             }
-        })
+        }, read_only=process.projects.exists())
 
 
 @user_passes_test(user_should_be_volunteer)
