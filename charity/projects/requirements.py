@@ -29,9 +29,7 @@ def ward_should_not_be_used_by_any_tasks(ward, project):
     if hasattr(ward, 'project_tasks_exists'):
         return not ward.project_tasks_exists
     else:
-        return not project.wards.filter(
-            Q(id=ward.id) &
-            Exists(project.tasks.filter(ward=OuterRef('pk')))).exists()
+        return not project.tasks.filter(ward=ward).exists()
 
 
 def reviewer_should_not_be_used_by_any_tasks(reviewer, project):

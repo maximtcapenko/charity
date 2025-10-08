@@ -15,7 +15,6 @@ class DictObjectWrapper:
         if not issubclass(field.__class__, fields.files.FileField):
             return None
 
-        field.storage
         instance = DictObjectWrapper.DynamicObject()
         instance.url = field.storage.url(value)
         return instance
