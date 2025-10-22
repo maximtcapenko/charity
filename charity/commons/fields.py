@@ -1,4 +1,3 @@
-from typing import Any
 from django.db import models
 from django.db.models.fields.files import FieldFile
 

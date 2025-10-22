@@ -41,14 +41,13 @@ def validate_field_name(value):
 class CustomFieldCreateForm(forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['fund', 'content_type']
 
-    field_order = ['label', 'name', 'linked_process', 'field_type', 'required']
+    field_order = ['label', 'name', 'field_type', 'required']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         InitialMixin.__init__(self)
 
         self.form.fund.widget = forms.HiddenInput()
-        self.form.linked_process.queryset = Process.objects.filter(fund=self.fund)
         if not self.instance._state.adding:
             self.form.name.initial = self.instance.attribute.slug
             self.form.name.disabled = True

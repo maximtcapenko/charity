@@ -1,4 +1,4 @@
-from django.db.models import Exists, Q, OuterRef
+from django.db.models import Q
 
 
 def project_is_ready_to_be_completed(project):
