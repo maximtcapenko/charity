@@ -10,6 +10,7 @@ from customfields.forms import BaseCustomFieldsModelForm
 from projects.models import Project
 from tasks.models import Task
 
+from commons.widgets import ImagePreviewWidget
 from .models import Ward
 
 
@@ -20,6 +21,10 @@ class CreateWardForm(BaseCustomFieldsModelForm, FormControlMixin,
         FormControlMixin.__init__(self)
 
         self.fields['fund'].widget = forms.HiddenInput()
+        self.fields['cover'].widget = ImagePreviewWidget(
+            attrs={'class': 'form-control'},
+            accept='image/jpeg, image/png'
+        )
 
     class Meta:
         model = Ward
@@ -28,23 +33,25 @@ class CreateWardForm(BaseCustomFieldsModelForm, FormControlMixin,
 
 class SearchWardForm(
     forms.Form, FormControlMixin, SearchByNameMixin, SearchFormMixin, FormFieldsWrapperMixin):
-    __resolvers__ = {}
 
-    def __init__(self, fund, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        SearchByNameMixin.__init__(self)
-        FormFieldsWrapperMixin.__init__(self)
-
-        self.form.in_work_only = forms.BooleanField(
+    in_work_only = forms.BooleanField(
             label='In work', required=False,
             widget=forms.CheckboxInput(attrs={
                 'div_class': 'col-2',
                 'onchange': 'javascript:this.form.submit()'}))
-        self.form.not_in_work = forms.BooleanField(
+    
+    not_in_work = forms.BooleanField(
             label='Available', required=False,
             widget=forms.CheckboxInput(attrs={
                 'div_class': 'col-2',
                 'onchange': 'javascript:this.form.submit()'}))
+
+    def __init__(self, fund, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__resolvers__ = {}
+        
+        SearchByNameMixin.__init__(self)
+        FormFieldsWrapperMixin.__init__(self)
 
         filter = forms.ModelChoiceField(queryset=Filter.objects.filter(
             fund=fund, content_type__model='ward'), required=False, label='Filter')
@@ -54,7 +61,6 @@ class SearchWardForm(
 
         self.form.filter = filter
 
-        self.__resolvers__[self.form.filter.name] = self.apply_customfields_filter
         self.__resolvers__[self.form.in_work_only.name] = lambda field: Exists(
             Task.objects.filter(is_done=False, ward=OuterRef('pk')))
         self.__resolvers__[self.form.not_in_work.name] = lambda field: ~Exists(

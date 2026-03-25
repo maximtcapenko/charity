@@ -48,17 +48,18 @@ class UpdateProjectForm(CreateProjectForm):
 
 class SearchProjetForm(
     forms.Form, FormControlMixin, SearchByNameMixin, SearchFormMixin, FormFieldsWrapperMixin):
-    __resolvers__ = {
-        'active_only': lambda field: Q(is_closed=False)
-    }
 
+    active_only = forms.BooleanField(
+            label='Active', required=False, widget=forms.CheckboxInput(attrs={'onchange': 'javascript:this.form.submit()'}))
+    
     def __init__(self, fund, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.__resolvers__ = {
+            'active_only': lambda field: Q(is_closed=False)
+        }
+
         SearchByNameMixin.__init__(self)
         FormFieldsWrapperMixin.__init__(self)
-
-        self.form.active_only = forms.BooleanField(
-            label='Active', required=False, widget=forms.CheckboxInput(attrs={'onchange': 'javascript:this.form.submit()'}))
 
         self.form.leader = forms.ModelChoiceField(label='Leader', required=False, queryset=User.objects.filter(
             Q(volunteer_profile__fund=fund) & Exists(Project.objects.filter(fund=fund, leader=OuterRef('pk')))))

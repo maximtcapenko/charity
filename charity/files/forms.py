@@ -1,5 +1,6 @@
 from django import forms
 
+from commons.widgets import ImagePreviewWidget
 from commons.functional import resolve_many_2_many_attr_path, \
     resolve_rel_attr_path
 from commons.mixins import FormControlMixin, FileUploadMixin, \
@@ -21,6 +22,10 @@ class CreateAttachmentForm(
         FormControlMixin.__init__(self)
 
         self.form.author.widget = forms.HiddenInput()
+        self.form.file.widget = ImagePreviewWidget(
+            attrs={'class': 'form-control'},
+            accept='image/jpeg, image/png'
+        )
 
     def clean(self):
         content_type = self.target_content_type
@@ -46,7 +51,7 @@ class CreateAttachmentForm(
         
         self.instance.fund = self.fund
         self.instance.author = self.author
-
+        self.instance.type = Attachment.AttachmentType.IMG
         self.instance.save()
 
         target_attr = resolve_many_2_many_attr_path(
@@ -60,4 +65,4 @@ class CreateAttachmentForm(
 
     class Meta:
         model = Attachment
-        exclude = ['id', 'date_created', 'fund', 'size', 'storage_provider', 'thumb']
+        exclude = ['id', 'date_created', 'fund', 'size', 'storage_provider', 'thumb', 'type']

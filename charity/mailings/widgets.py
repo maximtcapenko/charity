@@ -4,37 +4,42 @@ from eav.models import Attribute
 
 class TemplateFieldsWidget(Widget):
     template_name = 'partials/template_fields_list.html'
-    fetch_url = ''
-    relation_id = ''
-    content_type = None
+
+    def __init__(self, attrs=None, relation_id=None, fetch_url=None, content_type=None):
+        super().__init__(attrs)
+        self.relation_id = relation_id
+        self.fetch_url = fetch_url
+        self.content_type = content_type
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
+        widget_context = context['widget']
+        widget_context['relation_id'] = self.relation_id
+        widget_context['fetch_url'] = self.fetch_url
 
-        context['widget']['relation_id'] = self.relation_id
-        context['widget']['fetch_url'] = self.fetch_url
-        custom_fields = list()
-
+        custom_fields = []
         if self.content_type:
-            custom_fields = list(Attribute.objects.filter(
-                entity_ct__in=[self.content_type]).all())
+            # Fetch EAV attributes
+            custom_fields.extend(Attribute.objects.filter(
+                entity_ct=self.content_type
+            ))
 
-            fields = self.content_type.model_class()._meta.fields
-            filtered_fields = list(filter(lambda x: x.name in ('name',), fields))
-            if filtered_fields:
-                for field in filtered_fields:
-                    custom_fields.append(field)
+            # Fetch specific model fields (e.g., 'name')
+            model_class = self.content_type.model_class()
+            if model_class:
+                fields = model_class._meta.fields
+                custom_fields.extend([f for f in fields if f.name == 'name'])
 
-        context['widget']['custom_fields'] = custom_fields
-
+        widget_context['custom_fields'] = custom_fields
         return context
 
 
 class TemplateFieldsField(Field):
     def __init__(self, relation_id=None, fetch_url=None, **kwargs):
-        self.widget = TemplateFieldsWidget
-        self.widget.relation_id = relation_id
-        self.widget.fetch_url = fetch_url
+        kwargs['widget'] = TemplateFieldsWidget(
+            relation_id=relation_id,
+            fetch_url=fetch_url
+        )
         super().__init__(**kwargs)
 
     @property
@@ -42,5 +47,5 @@ class TemplateFieldsField(Field):
         return self.widget.content_type
 
     @content_type.setter
-    def content_type(self, content_type):
-        self.widget.content_type = content_type
+    def content_type(self, value):
+        self.widget.content_type = value

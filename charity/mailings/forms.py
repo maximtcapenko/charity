@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Exists, Q, OuterRef
 
-from ckeditor.widgets import CKEditorWidget
+from django_prose_editor.widgets import ProseEditorWidget
 from django.urls import reverse
 
 from commons.mixins import FormControlMixin, InitialMixin
@@ -84,8 +84,7 @@ class AddMailingTemplateForm(forms.ModelForm, FormControlMixin, InitialMixin):
             info.content_type = self.instance.content_type
 
         self.form.info = info
-        self.form.template.widget = CKEditorWidget(
-            config_name='basic_ckeditor')
+        self.form.template.widget = ProseEditorWidget()
 
         for field in self.fields:
             if hasattr(self.fields[field], 'widget'):

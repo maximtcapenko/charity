@@ -1,3 +1,4 @@
-<div>
-    <strong>{{label|capfirst}}</strong>: {{value}}
+<div class="field-display mb-1">
+  <span class="fw-bold">{{ label|capfirst }}:</span> 
+  <span>{{ value|default_if_none:"" }}</span>
 </div>

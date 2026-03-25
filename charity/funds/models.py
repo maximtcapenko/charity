@@ -101,6 +101,6 @@ Fund.add_to_class('total_volunteers_count', property(
     fget=fund_total_volunteers_count))
 
 
-fund_cached_property = cached_property(user_fund, name='fund')
+fund_cached_property = cached_property(user_fund)
 User.add_to_class('fund', fund_cached_property)
 fund_cached_property.__set_name__(User, 'fund')

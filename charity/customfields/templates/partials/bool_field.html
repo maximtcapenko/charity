@@ -1,10 +1,8 @@
-<div>
-    <strong>{{label|capfirst}}</strong>: 
-        <span class="badge bg-primary">
-            {% if value %}
-                yes
-            {% else %}
-                no
-            {% endif %}
-        </span>
+<div class="field-display mb-1">
+  <span class="fw-bold">{{ label|capfirst }}:</span>
+  {% if value %}
+    <span class="badge bg-success">Yes</span>
+  {% else %}
+    <span class="badge bg-secondary">No</span>
+  {% endif %}
 </div>

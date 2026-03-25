@@ -73,7 +73,7 @@ INSTALLED_APPS = [
     'submissions.apps.SubmissionsConfig',
     'wards.apps.WardsConfig',
     'eav',
-    'ckeditor',
+    'django_prose_editor',
     'telemetry.apps.TelemetryConfig'
 ]
 
@@ -181,27 +181,6 @@ LOGGING = {
             'handlers': ['console'],
             'level': env.get_value('DJANGO_LOG_LEVEL', default='INFO'),
         },
-    },
-}
-
-CKEDITOR_CONFIGS = {
-    'basic_ckeditor': {
-        'toolbar': 'Custom',
-        'toolbar_Custom': [
-            {'name': 'editing', 'items': [
-                'Find', 'Replace', '-', 'SelectAll']},
-            {'name': 'basicstyles',
-             'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
-            {'name': 'paragraph',
-             'items': ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', '-',
-                       'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl']},
-            {'name': 'styles', 'items': [
-                'Styles', 'Format', 'Font', 'FontSize']},
-            {'name': 'colors', 'items': ['TextColor', 'BGColor']},
-        ],
-
-        # 'height': 300,
-        'width': '100%',
     },
 }
 

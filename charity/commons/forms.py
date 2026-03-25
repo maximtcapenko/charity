@@ -36,14 +36,15 @@ class CustomLabeledModelChoiceField(forms.ModelChoiceField):
 
 
 class ApprovedOnlySearchForm(forms.Form, FormControlMixin, SearchFormMixin):
-    __resolvers__ = {
-        'approved_only': lambda field: Q(approvement__is_rejected=False)
-    }
 
     approved_only = forms.BooleanField(label='Approved', required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        self.__resolvers__ = {
+        'approved_only': lambda field: Q(approvement__is_rejected=False)
+    }
         FormControlMixin.__init__(self)
 
         self.fields['approved_only'].widget.attrs.update({
