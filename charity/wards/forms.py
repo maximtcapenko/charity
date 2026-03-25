@@ -61,6 +61,7 @@ class SearchWardForm(
 
         self.form.filter = filter
 
+        self.__resolvers__[self.form.filter.name] = self.apply_customfields_filter
         self.__resolvers__[self.form.in_work_only.name] = lambda field: Exists(
             Task.objects.filter(is_done=False, ward=OuterRef('pk')))
         self.__resolvers__[self.form.not_in_work.name] = lambda field: ~Exists(
