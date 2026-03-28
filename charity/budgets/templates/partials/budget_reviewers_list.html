@@ -1,41 +1,76 @@
 {% load budgetfilters %}
-<div>
-    <a  {% if budget|budget_reviewer_can_be_added:user %}
-          href="{% url 'budgets:add_budget_reviewer' budget.id %}" 
-          class="btn btn-link"
-        {% else %}
-          class="btn btn-link disabled"
-        {% endif %}>Add reviewer</a>
-</div>
 {% load customtags %}
-<div class="card mb-4">
-    <div class="card-header">
-      {{items_count}} <i class="fas fa-user-friends"></i>
-      Reviewers
-    </div>
-    <div class="card-body">
-      <table class="table table-striped">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="mb-0 text-muted">
+    <i class="fa-solid fa-users-gear me-2"></i>Assigned Reviewers
+  </h5>
+  <a {% if budget|budget_reviewer_can_be_added:user %} href="{% url 'budgets:add_budget_reviewer' budget.id %}"
+    class="btn btn-sm btn-primary shadow-sm" {% else %} class="btn btn-sm btn-primary disabled shadow-sm" {% endif %}>
+    <i class="fa-solid fa-user-plus me-1"></i> Add Reviewer
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-light border-bottom-0 py-3 d-flex justify-content-between align-items-center">
+    <span class="small fw-bold text-muted text-uppercase">Member List</span>
+    <span class="badge bg-white text-dark border fw-normal">{{ items_count }} Records</span>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase">
+          <tr>
+            <th class="ps-4" style="width: 70%;">Reviewer Name & Title</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
         <tbody>
           {% for reviewer in page %}
-            <tr>
-              <td>
-                <h6>
-                  {{ reviewer.volunteer_profile|cover }}
-                  <a href="{% url 'budgets:get_reviewer_details' budget.id reviewer.id %}">{{ reviewer.username }}</a>
-                </h6>
-                {{ reviewer.volunteer_profile.title }}
-              </td>
-              <td class="align-middle">
-                <a href="{% url 'budgets:remove_budget_reviewer' budget.id reviewer.id %}" class="post-request">
-                  Remove
+          <tr>
+            <td class="ps-4">
+              <div class="d-flex flex-column">
+                <div data-bs-toggle="tooltip" title="Reviewer: {{ reviewer.username }}">
+                  {% include 'partials/user_image_part.html' with user=reviewer %}
+                </div>
+                <div class="mt-1" style="padding-left: 42px;">
+                  <small class="text-muted italic">
+                    {{ reviewer.volunteer_profile.title|default:"Volunteer Member" }}
+                  </small>
+                </div>
+              </div>
+            </td>
+            <td class="text-end pe-4">
+              <div class="btn-group shadow-sm">
+                <a href="{% url 'budgets:get_reviewer_details' budget.id reviewer.id %}"
+                  class="btn btn-sm btn-light border" title="View Profile">
+                  <i class="fa-solid fa-eye text-primary"></i>
                 </a>
-              </td>
-             </tr>
+                <a href="{% url 'budgets:remove_budget_reviewer' budget.id reviewer.id %}"
+                  class="btn btn-sm btn-light border text-danger post-request" title="Remove from Budget">
+                  <i class="fa-solid fa-user-minus"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="2" class="text-center py-5 text-muted">
+              <i class="fa-solid fa-users-slash fs-2 mb-2 d-block opacity-25"></i>
+              No reviewers assigned to this budget.
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
-      {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
-  {% include 'generic_errormodal.html' %}
-  {% include 'partials/js.html' %}
+
+  <div class="card-footer bg-white border-0 py-3">
+    {% include 'paginator.html' with obj_page=page %}
+  </div>
+</div>
+
+{% include 'generic_errormodal.html' %}
+{% include 'partials/js.html' %}

@@ -1,49 +1,104 @@
 {% load customtags %}
 {% load fundtags %}
-<div>
-    <a href="{% url 'funds:add_contribution' %}" class="btn btn-link" >Add contribution</a>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="mb-0 text-muted"><i class="fa-solid fa-hand-holding-dollar me-2 text-success"></i>Incoming Contributions
+  </h5>
+  <a href="{% url 'funds:add_contribution' %}" class="btn btn-sm btn-success shadow-sm px-3">
+    <i class="fa-solid fa-plus me-1"></i> Add Contribution
+  </a>
 </div>
-<div class="card mb-4">
-  <div class="card-header">
-    {{ items_count }} <i class="fa-solid fa-money-bills"></i>
-    Contributions
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-light border-bottom-0 py-3 d-flex justify-content-between align-items-center">
+    <span class="small fw-bold text-muted text-uppercase">Financial Records</span>
+    <span class="badge bg-white text-dark border fw-normal">{{ items_count }} Records</span>
   </div>
-  <div class="card-body">
-    <table class="table table-striped">
-      <tbody>
-        {% for contribution in page %}
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase">
           <tr>
-            <td class="col-3">
-              <h6>
-                {{ contribution.contributor|thumbnail:50 }}
-                <a href="{% url 'funds:get_contribution_details' contribution.id %}">{{ contribution.contributor.name }}</a>
-              </h6>
-              {{ contribution.contribution_date }}
+            <th class="ps-4" style="width: 30%;">Contributor & Date</th>
+            <th style="width: 20%;">Amount</th>
+            <th style="width: 25%;">Notes</th>
+            <th style="width: 15%;">Logged By</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for contribution in page %}
+          <tr>
+            <td class="ps-4">
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                  {{ contribution.contributor|thumbnail:40 }}
+                </div>
+                <div class="ms-3">
+                  <h6 class="mb-0">
+                    <a href="{% url 'funds:get_contribution_details' contribution.id %}"
+                      class="text-decoration-none fw-bold text-dark">
+                      {{ contribution.contributor.name }}
+                    </a>
+                  </h6>
+                  <small class="text-muted" style="font-size: 0.75rem;">
+                    <i class="fa-regular fa-calendar-check me-1"></i>{{ contribution.contribution_date|date:"M d, Y" }}
+                  </small>
+                </div>
+              </div>
             </td>
-            <td class="align-middle">
-              <i class="fa-solid fa-dollar-sign fa-xs"></i>
-              {{ contribution.amount|floatformat:'2g' }}
+            <td>
+              <div class="fw-bold text-success fs-5">
+                <i class="fa-solid fa-dollar-sign fa-xs"></i>
+                {{ contribution.amount|floatformat:'2g' }}
+              </div>
             </td>
-            <td class="align-middle">{{ contribution.notes }}</td>
-            <td class="align-middle">
-              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Author">
-                {% include 'partials/user_image_part.html' with user=contribution.author %}
-              </span>
+            <td>
+              <div class="text-muted small text-truncate" style="max-width: 220px;" data-bs-toggle="tooltip"
+                title="{{ contribution.notes }}">
+                {{ contribution.notes|default:"-" }}
+              </div>
             </td>
-            <td class="align-middle">
-              {% if contribution|contribution_is_ready_to_be_removed:user  %}
+            <td>
+              {% include 'partials/user_image_part.html' with user=contribution.author %}
+            </td>
+            <td class="text-end pe-4">
+              <div class="btn-group shadow-sm">
+                <a href="{% url 'funds:get_contribution_details' contribution.id %}" class="btn btn-sm btn-light border"
+                  title="View Details">
+                  <i class="fa-solid fa-eye text-primary"></i>
+                </a>
+                {% if contribution|contribution_is_ready_to_be_removed:user %}
                 <a href="{% url 'funds:remove_contribution' contribution.id %}"
-                class="post-request">Remove</a>
-              {% else %}
-                <a href="#" class="link-disabled">Remove</a>
-              {% endif %}
+                  class="btn btn-sm btn-light border text-danger post-request" title="Remove Record">
+                  <i class="fa-solid fa-trash-can"></i>
+                </a>
+                {% else %}
+                <button class="btn btn-sm btn-light border disabled opacity-50" title="Locked">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+                {% endif %}
+              </div>
             </td>
-            </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-5 text-muted">
+              <i class="fa-solid fa-receipt fs-2 mb-2 d-block opacity-25"></i>
+              No contribution records found for this fund.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card-footer bg-white border-0 py-3">
     {% include 'paginator.html' with obj_page=page %}
   </div>
 </div>
+
 {% include 'partials/js.html' %}
 {% include 'generic_errormodal.html' %}

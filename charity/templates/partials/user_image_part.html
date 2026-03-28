@@ -1,5 +1,23 @@
 {% load customtags %}
-{% if  user.volunteer_profile %}
-    {{ user.volunteer_profile|cover }}
-    <a href="{% url 'funds:get_volunteer_details' user.volunteer_profile.id %}">{{ user.username }}</a>
+
+{% if user.volunteer_profile %}
+<div class="d-inline-flex align-items-center">
+    <div class="flex-shrink-0 shadow-sm rounded-circle d-flex align-items-center justify-content-center"
+        style="width: fit-content; height: fit-content; border: 1px solid #dee2e6;">
+        {{ user.volunteer_profile|cover:32 }}
+    </div>
+
+    <div class="ms-2">
+        <a href="{% url 'funds:get_volunteer_details' user.volunteer_profile.id %}"
+            class="text-decoration-none fw-bold small text-dark hover-primary-link"
+            title="View profile of {{ user.username }}">
+            {{ user.username }}
+        </a>
+    </div>
+</div>
+{% else %}
+<div class="d-inline-flex align-items-center text-muted small italic">
+    <i class="fa-solid fa-user-slash me-1 opacity-50"></i>
+    <span>Not assigned</span>
+</div>
 {% endif %}

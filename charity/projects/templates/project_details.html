@@ -1,82 +1,182 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load projectfilters %}
-<h2 class="mt-4">{{ project.name }}</h2>
-<ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item">
-    <a href="{% url 'funds:get_details' project.fund_id %}">{{ project.fund.name }}</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'projects:get_list' %}">Projects</a>
-  </li>
-  <li class="breadcrumb-item active">Project Details</li>
-</ol>
-<div class="card mb-4">
-  <div class="card-body">
-      <div class="row">
-        <div class="col">
-          <div class="bg-light text-dark">
-            <strong>Description</strong>: {{ project.notes }}
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+    <div>
+      <h2 class="mb-0">{{ project.name }}</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_details' project.fund_id %}">{{ project.fund.name}}</a>
+          </li>
+          <li class="breadcrumb-item"> <a href="{% url 'projects:get_list' %}">Projects</a>
+          </li>
+          <li class="breadcrumb-item active">Project Details</li>
+        </ol>
+      </nav>
+    </div>
+
+    <div class="d-flex gap-2">
+      <a href="{% url 'projects:update' project.id %}"
+        class="btn btn-outline-secondary {% if not project|validate_pre_requirements:user %}disabled{% endif %}">
+        <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+      </a>
+
+      <a {% if project|validate_pre_requirements:user and project|project_is_ready_to_be_completed %}
+        href="{% url 'projects:complete_project' project.id %}" class="post-request btn btn-primary" {% else %}
+        class="disabled btn btn-primary" {% endif %}>
+        <i class="fa-solid fa-flag-checkered me-1"></i> Complete
+      </a>
+    </div>
+  </div>
+  <hr class="mb-4">
+  <div class="row">
+    <div class="container-fluid px-4 py-3">
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm bg-success text-white h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <small class="opacity-75 fw-bold">Completion Status</small>
+                  <h2 class="display-6 fw-bold mb-0">50%</h2>
+                  <small class="opacity-75">1 / 2 Tasks Done</small>
+                </div>
+                <i class="fa-regular fa-circle-check fs-4 opacity-75"></i>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="col">
-          <div class="bg-light text-dark">
-            <div>
-              <strong>Created</strong>: {{ project.date_created }}
+
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm bg-primary text-white h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <small class="opacity-75 fw-bold">Budget Utilization</small>
+                  <h2 class="display-6 fw-bold mb-0">50%</h2>
+                  <small class="opacity-75">$1,000 Spend / $2,000 Budget</small>
+                </div>
+                <i class="fa-solid fa-money-bill-wave fs-4 opacity-75"></i>
+              </div>
             </div>
-            <div>
-              <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' project.author.volunteer_profile.id %}">{{ project.author.username }}</a>
-            </div>
-            <div>
-              <strong>Leader</strong>: <a href="{% url 'funds:get_volunteer_details' project.leader.volunteer_profile.id %}">{{ project.leader.username }}</a>
-            </div>
-            <div>
-              <strong>Budget</strong>: {{ project.approved_budget|floatformat:'2g' }}
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm bg-secondary text-white h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <small class="opacity-75 fw-bold">Task Pipeline</small>
+                <i class="fa-solid fa-list-ul fs-4 opacity-75"></i>
+              </div>
+              <div class="row text-center">
+                <div class="col border-end border-white border-opacity-25">
+                  <h4 class="mb-0">0</h4>
+                  <small class="opacity-75" style="font-size: 0.7rem;">TODO</small>
+                </div>
+                <div class="col border-end border-white border-opacity-25">
+                  <h4 class="mb-0">1</h4>
+                  <small class="opacity-75" style="font-size: 0.7rem;">In Progress</small>
+                </div>
+                <div class="col border-end border-white border-opacity-25">
+                  <h4 class="mb-0">1</h4>
+                  <small class="opacity-75" style="font-size: 0.7rem;">On Review</small>
+                </div>
+                <div class="col">
+                  <h4 class="mb-0">0</h4>
+                  <small class="opacity-75" style="font-size: 0.7rem;">Done</small>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="row mt-2">
-        <div class="row">
-          <div class="col-1">
-            <i class="fa-solid fa-pen-to-square"></i>
-            {% if project|validate_pre_requirements:user %}
-              <a href="{% url 'projects:update' project.id %}">Edit</a>
-            {% else %}
-              <a href="" class="link-disabled">Edit</a>
-            {% endif %}
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="fw-bold mb-0">Project Timeline</h6>
+                <i class="fa-regular fa-calendar text-muted"></i>
+              </div>
+              <div class="small">
+                <div class="mb-1"><span class="text-muted">Created:</span> {{ project.date_created }}</div>
+                <div><span class="text-muted">Author:</span> <a class="text-decoration-none"
+                    href="{% url 'funds:get_volunteer_details' project.author.volunteer_profile.id %}">{{project.author.username}}</a>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="col-2">
-            <i class="fa-solid fa-flag-checkered"></i>
-            <a {% if project|validate_pre_requirements:user and project|project_is_ready_to_be_completed %}
-            href="{% url 'projects:complete_project' project.id %}" class="post-request"
-            {% else %}
-            class="link-disabled"
-            {% endif %} >Complete</a>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="fw-bold mb-0">Project Team</h6>
+                <i class="fa-solid fa-users text-muted"></i>
+              </div>
+              <div class="small">
+                <div class="mb-1"><span class="text-muted">Leader:</span>
+                  <a class="text-decoration-none"
+                    href="{% url 'funds:get_volunteer_details' project.leader.volunteer_profile.id %}">{{project.leader.username}}</a>
+                </div>
+                <div><span class="text-muted">Reviewer:</span> <a href="#"
+                    class="text-decoration-none">project.leader.username</a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="fw-bold mb-0">Status & Reference</h6>
+                <i class="fa-solid fa-circle-info text-muted"></i>
+              </div>
+              <div class="small">
+                <div class="mb-1">
+                  <span class="fw-bold fs-6">$2,000.00</span>
+                  <span class="badge rounded-pill bg-success-soft text-success border border-success ms-1"
+                    style="font-size: 0.65rem;">On Track</span>
+                </div>
+                <div><span class="text-muted">Process:</span> <a href="#" class="text-decoration-none">Transfer to
+                    Germany</a></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-</div>
-<ul class="nav nav-pills mb-3">
+  </div>
+
+  <ul class="nav nav-pills mb-3">
   {% for tab in tabs %}
   <li class="nav-item" role="presentation">
     {% if selected_tab == tab %}
-      <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
-      </a>
+    <a href="?tab={{ tab }}" class="nav-link active shadow-sm me-2">{{ tab|capfirst }}
+    </a>
     {% else %}
-      <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
+    <a href="?tab={{ tab }}" class="nav-link me-2">{{ tab|capfirst }}</a>
     {% endif %}
   </li>
   {% endfor %}
 </ul>
-<div>
-  {% for tab in tabs %}
-  {% if selected_tab == tab %}
+<div class="card border-0 shadow-sm">
+   <div class="card-body">
+    {% for tab in tabs %}
+    {% if selected_tab == tab %}
     {% include 'partials/project_'|add:tab|add:'_list.html' %}
-  {% endif %}
-  {% endfor %}
+    {% endif %}
+    {% endfor %}
+   </div>
 </div>
+
 {% include 'generic_errormodal.html' %}
 {% include 'partials/js.html' %}
+</div>
+
 {% endblock %}

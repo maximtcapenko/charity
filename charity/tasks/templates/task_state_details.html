@@ -117,7 +117,7 @@
               <div class="small">
                 <span class="text-muted">Author:</span>
                 <a href="{% url 'funds:get_volunteer_details' state.author.volunteer_profile.id %}"
-                  class="text-decoration-none fw-bold">
+                  class="text-decoration-none">
                   {{ state.author.username }}
                 </a>
               </div>
@@ -125,10 +125,10 @@
                 <span class="text-muted">Reviewer:</span>
                 {% if state.reviewer %}
                 <a href="{% url 'funds:get_volunteer_details' state.reviewer.volunteer_profile.id %}"
-                  class="text-decoration-none fw-bold">{{ state.reviewer.username }}</a>
+                  class="text-decoration-none">{{ state.reviewer.username }}</a>
                 {% else %}
                 <a href="{% url 'funds:get_volunteer_details' task.reviewer.volunteer_profile.id %}"
-                  class="text-decoration-none fw-bold text-muted">{{ task.reviewer.username }}</a>
+                  class="text-decoration-none text-muted">{{ task.reviewer.username }}</a>
                 {% endif %}
               </div>
             </div>
