@@ -1,12 +1,20 @@
 from django import forms
 from django.contrib.auth.models import User
 
+from commons.widgets import ImagePreviewWidget
 from commons.mixins import FormControlMixin, InitialMixin, FileUploadMixin
 from commons.functional import validate_modelform_field
 from .models import Fund, Contribution, Contributor, VolunteerProfile
 
 
 class FundForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        self.fields['cover'].widget = ImagePreviewWidget(
+            attrs={'class': 'form-control'},
+            accept='image/jpeg, image/png'
+        )
     class Meta:
         model = Fund
         exclude = ('date_created', )
@@ -75,6 +83,10 @@ class CreateContributorForm(
         FormControlMixin.__init__(self)
 
         self.form.fund.widget = forms.HiddenInput()
+        self.form.cover.widget = ImagePreviewWidget(
+            attrs={'class': 'form-control'},
+            accept='image/jpeg, image/png'
+        )
 
     def clean(self):
         validate_modelform_field('fund', self.initial, self.cleaned_data)

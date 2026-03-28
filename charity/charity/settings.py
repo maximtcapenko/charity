@@ -152,8 +152,16 @@ USE_TZ = True
 
 
 MEDIA_ROOT = BASE_DIR / "media"
-MEDIA_URL = f'https://{STORAGE_ACCOUNT_NAME}.blob.core.windows.net/media/'
-DEFAULT_FILE_STORAGE = 'commons.storages.AzureMediaStorage'
+
+STORAGES = {
+    "default": {
+        "BACKEND": "commons.storages.AzureMediaStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "commons.storages.AzureStaticStorage",
+    }
+}
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
