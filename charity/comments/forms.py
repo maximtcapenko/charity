@@ -19,6 +19,12 @@ class CreateCommentForm(
 
         self.form.author.widget = forms.HiddenInput()
         self.form.notes.label = False
+        self.form.notes.widget.attrs.update({
+            "class": "form-control border-0 bg-light p-3",
+            "rows":"6", 
+            "placeholder":"Type your update here...",
+            "style":"resize: none;"
+        })
 
         reply = self.initial.get('reply')
 

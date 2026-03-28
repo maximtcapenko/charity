@@ -10,7 +10,7 @@ register = template.Library()
 
 @register.inclusion_tag('partials/task_states_list.html', takes_context=True)
 def render_task_states_board(context, task):
-    state_template_name = 'partials/task_card_state.html'
+    state_template_name = 'partials/task_item_state.html'
 
     def get_state_reviews_count(state_id, reviews):
         result = next(
@@ -80,6 +80,7 @@ def render_task_states_board(context, task):
             'current_state': current_task_state if current_task_state and
             task_states_list and current_task_state in task_states_list else None,
             'task_states': task_states_list,
+            'in_progess': True if current_task_state and process_state.id == current_task_state.state_id else False,
             'card_css_class': f'{"border-primary" if current_task_state and process_state.id == current_task_state.state_id else ""}',
             'btn_css_class': f'{"disabled" if btn_should_be_disabled else ""}'
 

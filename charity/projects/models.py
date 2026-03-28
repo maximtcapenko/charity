@@ -61,11 +61,6 @@ def fund_projects_count(self):
         total=models.Count('id'))['total']
 
 
-def fund_active_projects_count(self):
-    return Project.objects.filter(fund__id=self.id, is_closed=False).aggregate(
-        total=models.Count('id'))['total']
-
-
 def fund_active_projects(self):
     return Project.objects.filter(fund__id=self.id, is_closed=False)\
         .select_related('leader') \
@@ -78,9 +73,6 @@ def ward_active_projects(self):
 
 Fund.add_to_class('projects_count', property(
     fget=fund_projects_count))
-
-Fund.add_to_class('active_projects_count', property(
-    fget=fund_active_projects_count))
 
 Fund.add_to_class('active_projects', property(
     fget=fund_active_projects))

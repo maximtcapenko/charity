@@ -14,6 +14,14 @@ class Fund(Base):
     def __str__(self):
         return self.name
 
+    @cached_property    
+    def active_wards_count(self):
+        return self.wards.filter(is_inactive=False).count()
+    
+    @cached_property
+    def active_projects_count(self):
+        return self.projects.filter(is_closed=False).count()
+
 
 class VolunteerProfile(Base):
     fund = models.ForeignKey(
@@ -73,6 +81,14 @@ class Contribution(Base):
         income_amount = self.incomes.aggregate(
             income_amount=models.Sum('amount', default=0))['income_amount']
         return self.amount - income_amount
+    
+    @cached_property
+    def incomes_exist(self):
+        return self.incomes.exists()
+                      
+    @cached_property
+    def payout_excess_budget(self):
+        return self.payout_excess_budgets.first() 
 
 
 class RequestReview(Base):

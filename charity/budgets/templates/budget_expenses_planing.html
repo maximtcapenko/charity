@@ -2,90 +2,127 @@
 {% block content %}
 {% load customtags %}
 {% load budgetfilters %}
-<h2 class="mt-4">Add expense to {{ budget.name }}</h2>
-<ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item">
-    <a href="{% url 'budgets:get_details' budget.id %}?tab=expenses">{{ budget.name }}</a>
-  </li>
-  <li class="breadcrumb-item active">Planing</li>
-</ol>
-<div class="card mb-4">
-  <div class="card-body">
-    <div class="bg-light text-dark">
-      <div>
-        <strong>Available Income</strong>: {{ avaliable_income_amount|floatformat:'2g' }}
-      </div>
-      <div>
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+    <div>
+      <h2 class="mb-0 text-primary">Expense Planning</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'budgets:get_details' budget.id %}?tab=expenses"
+              class="text-decoration-none">{{ budget.name }}</a></li>
+          <li class="breadcrumb-item active">Planning</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex gap-3">
+      <div class="card border-0 shadow-sm bg-light px-3 py-2">
+        <small class="text-muted d-block fw-bold" style="font-size: 0.7rem;">BUDGET STATUS</small>
         {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
+      </div>
+      <div class="card border-0 shadow-sm bg-primary text-white px-3 py-2">
+        <small class="opacity-75 d-block fw-bold" style="font-size: 0.7rem;">AVAILABLE INCOME</small>
+        <span class="h5 mb-0 fw-bold">${{ avaliable_income_amount|floatformat:'2g' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="mb-4">
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body bg-light rounded">
+      <form class="row align-items-end g-3" action="" method="get">
+        <div class="col-md-4">
+          <label for="id_project" class="form-label fw-bold text-muted small">SELECT PROJECT TO ALLOCATE FROM</label>
+          <select class="form-select border-0 shadow-sm" name="project_id" required id="id_project"
+            onchange="this.form.submit()">
+            <option value="">Select Project...</option>
+            {% for project in projects %}
+            <option value="{{ project.project.id }}" {% if selected_project == project.project.id|stringformat:"s" %} selected{% endif %}>
+              {{ project.project.name }} (Budget: ${{ project.requested_budget|floatformat:'2g' }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-auto ms-auto">
+          <span class="text-muted small italic">
+            <i class="fa-solid fa-circle-info me-1"></i> Selecting a project will filter tasks below.
+          </span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="fa-solid fa-list-check me-2 text-primary"></i>Eligible Tasks</h5>
+      <span class="badge bg-secondary rounded-pill">{{ tasks|length }} Tasks Available</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4">Task Details</th>
+              <th>Ward / Subject</th>
+              <th>Created</th>
+              <th>Priority</th>
+              <th>Estimated Cost</th>
+              <th class="text-end pe-4">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for task in tasks %}
+            <tr>
+              <td class="ps-4">
+                <a href="{% url 'tasks:get_details' task.id %}" class="fw-bold text-decoration-none d-block">
+                  {{ task.name }}
+                </a>
+                <small class="text-muted">ID: #{{ task.id }}</small>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  {{ task.ward|cover:30 }} <span class="ms-2 small">{{ task.ward.name }}</span>
+                </div>
+              </td>
+              <td class="small text-muted">{{ task.date_created|date:"M d, Y" }}</td>
+              <td>
+                {% if task.is_high_priority %}
+                <span class="badge bg-danger-soft text-danger border border-danger">
+                  <i class="fa-solid fa-fire me-1"></i>High
+                </span>
+                {% else %}
+                <span class="badge bg-light text-muted border">Regular</span>
+                {% endif %}
+              </td>
+              <td class="fw-bold text-dark">
+                ${{ task.estimated_expense_amount|floatformat:'2g' }}
+              </td>
+              <td class="text-end pe-4">
+                <a {% if budget|budget_item_can_be_added:user %}
+                  href="{% url 'budgets:add_expenses' budget.id %}?task_id={{task.id}}&project_id={{selected_project}}"
+                  class="btn btn-sm btn-primary px-3 shadow-sm" {% else %} class="btn btn-sm btn-light disabled border"
+                  {% endif %}>
+                  <i class="fa-solid fa-plus me-1"></i> Add Expense
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-5">
+                <div class="text-muted">
+                  <i class="fa-solid fa-magnifying-glass fs-2 mb-3 d-block"></i>
+                  No tasks found. Please select a project or check task states.
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 </div>
-<div class="col-4">
-<form class="form-inline" action="" method="get">
-  <label for="id_project">Project:</label>
-  <select class="form-select" name="project_id" required="true" id="id_project" onchange="javascript:this.form.submit()">
-    <option value="">Select Project</option>
-    {% for project in projects %}
-      {% if selected_project == project.project.id|stringformat:"s" %}
-        <option selected="true" value="{{ project.project.id }}">{{ project.project.name }} ({{ project.requested_budget|floatformat:'2g' }})</option>
-      {% else %}
-        <option value="{{ project.project.id }}">{{ project.project.name }} ({{ project.requested_budget|floatformat:'2g' }})</option>
-      {% endif %}
-    {% endfor %}
-  </select>
-</form>
-</div>
-<div class="card mb-4">
-  <div class="card-header">
-    <i class="fa-solid fa-list-check"></i>
-    Tasks
-  </div>
-  <div class="card-body">
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Task name</th>
-          <th>Ward</th>
-          <th>Created</th>
-          <th>State</th>
-          <th>Estimated expenses</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for task in tasks %}
-          <tr>
-            <td>
-              <h6>
-                <a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a>
-              </h6>
-            </td>
-            <td>
-              {{ task.ward|cover }}
-              {{ task.ward.name }}
-            </td>
-            <td>{{ task.date_created }}</td>
-            <td>
-              {% if task.is_high_priority %}
-              <span class="badge bg-warning text-dark">high priority</span>
-              {% else %}
-              <span class="badge bg-secondary">regular</span>
-            {% endif %}
-            </td>
-            <td>{{ task.estimated_expense_amount|floatformat:'2g' }}</td>
-            <td>
-              <a  {% if budget|budget_item_can_be_added:user %}
-                    href="{% url 'budgets:add_expenses' budget.id %}?task_id={{task.id}}&project_id={{selected_project}}"
-                  {% else %}
-                    class="link-disabled"
-                  {% endif %}>Add expense</a>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+
 {% include 'generic_errormodal.html' %}
 {% endblock %}

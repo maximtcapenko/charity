@@ -1,70 +1,106 @@
 {% load budgetfilters %}
-<div>
-  <a  {% if budget|budget_item_can_be_added:user %}
-        href="{% url 'budgets:expenses_planing' budget.id %}" class="btn btn-link" 
-      {% else %}
-        class="btn btn-link disabled" href=""
-      {% endif %}>Add expense</a>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="mb-0 text-muted"><i class="fa-solid fa-file-invoice-dollar me-2 text-danger"></i>Expenses Management</h5>
+  <a {% if budget|budget_item_can_be_added:user %} href="{% url 'budgets:expenses_planing' budget.id %}"
+    class="btn btn-sm btn-primary shadow-sm" {% else %} class="btn btn-sm btn-primary disabled shadow-sm" href="" {% endif %}>
+    <i class="fa-solid fa-plus me-1"></i> Add Expense
+  </a>
 </div>
-<div class="card mb-4">
-  <div class="card-header">
-  {{ items_count }} <i class="fas fa-sack-dollar"></i>
-    Expenses
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-light border-bottom-0 py-3">
+    <form action="{% url 'budgets:get_details' budget.id %}" method="get" class="row g-2 align-items-center">
+      <input type="hidden" name="tab" value="expenses">
+      {% for field in search_form %}
+      <div class="col-md-3">
+        {{ field }}
+      </div>
+      {% endfor %}
+      <div class="col-md-auto">
+        <button type="submit" class="btn btn-sm btn-secondary px-3">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
+      <div class="col text-end">
+        <span class="badge bg-white text-dark border fw-normal">
+          <strong>{{ items_count }}</strong> Records
+        </span>
+      </div>
+    </form>
   </div>
-  <div class="card-body">
-    <div>
-      <form action="{% url 'budgets:get_details' budget.id %}" method="get">
-        <input type="hidden" name="tab" value="expenses">
-        <div class="row row-cols-md-4 g-4">
-          {% for field in search_form %}
-          <div class="col">
-            {{field}}
-          </div>
-          {% endfor %}
-        </div>
-      </form>
-    </div>
-    <table class="table table-striped">
-      <tbody>
-        {% for expense in page %}
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase">
           <tr>
-            <td class="col-2 align-middle">
-              <h6>
-                <i class="fa-solid fa-dollar-sign fa-sm"></i>
-                <a href="{% url 'budgets:get_expense_details' budget.id expense.id %}">{{ expense.amount|floatformat:'2g' }}</a>
-              </h6>
-              {{ expense.date_created }}
+            <th class="ps-4" style="width: 25%;">Amount & Date</th>
+            <th class="text-center" style="width: 15%;">Status</th>
+            <th style="width: 20%;">Reviewer</th>
+            <th style="width: 20%;">Project</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for expense in page %}
+          <tr>
+            <td class="ps-4">
+              <div class="fw-bold text-danger fs-5">
+                <i class="fa-solid fa-dollar-sign fa-xs"></i>
+                <a href="{% url 'budgets:get_expense_details' budget.id expense.id %}"
+                  class="text-decoration-none text-danger">
+                  {{ expense.amount|floatformat:'2g' }}
+                </a>
+              </div>
+              <small class="text-muted" style="font-size: 0.75rem;">
+                <i class="fa-regular fa-calendar me-1"></i>{{ expense.date_created|date:"M d, Y" }}
+              </small>
             </td>
-            <td class="col-1 align-middle text-center"> 
+            <td class="text-center">
               {% include 'partials/td_approvement_part.html' with approvement=expense.approvement %}
             </td>
-            <td class="align-middle">
-              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Reviewer">
+            <td>
+              <div data-bs-toggle="tooltip" title="Reviewer: {{ expense.reviewer.username }}">
                 {% include 'partials/user_image_part.html' with user=expense.reviewer %}
-              </span>
+              </div>
             </td>
-            <td class="align-middle"> 
-              {{ expense.notes }}
+            <td>
+              <div class="d-flex align-items-center">
+                <i class="fa-solid fa-folder-open text-muted me-2 small"></i>
+                <a href="{% url 'projects:get_details' expense.project.id %}"
+                  class="text-decoration-none small fw-bold text-dark text-truncate" style="max-width: 150px;">
+                  {{ expense.project.name }}
+                </a>
+              </div>
             </td>
-            <td class="align-middle">
-              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Project">
-                <a href="{% url 'projects:get_details' expense.project.id %}">{{ expense.project.name }}</a>
-              </span>
-            </td>
-            <td class="align-middle">
-              <a {% if expense|budget_item_is_ready_to_be_removed:user %}
-                    href="{% url 'budgets:remove_budget_expense' budget.id expense.id %}" 
-                    class="post-request"
-                  {% else %}
-                    href="#" class="link-disabled"
-                  {% endif %}>Remove</a>
+            <td class="text-end pe-4">
+              <div class="btn-group shadow-sm">
+                <a {% if expense|budget_item_is_ready_to_be_removed:user %}
+                  href="{% url 'budgets:remove_budget_expense' budget.id expense.id %}"
+                  class="btn btn-sm btn-light border text-danger post-request" {% else %} href="#"
+                  class="btn btn-sm btn-light border disabled opacity-50" {% endif %} title="Remove">
+                  <i class="fa-solid fa-trash-can"></i>
+                </a>
+              </div>
             </td>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-5 text-muted">
+              <i class="fa-solid fa-money-bill-transfer fs-2 mb-2 d-block opacity-25"></i>
+              No expense records found.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer bg-white border-0 py-3">
     {% include 'paginator.html' with obj_page=page %}
   </div>
 </div>
+
 {% include 'generic_errormodal.html' %}
 {% include 'partials/js.html' %}

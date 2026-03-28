@@ -1,10 +1,17 @@
 {% load budgetfilters %}
-<div>
-    <a  {% if budget|budget_can_be_edited:user %}
-            href="{% url 'budgets:approve_budget' budget.id %}" 
-            class="btn btn-link"
-        {% else %}
-            class="btn btn-link disabled"
-        {% endif %}>Add review</a>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="mb-0 text-muted">
+    <i class="fa-solid fa- person-circle-check me-2"></i>Budget Approval Process
+  </h5>
+
+  <div class="d-flex gap-2">
+    <a {% if budget|budget_can_be_edited:user %} href="{% url 'budgets:approve_budget' budget.id %}"
+      class="btn btn-sm btn-primary shadow-sm px-3" {% else %}
+      class="btn btn-sm btn-primary disabled opacity-50 shadow-none px-3" href="#" {% endif %}>
+      <i class="fa-solid fa-plus me-1"></i> Add Review
+    </a>
+  </div>
 </div>
+
 {% include "approvements_list.html" %}

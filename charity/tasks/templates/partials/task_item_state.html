@@ -1,0 +1,32 @@
+<td style="width: 40px;" class="ps-3">{{process_state.order_position}}</td>
+<td style="width: 30px;">
+
+  <i class="fa-solid fa-circle 
+    {% if current_task_state.is_done %}
+      text-success
+    {% elif in_progess %}
+      text-primary
+    {% else %}
+      text-secondary 
+    {% endif %}  
+  small"></i>
+</td>
+<td class="fw-bold">
+  {% if current_state %}
+  <a href="{% url 'tasks:get_state_details' task.id  current_state.id%}">
+    {{process_state.name}}
+  </a>
+  {% elif not task_states %}
+  {{process_state.name}}
+  {% endif %}
+</td>
+<td class="text-muted">
+        {% for task_state in task_states %}
+         {% include 'partials/task_step_state.html' %}
+      {% endfor %}
+</td>
+<td class="text-end pe-3">
+  <a href="{% url 'tasks:move_to_next_state' task.id %}?process_state_id={{process_state.id}}"
+    class="btn btn-primary {{btn_css_class}}">Start</a>
+</td>
+</tr>
