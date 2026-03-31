@@ -1,55 +1,108 @@
 {% load customtags %}
 {% load projectfilters %}
-<div>
-  <a  {% if project|validate_pre_requirements:user %}
-        href="{% url 'projects:add_ward_to_project' project.id %}" 
-        class="btn btn-link"
-      {% else %}
-        href=""  class="btn btn-link disabled"
-      {% endif %}>Add ward</a>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h6 class="mb-0 fw-bold text-muted text-uppercase small">
+    <i class="fa-solid fa-leaf me-2 text-success"></i>Project Beneficiaries
+  </h6>
+  <a {% if project|validate_pre_requirements:user %} href="{% url 'projects:add_ward_to_project' project.id %}"
+    class="btn btn-sm btn-primary shadow-sm px-3" {% else %}
+    class="btn btn-sm btn-outline-secondary disabled opacity-50 shadow-none" {% endif %}>
+    <i class="fa-solid fa-plus me-1"></i> Add Ward
+  </a>
 </div>
-<div class="card mb-4">
-  <div class="card-header">
-    {{items_count}} <i class="fa-solid fa-leaf"></i>
-    Wards
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <span class="small fw-bold text-muted">ASSIGNED WARDS</span>
+    <span class="badge bg-light text-dark border fw-normal">{{ items_count }} Total</span>
   </div>
-  <div class="card-body">
-    <table class="table table-striped">
-      <tbody>
-        {% for ward in page %}
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase">
           <tr>
-            <td>
-              <div>
-                <h6>
-                  {{ ward|thumbnail:50 }}
-                  <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
-                </h6>
-                {{ ward.date_created }}
-              {% if ward.is_inactive %}
-                <span class="badge bg-secondary">inactive</span>
-              {% elif ward.project_tasks_exists %}
-                <span class="badge bg-primary">in work</span>
-              {% else %}
-                <span class="badge bg-primary">active</span>
-              {% endif %}
-              </div>
-                {% if ward.task.id %}
-                  <a href="{% url 'tasks:get_details' ward.task.id %}">{{ ward.task.name }}</a>
-                {% endif %}
-            </td>
-            <td class="align-middle">
-              <a {% if project|validate_pre_requirements:user and ward|ward_should_not_be_used_by_any_tasks:project %}
-                   href="{% url 'projects:remove_project_ward' project.id ward.id%}"
-                   class="post-request"
-                 {% else %}
-                   href="" class="link-disabled"
-                 {% endif %}>Remove</a>
-           </td>           
+            <th class="ps-4" style="width: 40%;">Ward Identity</th>
+            <th style="width: 30%;">Active Task / Progress</th>
+            <th style="width: 15%;">Status</th>
+            <th class="text-end pe-4">Actions</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for ward in page %}
+          <tr>
+            <td class="ps-4">
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                  {{ ward|thumbnail:48 }}
+                </div>
+                <div class="ms-3">
+                  <h6 class="mb-0 fw-bold">
+                    <a href="{% url 'wards:get_details' ward.id %}" class="text-decoration-none text-dark">
+                      {{ ward.name }}
+                    </a>
+                  </h6>
+                  <small class="text-muted" style="font-size: 0.75rem;">
+                    <i class="fa-regular fa-calendar-check me-1"></i>Joined: {{ ward.date_created|date:"M d, Y" }}
+                  </small>
+                </div>
+              </div>
+            </td>
+            <td>
+              {% if ward.task.id %}
+              <div class="d-flex flex-column">
+                <a href="{% url 'tasks:get_details' ward.task.id %}" class="text-decoration-none small fw-bold">
+                  <i class="fa-solid fa-list-check me-1 text-primary"></i> {{ ward.task.name }}
+                </a>
+                <span class="text-muted" style="font-size: 0.7rem;">Click to view task progress</span>
+              </div>
+              {% else %}
+              <span class="text-muted small italic">No specific task assigned</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if ward.is_inactive %}
+              <span
+                class="badge rounded-pill bg-secondary-soft text-secondary border border-secondary px-2">INACTIVE</span>
+              {% elif ward.project_tasks_exists %}
+              <span class="badge rounded-pill bg-info-soft text-info border border-info px-2">IN WORK</span>
+              {% else %}
+              <span class="badge rounded-pill bg-primary-soft text-primary border border-primary px-2">ACTIVE</span>
+              {% endif %}
+            </td>
+            <td class="text-end pe-4">
+              {% if project|validate_pre_requirements:user and ward|ward_should_not_be_used_by_any_tasks:project %}
+              <a href="{% url 'projects:remove_project_ward' project.id ward.id %}"
+                class="btn btn-sm btn-light border text-danger post-request" title="Remove from project">
+                <i class="fa-solid fa-user-minus"></i>
+              </a>
+              {% else %}
+              <button class="btn btn-sm btn-light border disabled opacity-50" title="Cannot remove: active tasks exist">
+                <i class="fa-solid fa-lock"></i>
+              </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center py-5 text-muted">
+              <i class="fa-solid fa-people-roof fs-2 mb-2 d-block opacity-25"></i>
+              No wards have been assigned to this project yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if page.has_other_pages %}
+  <div class="card-footer bg-white border-0 py-3">
     {% include 'paginator.html' with obj_page=page %}
   </div>
-  {% include 'generic_errormodal.html' %}
-  {% include 'partials/js.html' %}
+  {% endif %}
+</div>
+
+{% include 'generic_errormodal.html' %}
+{% include 'partials/js.html' %}

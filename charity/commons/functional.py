@@ -43,10 +43,7 @@ def render_generic_form(request, form_class, context, read_only=None):
         params['instance'] = instance
 
     if not form_template:
-        if issubclass(form_class, FileUploadMixin):
-            form_template = 'generic_multipartform.html'
-        else:
-            form_template = 'generic_createform.html'
+        form_template = 'generic_multipartform.html'
 
     if request.method == 'POST':
         if initial:

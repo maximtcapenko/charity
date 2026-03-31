@@ -97,6 +97,8 @@ def get_details(request, id):
 
     return render(request, 'project_details.html', {
         'title': 'Project',
+        'budget_utilization_in_percents': round(project.spent_budget / project.approved_budget * 100) if project.approved_budget > 0 else 0,
+        'complete_in_percents': round(project.done_tasks_count / project.tasks_count * 100) if project.tasks_count > 0 else 0,
         'tabs': tabs.keys(),
         'items_count': count,
         'project': project,

@@ -2,40 +2,110 @@
 {% block content %}
 {% load customtags %}
 {% load mailingfilters %}
-{% include "partials/header.html" with title='Mailing groups' %}
-<div>
-  <a href="{% url 'mailings:add_group'%}" class="btn btn-link">Add group</a>
-</div>
-<div class="card mb-4">
-  <div class="card-header">
-    {{items_count}} <i class="fa-solid fa-envelope"></i>
-    Mailing groups
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <div>
+      <h2 class="mb-0 text-primary">Mailing Groups</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Dashboard</a></li>
+          <li class="breadcrumb-item active">Recipients</li>
+        </ol>
+      </nav>
+    </div>
+    <a href="{% url 'mailings:add_group' %}" class="btn btn-primary shadow-sm px-4">
+      <i class="fa-solid fa-users-plus me-2"></i>Create New Group
+    </a>
   </div>
-  <div class="card-body">
-    <table class="table table-striped">
-    <tbody>
-        {% for group in page %}
-        <tr>
-          <td class="align-middle">
-            <h6>
-              <a href="{% url 'mailings:get_group_details' group.id %}">{{ group.name }}</a>
-            </h6>
-              {{ group.date_created }}
-          </td>
-          <td class="align-middle">
-            <a {% if group|mailing_group_is_ready_to_be_removed:user %}
-              href="{% url 'mailings:remove_group' group.id %}" class="post-request"
-            {% else %}
-              class="link-disabled"
-            {% endif %} >Remove</a>
-          </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-    </table>
-    {% include 'paginator.html' with obj_page=page %}
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+      <h6 class="mb-0 fw-bold text-muted">
+        <i class="fa-solid fa-users-rectangle me-2 text-primary"></i>
+        Audience Segments <span class="badge rounded-pill bg-light text-dark border ms-1">{{ items_count }}
+          Groups</span>
+      </h6>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-uppercase">
+            <tr>
+              <th class="ps-4" style="width: 60%;">Group Name & Info</th>
+              <th style="width: 25%;">Date Created</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for group in page %}
+            <tr>
+              <td class="ps-4">
+                <div class="d-flex align-items-center">
+                  <div class="flex-shrink-0">
+                    <div class="bg-info-soft text-info rounded-circle p-2"
+                      style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
+                      <i class="fa-solid fa-people-group"></i>
+                    </div>
+                  </div>
+                  <div class="ms-3">
+                    <h6 class="mb-0">
+                      <a href="{% url 'mailings:get_group_details' group.id %}"
+                        class="text-decoration-none fw-bold text-dark">
+                        {{ group.name }}
+                      </a>
+                    </h6>
+                    <small class="text-muted" style="font-size: 0.75rem;">
+                      ID: #{{ group.id }}
+                    </small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="small text-muted">
+                  <i class="fa-regular fa-calendar-plus me-1"></i>
+                  {{ group.date_created|date:"M d, Y" }}
+                </div>
+              </td>
+              <td class="text-end pe-4">
+                <div class="btn-group shadow-sm">
+                  <a href="{% url 'mailings:get_group_details' group.id %}" class="btn btn-sm btn-light border"
+                    title="Manage Members">
+                    <i class="fa-solid fa-user-gear text-primary"></i>
+                  </a>
+                  {% if group|mailing_group_is_ready_to_be_removed:user %}
+                  <a href="{% url 'mailings:remove_group' group.id %}"
+                    class="btn btn-sm btn-light border text-danger post-request" title="Delete Group">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </a>
+                  {% else %}
+                  <button class="btn btn-sm btn-light border disabled opacity-50" title="Group has active submissions">
+                    <i class="fa-solid fa-lock"></i>
+                  </button>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" class="text-center py-5 text-muted">
+                <i class="fa-solid fa-users-slash fs-2 mb-2 d-block opacity-25"></i>
+                No mailing groups found. Create one to organize your recipients.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-footer bg-white border-0 py-3">
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
   </div>
 </div>
+
 {% include 'partials/js.html' %}
 {% include 'generic_errormodal.html' %}
 {% endblock %}

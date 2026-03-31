@@ -1,39 +1,122 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-{% include "partials/header.html" with title='Processes' %}
-  <div>
-    <a href="{% url 'processes:create' %}" class="btn btn-link" >Add process</a>
-  </div>
-  <div class="card mb-4">
-    <div class="card-header">
-      {{items_count}} <i class="fa-solid fa-gears"></i>
-      Processes
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <div>
+      <h2 class="mb-0 text-primary">System Processes</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Dashboard</a></li>
+          <li class="breadcrumb-item active">Workflow Blueprints</li>
+        </ol>
+      </nav>
     </div>
-    <div class="card-body">
-      <table class="table table-striped">
-        <tbody>
-          {% for process in page %}
+    <a href="{% url 'processes:create' %}" class="btn btn-primary shadow-sm px-4">
+      <i class="fa-solid fa-plus-circle me-2"></i>Create New Process
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+      <h6 class="mb-0 fw-bold text-muted text-uppercase small">
+        <i class="fa-solid fa-gears me-2 text-secondary"></i>
+        Available Workflows <span class="badge rounded-pill bg-light text-dark border ms-1">{{ items_count }}</span>
+      </h6>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-uppercase">
             <tr>
-              <td class="col-3">
-                <h6>
-                  <a href="{% url 'processes:get_details' process.id %}">{{ process.name }}</a>
-                </h6>
-                {{ process.date_created }}
+              <th class="ps-4" style="width: 45%;">Process Name & Creation</th>
+              <th style="width: 20%;">Status</th>
+              <th style="width: 20%;">Complexity</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for process in page %}
+            <tr>
+              <td class="ps-4">
+                <div class="d-flex align-items-center">
+                  <div class="flex-shrink-0">
+                    <div
+                      class="bg-secondary-soft text-secondary rounded p-2 d-flex align-items-center justify-content-center"
+                      style="width: 42px; height: 42px;">
+                      <i class="fa-solid fa-diagram-project"></i>
+                    </div>
+                  </div>
+                  <div class="ms-3">
+                    <h6 class="mb-0 fw-bold">
+                      <a href="{% url 'processes:get_details' process.id %}" class="text-decoration-none text-dark">
+                        {{ process.name }}
+                      </a>
+                    </h6>
+                    <small class="text-muted" style="font-size: 0.75rem;">
+                      <i class="fa-regular fa-calendar-plus me-1"></i>{{ process.date_created|date:"M d, Y" }}
+                    </small>
+                  </div>
+                </div>
               </td>
-              <td class="col-2 align-middle">
+              <td>
                 {% if not process.is_inactive %}
-                  <span class="badge bg-primary">active</span>
+                <span class="badge rounded-pill bg-success-soft text-success border border-success px-3 py-2"
+                  style="font-size: 0.7rem;">
+                  <i class="fa-solid fa-circle-check me-1"></i> ACTIVE
+                </span>
                 {% else %}
-                  <span class="badge bg-secondary">inactive</span>
+                <span class="badge rounded-pill bg-secondary-soft text-secondary border border-secondary px-3 py-2"
+                  style="font-size: 0.7rem;">
+                  <i class="fa-solid fa-ban me-1"></i> INACTIVE
+                </span>
                 {% endif %}
               </td>
-              <td class="align-middle">{{ process.states_count }}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <span class="fw-bold text-dark me-2">{{ process.states_count }}</span>
+                  <span class="text-muted small">Workflow States</span>
+                </div>
+              </td>
+              <td class="text-end pe-4">
+                <a href="{% url 'processes:get_details' process.id %}"
+                  class="btn btn-sm btn-light border shadow-sm px-3" title="View/Edit Logic">
+                  <i class="fa-solid fa-sliders text-primary me-1"></i> Configure
+                </a>
+              </td>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-5 text-muted">
+                <i class="fa-solid fa-microchip fs-2 mb-2 d-block opacity-25"></i>
+                No processes defined. Start by creating a workflow blueprint.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-footer bg-white border-0 py-3">
       {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+</div>
+
+<style>
+  .bg-secondary-soft {
+    background-color: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+  }
+
+  .bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.1);
+    color: #198754;
+  }
+</style>
+
+{% include 'partials/js.html' %}
 {% endblock %}

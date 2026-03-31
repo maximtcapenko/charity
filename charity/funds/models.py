@@ -88,7 +88,11 @@ class Contribution(Base):
                       
     @cached_property
     def payout_excess_budget(self):
-        return self.payout_excess_budgets.first() 
+        return self.payout_excess_budgets.first()
+
+    @cached_property
+    def payout_excess_task(self):
+        return self.tasks.first() 
 
 
 class RequestReview(Base):
@@ -111,7 +115,6 @@ def user_fund(self):
 
 def fund_total_volunteers_count(self):
     return VolunteerProfile.objects.filter(fund__id=self.id).aggregate(total=models.Count('id'))['total']
-
 
 Fund.add_to_class('total_volunteers_count', property(
     fget=fund_total_volunteers_count))

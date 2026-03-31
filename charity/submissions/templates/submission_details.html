@@ -1,71 +1,131 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load submissionfilters %}
-<h2 class="mt-4">{{ submission.name }}</h2>
-<ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item">
-    <a href="{% url 'funds:get_details' submission.fund_id %}">{{ submission.fund.name }}</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'submissions:get_list' %}">Submission list</a>
-  </li>
-  <li class="breadcrumb-item active">Submission Details</li>
-</ol>
-<div class="card mb-4">
-  <div class="card-body">
-    <div class="row">
-      <div class="col">
-        <div class="bg-light text-dark">
-          <strong>Description</strong>: {{ submission.notes }}
-        </div>
+{% load customtags %}
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+    <div>
+      <div class="d-flex align-items-center gap-3">
+        <h2 class="mb-0 text-primary">{{ submission.name }}</h2>
+        {% if submission.is_draft %}
+        <span class="badge rounded-pill bg-warning-soft text-warning border border-warning px-3">
+          <i class="fa-solid fa-pen-ruler me-1"></i> DRAFT MODE
+        </span>
+        {% else %}
+        <span class="badge rounded-pill bg-success-soft text-success border border-success px-3">
+          <i class="fa-solid fa-paper-plane me-1"></i> PUBLISHED
+        </span>
+        {% endif %}
       </div>
-      <div class="col">
-        <div class="bg-light text-dark">
-          <div>
-            <strong>Created</strong>: {{ submission.date_created }}
-          </div>
-          <div>
-            <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' submission.author.volunteer_profile.id %}">{{ submission.author.username }}</a>
-          </div>
-          <div>
-            <strong>Mailing group</strong>:<a href="{% url 'mailings:get_group_details' submission.mailing_group.id %}">
-              {{submission.mailing_group.name}}</a>
-          </div>
-          <div>
-            <strong>Mailing template</strong>:<a href="{% url 'mailings:edit_template' submission.mailing_template.id %}">
-              {{submission.mailing_template.name}}</a>
-          </div>
-          <div>
-            <strong>Status</strong>:
-              <span class="badge bg-primary">
-                {{submission.status}}
-              </span>
-          </div>
-        </div>
-      </div>
+      <nav aria-label="breadcrumb" class="mt-2">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_details' submission.fund_id %}"
+              class="text-decoration-none text-muted">{{ submission.fund.name }}</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'submissions:get_list' %}"
+              class="text-decoration-none text-muted">Submissions</a></li>
+          <li class="breadcrumb-item active">Campaign Details</li>
+        </ol>
+      </nav>
     </div>
-    <div class="row mt-2">
+
+    <div class="d-flex gap-2">
+      {% if submission|submission_can_be_edited:user %}
+      <a href="{% url 'submissions:edit_submission' submission.id %}" class="btn btn-outline-secondary shadow-sm">
+        <i class="fa-solid fa-pen-to-square me-1"></i> Edit Configuration
+      </a>
+      <a href="{% url 'submissions:send_submission' submission.id %}"
+        class="btn btn-primary shadow-sm px-4 post-request">
+        <i class="fa-solid fa-rocket me-2"></i> Send Submission
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <hr class="mb-4">
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
       <div class="row">
-        <div class="col-1">
-          <i class="fa-solid fa-pen-to-square"></i>
-          <a {% if submission|submission_can_be_edited:user %}
-              href="{% url 'submissions:edit_submission' submission.id %}"
-             {% else %}
-              class="link-disabled"
-             {% endif %}>Edit</a>
+        <div class="col-md-6">
+          <h6 class="text-muted text-uppercase fw-bold small mb-2">Campaign Notes</h6>
+          <p class="text-dark lead mb-0" style="font-size: 1rem;">
+            {{ submission.notes|default:"No description provided for this submission." }}
+          </p>
         </div>
-        <div class="col-2">
-          <i class="fa-solid fa-paper-plane"></i>
-          <a {% if submission|submission_can_be_edited:user %}
-                href="{% url 'submissions:send_submission' submission.id %}" 
-                class="post-request"
-             {% else %}
-                class="link-disabled"
-             {% endif %}>Send</a>
+
+        <div class="col-md-3 border-start ps-md-4">
+          <h6 class="text-muted text-uppercase fw-bold small mb-3">Timeline</h6>
+          <div class="small d-grid gap-2">
+            <div>
+              <span class="text-muted d-block" style="font-size: 0.7rem;">Created</span>
+              <span class="text-dark"><i class="fa-regular fa-calendar-plus me-1 text-muted"></i>{{submission.date_created|date:"M d, Y H:i" }}</span>
+            </div>
+            <div>
+              <span class="text-muted d-block" style="font-size: 0.7rem;">Last updated</span>
+              <span class="text-dark"><i class="fa-solid fa-arrows-rotate me-1 text-muted"></i>{{submission.last_update_date|date:"M d, Y H:i" }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 border-start ps-md-4">
+          <h6 class="text-muted text-uppercase fw-bold small mb-3">Configuration</h6>
+          <div class="d-grid gap-2 small">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Group:</span>
+              <a href="{% url 'mailings:get_group_details' submission.mailing_group.id %}"
+                class="fw-bold text-decoration-none">
+                {{ submission.mailing_group.name }}
+              </a>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Template:</span>
+              <a href="{% url 'mailings:edit_template' submission.mailing_template.id %}"
+                class="fw-bold text-decoration-none">
+                {{ submission.mailing_template.name }}
+              </a>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Author:</span>
+              <span class="fw-bold">{{ submission.author.username }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white pt-3 border-0">
+      <ul class="nav nav-pills card-header-pills">
+        <li class="nav-item">
+          <a href="?tab=wards"
+            class="nav-link {% if not request.GET.tab or request.GET.tab == 'wards' %}active shadow-sm{% endif %} me-2">
+            <i class="fa-solid fa-leaf me-1"></i> Included Wards
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="?tab=logs" class="nav-link {% if request.GET.tab == 'logs' %}active shadow-sm{% endif %}">
+            <i class="fa-solid fa-list-ul me-1"></i> Transmission Logs
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card-body p-0 border-top">
+      {% if not request.GET.tab or request.GET.tab == 'wards' %}
+      <div class="p-4">
+        {% include "partials/submission_wards_list.html" %}
+      </div>
+      {% elif request.GET.tab == 'logs' %}
+      <div class="p-4">
+        {% include "partials/submission_logs_list.html" %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
 </div>
-{% include "partials/submission_wards_list.html" %}
+
+{% include 'partials/js.html' %}
+{% include 'generic_errormodal.html' %}
 {% endblock %}

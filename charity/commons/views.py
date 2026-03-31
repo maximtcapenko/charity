@@ -60,6 +60,7 @@ def azure_ad_callback(request):
 
     if 'access_token' in result:
         user_info = result['id_token_claims']
+        print(user_info)
         username = user_info.get('preferred_username') or user_info.get('email')
       
         user = User.objects.filter(email=username).first()

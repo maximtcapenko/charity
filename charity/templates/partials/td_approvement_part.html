@@ -1,7 +1,59 @@
-{% if not approvement.id %}
-  <span class="badge bg-info text-dark">pending</span>
-{% elif approvement.is_rejected %}
-  <span class="badge bg-danger">rejected</span>
-{% else %}
-  <span class="badge bg-success">approved</span>
-{% endif %}
+<div class="d-inline-flex align-items-center" style="gap: 8px;">
+  {% if not approvement.id %}
+  <span class="status-dot bg-info"></span>
+  <span class="small fw-bold text-info text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+    Pending
+  </span>
+
+  {% elif approvement.is_rejected %}
+  <span class="status-dot bg-danger"></span>
+  <a href="{% url 'approvements:get_details' approvement.id %}"
+    class="small fw-bold text-danger text-uppercase text-decoration-none hover-underline"
+    style="font-size: 0.65rem; letter-spacing: 0.5px;">
+    Rejected
+  </a>
+
+  {% else %}
+  <span class="status-dot bg-success"></span>
+  <span class="small fw-bold text-success text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+    Approved
+  </span>
+  {% endif %}
+</div>
+
+<style>
+  /* The 'Status Light' Dot */
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  /* Subtle pulsing for pending items to catch the eye in a table */
+  .status-dot.bg-info {
+    box-shadow: 0 0 0 0 rgba(13, 202, 240, 0.4);
+    animation: status-pulse-info 2s infinite;
+  }
+
+  @keyframes status-pulse-info {
+    0% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(13, 202, 240, 0.7);
+    }
+
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 4px rgba(13, 202, 240, 0);
+    }
+
+    100% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(13, 202, 240, 0);
+    }
+  }
+
+  .hover-underline:hover {
+    text-decoration: underline !important;
+  }
+</style>

@@ -1,13 +1,49 @@
 {% for reply in replies %}
-<div id="{{reply.id}}" class="row mt-2 bg-light text-dark">
-    <div class="col-2">
-        <div>
-            {% include 'partials/user_image_part.html' with user=reply.author %}
-        </div>
-        {{ reply.date_created }}
+<div class="reply-item py-2 border-top-0" id="reply-{{ reply.id }}">
+  <div class="d-flex align-items-start">
+    <div class="flex-shrink-0 me-2 mt-1">
+      <div class="avatar-24">
+        {% include 'partials/user_image_part.html' with user=reply.author %}
+      </div>
     </div>
-    <div class="col-10">
+
+    <div class="flex-grow-1">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <small class="text-muted" style="font-size: 0.65rem;">
+          {{ reply.date_created|date:"M d, H:i" }}
+        </small>
+      </div>
+
+      <div class="reply-text text-muted-dark" style="white-space: pre-wrap; line-height: 1.4; font-size: 0.85rem;">
         {{ reply.notes }}
+      </div>
     </div>
   </div>
+</div>
 {% endfor %}
+
+<style>
+  /* Even smaller avatar for nested replies to show hierarchy */
+  .avatar-24 .user-image-partial-wrapper img {
+    width: 24px !important;
+    height: 24px !important;
+    border: 1px solid #eee;
+  }
+
+  .reply-item {
+    transition: background-color 0.15s ease;
+  }
+
+  .reply-item:hover {
+    background-color: rgba(0, 0, 0, 0.01);
+  }
+
+  .text-muted-dark {
+    color: #444;
+  }
+
+  /* Remove the last border if this is inside a thread */
+  .reply-item:last-child {
+    padding-bottom: 0 !important;
+  }
+</style>

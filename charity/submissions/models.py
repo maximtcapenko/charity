@@ -8,7 +8,7 @@ from wards.models import Ward
 
 
 class SubmissionSentStatus(models.TextChoices):
-    DRAFT = 'DRAFT', 'Is draft'
+    QUEUED = 'QUEUED', 'In queue'
     SENT = 'SENT', 'Sent'
     IN_PROGRESS = 'IN_PROGRESS', 'In progress'
     PARTIALLY_SENT = 'PARTIALLY_SENT', 'Partially sent'
@@ -25,5 +25,12 @@ class Submission(Base):
     mailing_template = models.ForeignKey(
         MailingTemplate, on_delete=models.PROTECT, related_name='submissions')
     mailing_group = models.ForeignKey(MailingGroup, on_delete=models.PROTECT, related_name='submissions')
+    is_draft = models.BooleanField()
+    last_update_date = models.DateTimeField(auto_now=True, null=True)
+
+class SubmissionLog(Base):
+    submission = models.ForeignKey(Submission, on_delete=models.CASCADE, related_name='logs')
+    author = models.ForeignKey(User, on_delete=models.PROTECT)
+    recipients_count = models.IntegerField()
     status = models.CharField(
         choices=SubmissionSentStatus.choices, max_length=16)

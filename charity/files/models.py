@@ -23,16 +23,13 @@ class Attachment(Base):
         EXCEL = 'EXCEL', 'Excel'
         VIDEO = 'VIDEO', 'Video'
 
-    name = models.CharField(max_length=256, blank=False,
-                            unique=True, null=False)
+    name = models.CharField(max_length=256, blank=False, null=False)
     notes = models.TextField(blank=True, null=True)
     file = FundFileField(upload_to=storages.FILES)
     thumb = FundFileField(upload_to=storages.THUMBS)
     type = models.CharField(choices=AttachmentType.choices, max_length=6)
     author = models.ForeignKey(User, on_delete=models.PROTECT)
     fund = models.ForeignKey(Fund, on_delete=models.PROTECT)
-    storage_provider = models.CharField(
-        max_length=10, default=settings.DEFAULT_STORAGE_PROVIDER)
     is_public = models.BooleanField(default=False)
     size = models.IntegerField()
 
@@ -40,6 +37,7 @@ class Attachment(Base):
         if self.file:
             self._create_thumbnail()
 
+        self.size = round(self.file.size / 1000)
         super().save(*args, **kwargs)
 
     def _create_thumbnail(self):      
@@ -51,5 +49,3 @@ class Attachment(Base):
             thumb_filename = f'thumb_{uuid.uuid1().hex}.jpeg'
             self.thumb.save(thumb_filename, ContentFile(
             thumb_io.getvalue()), save=False)
-        else:
-            pass

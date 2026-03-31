@@ -158,6 +158,16 @@
             </a>
           </div>
           {% endif %}
+
+          {% if contribution.payout_excess_task %}
+          <div class="mt-4 pt-3 border-top">
+            <label class="text-muted small d-block text-uppercase fw-bold text-warning">Excess Payout Reference</label>
+            <a href="{% url 'tasks:get_details' contribution.payout_excess_task.id%}"
+              class="small text-decoration-none fw-bold">
+              <i class="fa-solid fa-receipt me-1"></i> View Task
+            </a>
+          </div>
+          {% endif %} 
         </div>
       </div>
     </div>

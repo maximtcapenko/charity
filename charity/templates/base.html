@@ -1,207 +1,232 @@
+<!DOCTYPE html>
 <html lang="en">
-  {% load static %}
-  {% load customtags %}
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
-    <title>
-      Charity board
-      {% if title %} 
-        - {{ title }}
-      {% endif %}
-    </title>
-    <link rel="icon" href="{% static 'assets/img/logo.png' %}" type="image/png">
-    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
-    <link rel="stylesheet" href="{% static 'css/fixed-styles.css' %}">
-    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-  </head>
-  <body class="sb-nav-fixed">
-    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-      <!-- Navbar Brand -->
-      <a class="navbar-brand ps-3" href="">Charity</a>
-      <!-- Sidebar Toggle -->
-      <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
-      <!-- Navbar Search -->
-      <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-      </form>
-      <!-- Navbar -->
-      <!--Tasks-->
-      <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-2">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fa-solid fa-list-check"></i>
-            {% if user.is_authenticated %}
-              <span class="badge bg-danger rounded-circle">{{ user.assigned_active_tasks.count }}</span>
-            {% endif %}
-          </a>
-          {% if user.is_authenticated %}
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-            {{ user.assigned_active_tasks |active_tasks_list}}
-          </ul>
-          {% endif %}
-        </li>
-      </ul>
-      <!--Notifications-->
-      <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-2">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fa-solid fa-bell"></i>
-            {% if user.is_authenticated %}
-              <span class="badge bg-danger rounded-circle">{{ user.not_viewed_notifications.count }}</span>
-            {% endif %}
-          </a>
-          {% if user.is_authenticated %}
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-            {{ user.not_viewed_notifications |notifications_list}}
-          </ul>
-          {% endif %}
-        </li>
-      </ul>
-      <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            {{ user.volunteer_profile|cover:25 }}</a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-            <li>
-              <a href="{%url 'funds:get_volunteer_details' user.volunteer_profile.id %}" class="dropdown-item">
-                <strong>{{ user.username }}</strong>
-              </a>
-              <hr class="dropdown-divider" />
-            </li>
-            <li>
-              <a class="dropdown-item" href="#!">Settings</a>
-            </li>
-            <li>
-              <a class="dropdown-item" href="#!">Activity Log</a>
-            </li>
-            <li>
-              <hr class="dropdown-divider" />
-            </li>
-            <li>
-              <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </nav>
-    <div id="layoutSidenav">
-      <div id="layoutSidenav_nav">
-        <nav class="sb-sidenav accordion sb-sidenav" id="sidenavAccordion">
-          <div class="sb-sidenav-menu">
-            <div class="nav">
-              <div class="sb-sidenav-menu-heading"></div>
-              <a class="nav-link" href="{% url 'funds:get_current_details' %}">
-                <div class="sb-nav-link-icon">
-                  <i class="fa-solid fa-house"></i>
-                </div>Home
-              </a>
-              <a class="nav-link" href="{% url 'wards:get_list' %}">
-                <div class="sb-nav-link-icon">
-                  <i class="fa-solid fa-leaf"></i>
-                </div>Wards
-                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-              </a>
-              <div>
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'filters:get_list' 'ward' %}">
-                    <div class="sb-nav-link-icon">
-                      <i class="fa-solid fa-filter"></i>
-                    </div>
-                    Filters</a>
-                </nav>
-              </div>
-              <div>
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'submissions:get_list' %}">
-                    <div class="sb-nav-link-icon">
-                      <i class="fa-regular fa-paper-plane"></i>
-                    </div>
-                    Submission</a>
-                </nav>
-              </div>
-              <a class="nav-link">
-                <div class="sb-nav-link-icon">
-                  <i class="fa-solid fa-envelope"></i>
-                </div>
-                Mailing
-                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-              </a>
-              <div>
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mailings:get_gorups_list'%}">
-                    <div class="sb-nav-link-icon">
-                      <i class="fa-solid fa-at"></i>
-                    </div>
-                    Mailing groups</a>
-                </nav>
-              </div>
-              <div>
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mailings:get_templates_list'%}">
-                    <div class="sb-nav-link-icon">
-                      <i class="fa-solid fa-book-open"></i>
-                    </div>
-                    Templates</a>
-                </nav>
-              </div>
-              <a class="nav-link" href="{% url 'budgets:get_list' %}">
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-sack-dollar"></i>
-                </div>Budgets
-              </a>
-              <a class="nav-link" href="{% url 'customfields:get_list' %}">
-                <div class="sb-nav-link-icon">
-                  <i class="fa-solid fa-tags"></i>
-                </div>Custom fields
-              </a>
-              <a class="nav-link" href="{% url 'processes:get_list' %}">
-                <div class="sb-nav-link-icon">
-                  <i class="fa-solid fa-gears"></i>
-                </div>Processes
-              </a>
-              <a class="nav-link" href="{% url 'projects:get_list' %}">
-                <div class="sb-nav-link-icon">
-                  <i class="fa-solid fa-diagram-project"></i>
-                </div>Projects
-              </a>
-            </div>
-          </div>
-          <div class="sb-sidenav-footer bg-light">
-            <div class="small text-muted">Logged in at:</div>
-            <div class="text-muted">{{ user.last_login }}</div>
-          </div>
-        </nav>
-      </div>
-      <div id="layoutSidenav_content">
-        <main>
-          <div class="container-fluid px-4">
-            {% block content %}
+{% load static %}
+{% load customtags %}
 
-            {% endblock %}
-          </div>
-        </main>
-        <footer class="py-4 bg-light mt-auto">
-          <div class="container-fluid px-4">
-            <div class="d-flex align-items-center justify-content-between small">
-              <div class="text-muted">
-                Copyright &copy; Charity {% now 'Y' %}
-              </div>
-            </div>
-          </div>
-        </footer>
-      </div>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Charity Board {% if title %} - {{ title }}{% endif %}</title>
+
+  <link rel="icon" href="{% static 'assets/img/logo.png' %}" type="image/png">
+  <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/fixed-styles.css' %}">
+
+  <style>
+    .bg-primary-soft {
+      background-color: rgba(13, 110, 253, 0.1);
+      color: #0d6efd;
+    }
+
+    .bg-success-soft {
+      background-color: rgba(25, 135, 84, 0.1);
+      color: #198754;
+    }
+
+    .bg-warning-soft {
+      background-color: rgba(255, 193, 7, 0.1);
+      color: #ffc107;
+    }
+
+    .bg-danger-soft {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+    }
+
+    .badge.rounded-circle {
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+    }
+
+    .nav-link {
+      transition: all 0.2s;
+    }
+
+    .sb-sidenav-menu-heading {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #adb5bd;
+      padding-top: 1.5rem !important;
+    }
+  </style>
+
+  <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+</head>
+
+<body class="sb-nav-fixed bg-light">
+
+  <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark shadow">
+    <a class="navbar-brand ps-3 fw-bold" href="/">
+      <i class="fa-solid fa-hand-holding-heart me-2 text-primary"></i>Charity
+    </a>
+    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0 text-white opacity-75" id="sidebarToggle">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script>
-      window.addEventListener('DOMContentLoaded', event => {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-          return new bootstrap.Tooltip(tooltipTriggerEl)
-        })
+
+    <ul class="navbar-nav ms-auto ms-md-0 me-3">
+      <li class="nav-item dropdown me-2">
+        <a class="nav-link dropdown-toggle" id="tasksDropdown" href="#" role="button" data-bs-toggle="dropdown"
+          aria-expanded="false">
+          <i class="fa-solid fa-list-check"></i>
+          {% if user.is_authenticated and user.assigned_active_tasks.count > 0 %}
+          <span class="badge rounded-circle bg-danger badge-floating">
+            {{ user.assigned_active_tasks.count }}
+          </span>
+          {% endif %}
+        </a>
+        {% if user.is_authenticated %}
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="tasksDropdown">
+          {{ user.assigned_active_tasks |active_tasks_list}}
+        </ul>
+        {% endif %}
+      </li>
+
+      <li class="nav-item dropdown me-2">
+        <a class="nav-link dropdown-toggle" id="alertsDropdown" href="#" role="button" data-bs-toggle="dropdown"
+          aria-expanded="false">
+          <i class="fa-solid fa-bell"></i>
+          {% if user.is_authenticated and user.not_viewed_notifications.count > 0 %}
+          <span class="badge rounded-circle bg-warning text-dark badge-floating">
+            {{ user.not_viewed_notifications.count }}
+          </span>
+          {% endif %}
+        </a>
+        {% if user.is_authenticated %}
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="alertsDropdown">
+          {{ user.not_viewed_notifications |notifications_list}}
+        </ul>
+        {% endif %}
+      </li>
+
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" id="userDropdown" href="#" role="button" data-bs-toggle="dropdown"
+          aria-expanded="false">
+          {{ user.volunteer_profile|cover:30 }}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
+          <li class="px-3 py-2 border-bottom mb-2 bg-light">
+            <small class="text-muted d-block">Signed in as</small>
+            <span class="fw-bold text-dark">{{ user.username }}</span>
+          </li>
+          <li><a class="dropdown-item" href="{% url 'funds:get_volunteer_details' user.volunteer_profile.id %}"><i
+                class="fa-solid fa-id-card me-2 text-muted"></i> My Profile</a></li>
+          <li><a class="dropdown-item" href="#!"><i class="fa-solid fa-gear me-2 text-muted"></i> Settings</a></li>
+          <li><a class="dropdown-item" href="#!"><i class="fa-solid fa-clock-rotate-left me-2 text-muted"></i> Activity
+              Log</a></li>
+          <li>
+            <hr class="dropdown-divider" />
+          </li>
+          <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i
+                class="fa-solid fa-sign-out-alt me-2"></i> Logout</a></li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+
+  <div id="layoutSidenav">
+    <div id="layoutSidenav_nav">
+      <nav class="sb-sidenav accordion sb-sidenav-dark shadow-sm" id="sidenavAccordion">
+        <div class="sb-sidenav-menu">
+          <div class="nav">
+            <div class="sb-sidenav-menu-heading">Main Dashboard</div>
+            <a class="nav-link" href="{% url 'funds:get_current_details' %}">
+              <div class="sb-nav-link-icon"><i class="fa-solid fa-house"></i></div>Home
+            </a>
+
+            <div class="sb-sidenav-menu-heading">Case Management</div>
+            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseWards"
+              aria-expanded="false">
+              <div class="sb-nav-link-icon"><i class="fa-solid fa-leaf text-success"></i></div> Wards
+              <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+            </a>
+            <div class="collapse" id="collapseWards" data-bs-parent="#sidenavAccordion">
+              <nav class="sb-sidenav-menu-nested nav border-start border-secondary ms-3">
+                <a class="nav-link small" href="{% url 'wards:get_list' %}">Ward Directory</a>
+                <a class="nav-link small" href="{% url 'filters:get_list' 'ward' %}">Dynamic Filters</a>
+                <a class="nav-link small" href="{% url 'submissions:get_list' %}">Submission Logic</a>
+              </nav>
+            </div>
+
+            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMailing"
+              aria-expanded="false">
+              <div class="sb-nav-link-icon"><i class="fa-solid fa-envelope text-info"></i></div> Mailing
+              <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+            </a>
+            <div class="collapse" id="collapseMailing" data-bs-parent="#sidenavAccordion">
+              <nav class="sb-sidenav-menu-nested nav border-start border-secondary ms-3">
+                <a class="nav-link small" href="{% url 'mailings:get_gorups_list' %}">Mailing Groups</a>
+                <a class="nav-link small" href="{% url 'mailings:get_templates_list' %}">Templates</a>
+              </nav>
+            </div>
+
+            <div class="sb-sidenav-menu-heading">Financials & Ops</div>
+            <a class="nav-link" href="{% url 'budgets:get_list' %}">
+              <div class="sb-nav-link-icon"><i class="fas fa-sack-dollar text-warning"></i></div>Budgets
+            </a>
+            <a class="nav-link" href="{% url 'projects:get_list' %}">
+              <div class="sb-nav-link-icon"><i class="fa-solid fa-diagram-project text-primary"></i></div>Projects
+            </a>
+
+            <div class="sb-sidenav-menu-heading">System Config</div>
+            <a class="nav-link" href="{% url 'processes:get_list' %}">
+              <div class="sb-nav-link-icon"><i class="fa-solid fa-gears text-secondary"></i></div>Processes
+            </a>
+            <a class="nav-link" href="{% url 'customfields:get_list' %}">
+              <div class="sb-nav-link-icon"><i class="fa-solid fa-tags"></i></div>Custom Fields
+            </a>
+          </div>
+        </div>
+
+        <div class="sb-sidenav-footer bg-dark border-top border-secondary py-3">
+          <div class="small opacity-50">Authenticated as:</div>
+          <div class="text-white small fw-bold">{{ user.username }}</div>
+        </div>
+      </nav>
+    </div>
+
+    <div id="layoutSidenav_content">
+      <main>
+        <div class="container-fluid px-0">
+          {% block content %}
+          {% endblock %}
+        </div>
+      </main>
+
+      <footer class="py-4 bg-white border-top mt-auto shadow-sm">
+        <div class="container-fluid px-4">
+          <div class="d-flex align-items-center justify-content-between small text-muted">
+            <div>Copyright &copy; Charity Board {% now 'Y' %}</div>
+            <div>Version 2.4.0</div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+    crossorigin="anonymous"></script>
+  <script src="{% static 'js/scripts.js' %}"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', event => {
+      // Initialize tooltips
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
       });
-    </script>
-  </body>
+
+      // Toggle Sidebar state persistence can be added here
+    });
+  </script>
+</body>
+
 </html>

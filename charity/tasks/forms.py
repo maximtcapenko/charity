@@ -21,7 +21,6 @@ from .signals import review_request_created, task_has_been_completed
 class CreateTaskForm(
         forms.ModelForm, InitialMixin, FormControlMixin):
     __initial__ = ['project', 'author']
-    field_order = ['ward', 'name', 'process']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -43,6 +42,8 @@ class CreateTaskForm(
             .only('id', 'name')
 
         FormControlMixin.__init__(self)
+
+        self.order_fields(['ward', 'process', 'name', 'notes', 'start_date', 'end_date'])
 
     def clean(self):
         start_date = self.cleaned_data['start_date']
@@ -86,16 +87,16 @@ class UpdateTaskForm(CreateTaskForm):
 
         if self.instance:
             if self.instance.is_started:
-                self.form.start_date.disabled = True
+                self.fields["start_date"].disabled = True
 
-            self.form.ward.queryset = get_available_project_wards_queryset(
+            self.fields["ward"].queryset = get_available_project_wards_queryset(
                 self.instance.project, task_id=self.instance.id
             ).only('id', 'name')
 
             if self.instance.expense and \
                     should_be_approved(self.instance.expense):
                 self.fields.pop('estimated_expense_amount')
-                self.form.ward.disabled = True
+                self.fields["ward"].disabled = True
 
             if self.instance.state_id:
                 self.fields.pop('process')
@@ -164,7 +165,7 @@ class CompleteTaskForm(forms.Form,  InitialMixin, FormControlMixin):
 
             if self.task.expense.amount > actual_expense_amount:
                 payout_excess_contribution = Contribution(
-                    fund=self.fund, contribution_date=datetime.datetime.utcnow(),
+                    fund=self.fund, contribution_date=datetime.datetime.now(datetime.timezone.utc),
                     author=self.author,
                     contributor=self.cleaned_data['contributor'],
                     amount=self.task.expense.amount - actual_expense_amount,

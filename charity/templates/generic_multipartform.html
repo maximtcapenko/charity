@@ -1,22 +1,111 @@
 {% extends 'base.html' %}
 {% block content %}
-  <div class="col-10 col-md-3 col-xl-4 mt-4">
-    <div class="row">
-      <div class="col-10">
-      <h2>{{ title }}</h2>
-      </div>
-      <div class="col-2 text-end">
-        <a class="btn btn-outline-secondary" href="{{ return_url }}" >
-          <i class="fa-solid fa-xmark"></i>
-        </a>
-      </div>
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{{ return_url }}" class="text-decoration-none text-muted">Back</a></li>
+          <li class="breadcrumb-item active">{{ title }}</li>
+        </ol>
+      </nav>
+      <h2 class="fw-bold text-primary mb-0">{{ title }}</h2>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm shadow-sm" href="{{ return_url }}">
+      <i class="fa-solid fa-xmark me-1"></i> Close
+    </a>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+      <form enctype="multipart/form-data" action="" method="post" class="card border-0 shadow-sm overflow-hidden">
+        {% csrf_token %}
+
+        {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+        {% endfor %}
+
+        <div class="card-body p-4 p-md-5">
+          <div class="row g-4">
+            {% for field in form.visible_fields %}
+            <div class="{% if field.field.widget.input_type == 'textarea' %}col-12{% else %}col-md-6{% endif %}">
+              <div class="form-group mb-2">
+                <label class="form-label fw-bold small text-muted mb-1" for="{{ field.id_for_label }}">
+                  {{ field.label }}
+                  {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+
+                {% if field.field.widget.input_type == 'checkbox' %}
+                <div class="form-check form-switch mt-1">
+                  {{ field }}
+                  <label class="form-check-label small text-muted" for="{{ field.id_for_label }}">Enable / Disable</label>
+                </div>
+                {% else %}
+                {{ field }}
+                {% endif %}
+
+                {% if field.errors %}
+                <div class="text-danger small mt-1">
+                  {{ field.errors|striptags }}
+                </div>
+                {% endif %}
+                {% if field.help_text %}
+                <div class="form-text small opacity-75">{{ field.help_text|safe }}</div>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card-footer bg-light border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+          <small class="text-muted"><span class="text-danger">*</span> Indicates a required field</small>
+          <div>
+            <a href="{{ return_url }}" class="btn btn-link text-muted text-decoration-none me-3">Cancel</a>
+            <button type="submit" class="btn btn-primary px-5 shadow-sm">
+              <i class="fa-solid fa-check-circle me-2"></i> Save Changes
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
   </div>
-  <div class="col-12 col-md-3 col-xl-4">
-    <form enctype="multipart/form-data" action="" method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <input type="submit" class="btn btn-primary" value="Submit" />
-    </form>
-  </div>
+</div>
+
+<style>
+  /* Ensure Django's auto-generated fields match Bootstrap */
+  .card-body input:not([type="checkbox"]),
+  .card-body select,
+  .card-body textarea {
+    display: block;
+    width: 100%;
+    padding: 0.475rem 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+  }
+
+  .card-body input[type="checkbox"] {
+    cursor: pointer;
+  }
+
+  .card-body textarea {
+    min-height: 120px;
+  }
+
+  .card-body input:focus,
+  .card-body select:focus,
+  .card-body textarea:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .1);
+  }
+</style>
 {% endblock %}

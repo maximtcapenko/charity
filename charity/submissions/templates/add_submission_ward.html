@@ -1,18 +1,77 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-<h2 class="mt-4">Add ward to {{ submission.name }}</h2>
-<ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item">
-    <a href="{% url 'funds:get_details' submission.fund_id %}">{{ submission.fund.name }}</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'submissions:get_list' %}">Submission list</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'submissions:get_submission_details' submission.id %}">{{ submission.name }}</a>
-  </li>
-  <li class="breadcrumb-item active">Adding ward</li>
-</ol>
-{% render_partial 'wards.views.get_filter_list_partial' model=model_name target_id=submission.id %}
+
+<div class="container-fluid px-4">
+  <div class="mt-4 mb-4">
+    <div class="d-flex align-items-center mb-2">
+      <div class="bg-primary-soft text-primary rounded-circle p-2 me-3"
+        style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+        <i class="fa-solid fa-plus fs-5"></i>
+      </div>
+      <h2 class="fw-bold mb-0">Add Ward to Submission</h2>
+    </div>
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 small">
+        <li class="breadcrumb-item">
+          <a href="{% url 'funds:get_details' submission.fund_id %}" class="text-decoration-none text-muted">
+            <i class="fa-solid fa-house-chimney-medical me-1"></i>{{ submission.fund.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'submissions:get_list' %}" class="text-decoration-none text-muted">Submissions</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'submissions:get_submission_details' submission.id %}"
+            class="text-decoration-none text-muted">{{ submission.name }}</a>
+        </li>
+        <li class="breadcrumb-item active text-primary fw-bold">Selection Utility</li>
+      </ol>
+    </nav>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4 bg-light">
+    <div class="card-body py-3 d-flex align-items-center justify-content-between">
+      <div>
+        <span class="text-muted small text-uppercase fw-bold">Target Campaign</span>
+        <h5 class="mb-0 fw-bold text-dark">{{ submission.name }}</h5>
+      </div>
+      <div class="text-end">
+        <span class="badge bg-white text-dark border rounded-pill px-3 py-2">
+          <i class="fa-solid fa-envelope-open-text me-2 text-primary"></i>{{ submission.mailing_template.name }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="selection-container">
+    <div class="mb-3 d-flex align-items-center">
+      <i class="fa-solid fa-magnifying-glass-plus me-2 text-muted"></i>
+      <span class="fw-bold text-muted small text-uppercase">Use filters to find and select wards</span>
+    </div>
+
+    {% render_partial 'wards.views.get_filter_list_partial' model=model_name target_id=submission.id %}
+  </div>
+
+  <div class="mt-4 pb-5">
+    <a href="{% url 'submissions:get_submission_details' submission.id %}"
+      class="btn btn-link text-muted text-decoration-none">
+      <i class="fa-solid fa-arrow-left me-1"></i> Cancel and return to details
+    </a>
+  </div>
+</div>
+
+<style>
+  /* Ensure the rendered partial fits our modern aesthetic */
+  .selection-container .card {
+    border: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+  }
+
+  .bg-primary-soft {
+    background-color: rgba(13, 110, 253, 0.1);
+  }
+</style>
+
 {% endblock %}

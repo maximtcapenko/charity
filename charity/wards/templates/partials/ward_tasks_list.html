@@ -1,45 +1,100 @@
 {% load taskstags %}
-<div class="card mb-4">
-  <div class="card-header">
-    <i class="fa-solid fa-list-check"></i>
+{% load customtags %}
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+    <h6 class="mb-0 fw-bold text-muted text-uppercase small">
+      <i class="fa-solid fa-list-check me-2 text-primary"></i>
+      Active Care Plan & Tasks
+    </h6>
+    <span class="badge rounded-pill bg-light text-dark border fw-normal px-3">
+      {{ ward.tasks.count }} Total Tasks
+    </span>
   </div>
-  <div class="card-body">
-    <table class="table table-striped">
-      <tbody>
-        {% for task in ward.tasks.all %}
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase">
           <tr>
-            <td class="col-3 align-middle">
-              <h6><a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a></h6>
-              {{ task.date_created }}
-              {% if task.is_high_priority %}
-                <span class="badge bg-warning text-dark">high priority</span>
-              {% else %}
-                <span class="badge bg-secondary">regular</span>
-              {% endif %}
+            <th class="ps-4" style="width: 35%;">Task Description</th>
+            <th style="width: 15%;">Assigned To</th>
+            <th style="width: 35%;">Current Progress</th>
+            <th class="text-end pe-4" style="width: 15%;">Allocation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in ward.tasks.all %}
+          <tr>
+            <td class="ps-4">
+              <div class="d-flex flex-column">
+                <h6 class="mb-1 fw-bold">
+                  <a href="{% url 'tasks:get_details' task.id %}" class="text-decoration-none text-dark">
+                    {{ task.name }}
+                  </a>
+                </h6>
+                <div class="d-flex align-items-center gap-2">
+                  {% if task.is_high_priority %}
+                  <span class="badge rounded-pill bg-danger-soft text-danger border border-danger px-2"
+                    style="font-size: 0.65rem;">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>HIGH PRIORITY
+                  </span>
+                  {% else %}
+                  <span class="badge rounded-pill bg-secondary-soft text-secondary border border-secondary px-2"
+                    style="font-size: 0.65rem;">
+                    REGULAR
+                  </span>
+                  {% endif %}
+                  <small class="text-muted" style="font-size: 0.7rem;">{{ task.date_created|date:"M d, Y" }}</small>
+                </div>
+              </div>
             </td>
-            <td class="col-2 align-middle">
-              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Assignee">
+            <td>
+              <div class="d-flex align-items-center" data-bs-toggle="tooltip"
+                title="Assignee: {{ task.assignee.username }}">
                 {% include 'partials/user_image_part.html' with user=task.assignee %}
-              </span>
+              </div>
             </td>
-            <td class="align-middle">
-              {% render_task_progress task=task %}
+            <td>
+              <div class="pe-3">
+                {% render_task_progress task=task %}
+              </div>
             </td>
-            <td class="align-middle text-center">
-              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Budget">
-                <i class="fa-solid fa-dollar-sign fa-xs"></i>
+            <td class="text-end pe-4">
+              <div class="d-inline-flex align-items-center bg-light rounded px-2 py-1 border shadow-sm">
+                <i class="fa-solid fa-dollar-sign text-success small me-1"></i>
                 {% if task.expense %}
-                  <a href="{% url 'budgets:get_expense_details' task.expense.budget_id task.expense_id %}"> 
-                    {{ task.estimated_expense_amount|floatformat:'2g' }}
-                  </a> 
-                {% else %}
+                <a href="{% url 'budgets:get_expense_details' task.expense.budget_id task.expense_id %}"
+                  class="text-decoration-none fw-bold text-dark small" title="View Expense Details">
                   {{ task.estimated_expense_amount|floatformat:'2g' }}
+                </a>
+                {% else %}
+                <span class="fw-bold text-dark small">{{ task.estimated_expense_amount|floatformat:'2g' }}</span>
                 {% endif %}
-              </span>
+              </div>
             </td>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center py-5 text-muted">
+              <i class="fa-solid fa-clipboard-question fs-2 mb-2 d-block opacity-25"></i>
+              <p class="small mb-0">No tasks currently associated with this ward.</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
+
+<style>
+  /* Specific soft badge styles for this view */
+  .bg-danger-soft {
+    background-color: rgba(220, 53, 69, 0.1);
+  }
+
+  .bg-secondary-soft {
+    background-color: rgba(108, 117, 125, 0.1);
+  }
+</style>

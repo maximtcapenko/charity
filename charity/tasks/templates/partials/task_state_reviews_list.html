@@ -1,9 +1,76 @@
 {% load taskfilters %}
-<a {% if state|task_state_is_ready_for_review:context %}
-     href="{% url 'tasks:approve_task_state' task.id state.id %}" 
-     class="btn btn-link"
-    {% else %}
-        class="btn btn-link disabled"
-        href=""
-    {% endif %}>Add review </a>
-{% include 'approvements_list.html' %}
+{% load customtags %}
+
+<div class="task-review-section">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h6 class="mb-0 fw-bold text-muted text-uppercase small">
+        <i class="fa-solid fa-circle-check me-2 text-warning"></i>Compliance & Approval
+      </h6>
+      <small class="text-muted">Review history and formal sign-offs for this state</small>
+    </div>
+
+    <div class="review-actions">
+      {% if state|task_state_is_ready_for_review:context %}
+      <a href="{% url 'tasks:approve_task_state' task.id state.id %}" class="btn btn-warning shadow-sm px-4 fw-bold">
+        <i class="fa-solid fa-signature me-2"></i> Submit Review
+      </a>
+      {% else %}
+      <div class="d-inline-block" data-bs-toggle="tooltip"
+        title="Review is not available at this stage or you lack permissions.">
+        <button class="btn btn-outline-secondary disabled opacity-50 px-4 shadow-none">
+          <i class="fa-solid fa-lock me-2"></i> Review Locked
+        </button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm overflow-hidden">
+    <div class="card-header bg-light py-3 border-bottom-0">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="small fw-bold text-muted text-uppercase">Review Log</span>
+        {% if state.is_approvement_required %}
+        <span class="badge bg-warning-soft text-warning border border-warning px-2">
+          <i class="fa-solid fa-circle-exclamation me-1"></i>Approval Required
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="approval-list-wrapper">
+        {% include 'approvements_list.html' %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Styling to ensure the review section feels official */
+  .btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+  }
+
+  .btn-warning:hover {
+    background-color: #ffca2c;
+    border-color: #ffc720;
+  }
+
+  .bg-warning-soft {
+    background-color: rgba(255, 193, 7, 0.1);
+  }
+
+  /* If the list is empty, let's make it look clean */
+  .approval-list-wrapper:empty::after {
+    content: "No reviews have been recorded yet.";
+    display: block;
+    padding: 3rem;
+    text-align: center;
+    color: #adb5bd;
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+</style>

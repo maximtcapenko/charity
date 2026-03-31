@@ -17,9 +17,13 @@ def render_tasks_board(context, project, tasks):
 
     def _get_context():
         todo_tasks = ''
+        todo_tasks_count = 0
         in_progress_tasks = ''
+        in_progress_tasks_count = 0
         on_review_tasks = ''
+        on_review_tasks_count = 0
         done_tasks = ''
+        done_tasks_count = 0
 
         comments = wrap_dict_set_to_objects_list(
             get_project_tasks_comments_count_queryset(project))
@@ -34,6 +38,7 @@ def render_tasks_board(context, project, tasks):
                 filter(lambda x: x.id == task.id, progresses))
 
             if not task.is_started and not task.is_done:
+                todo_tasks_count += 1
                 todo_tasks += loader.render_to_string(task_template_name, {
                     'task': task,
                     'comments_count': comments_count.comments_count,
@@ -41,12 +46,14 @@ def render_tasks_board(context, project, tasks):
                 }, request, using=None)
 
             elif task.is_started and not task.is_on_review and not task.is_done:
+                in_progress_tasks_count += 1
                 in_progress_tasks += loader.render_to_string(task_template_name, {
                     'task': task,
                     'comments_count': comments_count.comments_count,
                     'progress': progress
                 }, request, using=None)
             elif task.is_on_review:
+                on_review_tasks_count += 1
                 on_review_tasks += loader.render_to_string(task_template_name, {
                     'task': task,
                     'comments_count': comments_count.comments_count,
@@ -54,6 +61,7 @@ def render_tasks_board(context, project, tasks):
                 }, request, using=None)
 
             elif task.is_done:
+                done_tasks_count += 1
                 done_tasks += loader.render_to_string(task_template_name, {
                     'task': task,
                     'comments_count': comments_count.comments_count,
@@ -62,9 +70,13 @@ def render_tasks_board(context, project, tasks):
 
         return {
             'todo_tasks': mark_safe(todo_tasks),
+            'todo_tasks_count': todo_tasks_count,
             'in_progress_tasks': mark_safe(in_progress_tasks),
+            'in_progress_tasks_count': in_progress_tasks_count,
             'on_review_tasks': mark_safe(on_review_tasks),
-            'done_tasts': mark_safe(done_tasks),
+            'on_review_tasks_count': on_review_tasks_count,
+            'done_tasks': mark_safe(done_tasks),
+            'done_tasks_count': done_tasks_count,
             'items_count': items_count,
             'page': tasks
         }

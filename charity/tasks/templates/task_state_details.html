@@ -144,7 +144,7 @@
 
               {% if state.completion_date %}
               <small class="text-muted d-block">Completed:</small>
-              <div><i class="fa-regular fa-calendar-check me-2 text-success"></i>{{ state.completion_date|date:"M d, Y"}}</div>
+              <div><i class="fa-regular fa-calendar-check me-2 text-success"></i>{{ state.completion_date|date:"Md, Y H:i"}}</div>
               {% endif %}
             </div>
           </div>

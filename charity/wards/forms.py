@@ -25,6 +25,7 @@ class CreateWardForm(BaseCustomFieldsModelForm, FormControlMixin,
             attrs={'class': 'form-control'},
             accept='image/jpeg, image/png'
         )
+        self.order_fields(['cover'])
 
     class Meta:
         model = Ward
