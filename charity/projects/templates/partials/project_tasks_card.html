@@ -1,43 +1,160 @@
-<div class="card mb-4">
-  <div class="card-header">
-    {{items_count}} <i class="fa-solid fa-list-check"></i>
-    Tasks
+<div class="kanban-board py-3">
+  <div class="row g-3 mb-4">
+    <div class="col-md-12 d-flex gap-2">
+      <span class="badge bg-light text-dark border fw-normal">Total Tasks: {{ items_count }}</span>
+    </div>
   </div>
-  <div class="card-body">
-    <div class="row">
-      <div class="col">
-        <div class="bg bg-secondary rounded text-light text-center">TODO</div>
-      </div>
-      <div class="col">
-        <div class="bg bg-primary rounded text-light text-center">In Progress</div>
-      </div>
-      <div class="col">
-        <div class="bg bg-info rounded text-dark text-center">On Review</div>
-      </div>
-      <div class="col">
-        <div class="bg bg-success rounded text-light text-center">Done</div>
+
+  <div class="row g-3 flex-nowrap overflow-auto pb-3">
+
+    <div class="col-12 col-md-3" style="min-width: 300px;">
+      <div class="kanban-column bg-light rounded-3 p-2 border shadow-sm">
+        <div
+          class="column-header d-flex justify-content-between align-items-center p-2 mb-3 border-bottom border-2 border-secondary">
+          <h6 class="mb-0 fw-bold text-secondary text-uppercase small">
+            <i class="fa-solid fa-thumbtack me-2"></i>To Do
+          </h6>
+          <span class="badge bg-secondary rounded-pill small">{{ todo_tasks_count }}</span>
+        </div>
+        <div class="task-list p-1" style="min-height: 200px;">
+          {{ todo_tasks }}
+        </div>
       </div>
     </div>
 
-    <div class="row">
-      <div class="col">
-        {{ todo_tasks }}
-      </div>
-      <div class="col">
-        {{ in_progress_tasks }}
-      </div>
-      <div class="col">
-        {{ on_review_tasks }}
-      </div>
-      <div class="col">
-        {{ done_tasts }}
+    <div class="col-12 col-md-3" style="min-width: 300px;">
+      <div class="kanban-column bg-light rounded-3 p-2 border shadow-sm">
+        <div
+          class="column-header d-flex justify-content-between align-items-center p-2 mb-3 border-bottom border-2 border-primary">
+          <h6 class="mb-0 fw-bold text-primary text-uppercase small">
+            <i class="fa-solid fa-person-running me-2"></i>In Progress
+          </h6>
+          <span class="badge bg-primary rounded-pill small">{{ in_progress_tasks_count }}</span>
+        </div>
+        <div class="task-list p-1" style="min-height: 200px;">
+          {{ in_progress_tasks }}
+        </div>
       </div>
     </div>
 
-    <div class="row mt-2">
-      <div>
-        {% include 'paginator.html' with obj_page=page %}
+    <div class="col-12 col-md-3" style="min-width: 300px;">
+      <div class="kanban-column bg-light rounded-3 p-2 border shadow-sm">
+        <div
+          class="column-header d-flex justify-content-between align-items-center p-2 mb-3 border-bottom border-2 border-info">
+          <h6 class="mb-0 fw-bold text-info text-uppercase small">
+            <i class="fa-solid fa-magnifying-glass me-2"></i>On Review
+          </h6>
+          <span class="badge bg-info text-dark rounded-pill small">{{ on_review_tasks_count }}</span>
+        </div>
+        <div class="task-list p-1" style="min-height: 200px;">
+          {{ on_review_tasks }}
+        </div>
       </div>
     </div>
+
+    <div class="col-12 col-md-3" style="min-width: 300px;">
+      <div class="kanban-column bg-light rounded-3 p-2 border shadow-sm">
+        <div
+          class="column-header d-flex justify-content-between align-items-center p-2 mb-3 border-bottom border-2 border-success">
+          <h6 class="mb-0 fw-bold text-success text-uppercase small">
+            <i class="fa-solid fa-circle-check me-2"></i>Done
+          </h6>
+          <span class="badge bg-success rounded-pill small">{{ done_tasks_count }}</span>
+        </div>
+        <div class="task-list p-1" style="min-height: 200px;">
+          {{ done_tasks }}
+        </div>
+      </div>
+    </div>
+
   </div>
+
+  {% if page.has_other_pages %}
+  <div class="mt-4 pt-3 border-top d-flex justify-content-center">
+    {% include 'paginator.html' with obj_page=page %}
+  </div>
+  {% endif %}
 </div>
+
+<style>
+  /* Styling for the board layout */
+  .kanban-board {
+    min-height: 500px;
+  }
+
+  .kanban-column {
+    transition: background-color 0.2s ease;
+    background-color: #fcfcfc !important;
+    /* Slightly off-white for contrast */
+  }
+
+  /* Column Header underlines match the status colors */
+  .border-secondary {
+    border-color: #6c757d !important;
+  }
+
+  .border-primary {
+    border-color: #0d6efd !important;
+  }
+
+  .border-info {
+    border-color: #0dcaf0 !important;
+  }
+
+  .border-success {
+    border-color: #198754 !important;
+  }
+
+  /* Ensure horizontal scrolling works on mobile/smaller screens */
+  .flex-nowrap {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Style the individual task items (assuming they are cards) */
+  .task-list .card {
+    margin-bottom: 12px;
+    border: 1px solid #eee !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+  }
+
+  /* Prevent title overflow from making cards different heights */
+  .task-card-wrapper .card-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    min-height: 2.8em;
+  }
+
+  /* Ensure the user image is consistent and doesn't conflict with text */
+  .task-card-wrapper .user-image-partial-wrapper img {
+    width: 32px !important;
+    height: 32px !important;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Soft styles for hover and financial badges */
+  .bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.1);
+  }
+
+  .transition-hover {
+    transition: all 0.2s ease;
+  }
+
+  .transition-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .border-dashed {
+    border: 1px dashed #dee2e6 !important;
+  }
+
+  .bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.1);
+    color: #198754;
+  }
+</style>

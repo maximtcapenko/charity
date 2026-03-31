@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_current_details' %}" class="text-decoration-none">{{user.fund.name }}</a></li>
+          <li class="breadcrumb-item"><a href="{{ return_url }}" class="text-decoration-none text-muted">Back</a></li>
+          <li class="breadcrumb-item active">{% if 'edit' in request.path %}Edit{% else %}Add New{% endif %}
+            Ward</li>
+        </ol>
+      </nav>
+      <h2 class="fw-bold text-primary">{{ title }}</h2>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm shadow-sm" href="{{ return_url }}">
+      <i class="fa-solid fa-xmark me-1"></i> Cancel
+    </a>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-8 col-lg-10">
+      <form enctype="multipart/form-data" action="" method="post" class="card border-0 shadow-sm overflow-hidden">
+        {% csrf_token %}
+        {{ form.fund }} 
+        <div class="card-body p-4">
+          <div class="row g-4">
+            <div class="col-md-7">
+              <h6 class="text-muted text-uppercase fw-bold small mb-3">General Identity</h6>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold small mb-1" for="id_name">Full Name</label>
+                <input type="text" name="name" maxlength="256" class="form-control" required id="id_name"
+                  placeholder="Enter ward name">
+              </div>
+
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label class="form-label fw-bold small mb-1" for="id_age">Age</label>
+                  <input type="number" name="age" class="form-control" required id="id_age">
+                </div>
+                <div class="col-md-8 mb-3">
+                  <label class="form-label fw-bold small mb-1" for="id_Current_Location">Current
+                    Location</label>
+                  <input type="text" name="Current_Location" class="form-control" id="id_Current_Location"
+                    placeholder="Hospital or City">
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold small mb-1" for="id_notes">Clinical Notes</label>
+                <textarea name="notes" cols="40" rows="5" class="form-control" id="id_notes"
+                  placeholder="Describe the current case..."></textarea>
+              </div>
+            </div>
+
+            <div class="col-md-5 border-start-md ps-md-4">
+              <h6 class="text-muted text-uppercase fw-bold small mb-3">Classification</h6>
+
+              <div class="mb-3">
+                <div class="form-check form-switch p-0 ps-5 mt-2">
+                  <input type="checkbox" name="is_inactive" class="form-check-input" id="id_is_inactive">
+                  <label class="form-check-label fw-bold text-muted ms-2" for="id_is_inactive">Mark as
+                    Inactive</label>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold small mb-1" for="id_F_TYPE">F Type</label>
+                {{ form.F_TYPE }}
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold small mb-1" for="id_clinic_types">Clinic Type</label>
+                {{ form.clinic_types }}
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label fw-bold small mb-1" for="id_level_1">Support Level</label>
+                <input type="number" name="level_1" class="form-control" id="id_level_1">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold small mb-1">Ward Photo (Cover)</label>
+                <div class="image-preview-container bg-light rounded p-3 text-center border">
+                  <img id="preview_id_cover" src="#" class="img-thumbnail mb-2 shadow-sm"
+                    style="max-height: 150px; display: none;">
+                  <div id="no-image-placeholder" class="text-muted small py-4">
+                    <i class="fa-solid fa-image fa-2x d-block mb-1 opacity-25"></i>
+                    Upload a photo
+                  </div>
+                  <input type="file" name="cover" class="form-control form-control-sm" id="id_cover"
+                    accept="image/jpeg, image/png">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer bg-light border-0 py-3 text-end">
+          <a href="{{ return_url }}" class="btn btn-link text-muted text-decoration-none me-3">Cancel</a>
+          <button type="submit" class="btn btn-primary px-5 shadow-sm">
+            <i class="fa-solid fa-cloud-arrow-up me-2"></i> Save Record
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<style>
+  @media (min-width: 768px) {
+    .border-start-md {
+      border-left: 1px solid #dee2e6 !important;
+    }
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .1);
+  }
+</style>
+{% endblock %}

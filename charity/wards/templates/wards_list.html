@@ -1,59 +1,128 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-{% include "partials/header.html" with title=title %}
-<div>
-  <a href="{% url 'wards:create' %}" class="btn btn-link">Add ward</a>
-</div>
-<div class="card mb-4">
-  <div class="card-header">
-    {{items_count}} <i class="fa-solid fa-leaf"></i>
-    Wards
-  </div>
-  <div class="card-body">
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
     <div>
-      <form action="" method="get">
-        <div class="row">
-          {% for field in search_form %}
-          <div {% if field.field.widget.attrs.div_class %} 
-                  class="{{field.field.widget.attrs.div_class}}"
-               {% else %}
-                  class="col"
-                {% endif %}>{{ field }}</div>
-          {% endfor %}
+      <h2 class="mb-0 text-primary">Ward Management</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Dashboard</a></li>
+          <li class="breadcrumb-item active">Wards</li>
+        </ol>
+      </nav>
+    </div>
+    <a href="{% url 'wards:create' %}" class="btn btn-primary shadow-sm px-4">
+      <i class="fa-solid fa-plus me-2"></i>Add New Ward
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4 bg-light">
+    <div class="card-body py-3">
+      <form action="" method="get" class="row g-3 align-items-center">
+        {% for field in search_form %}
+        <div {% if field.field.widget.attrs.div_class %} class="{{field.field.widget.attrs.div_class}}" {% else %}
+          class="col-md-3" {% endif %}>
+          {{ field }} </div>
+        {% endfor %}
+        <div class="col-md-auto">
+          <button type="submit" class="btn btn-sm btn-secondary px-3">Filter Wards</button>
         </div>
       </form>
     </div>
-    <table class="table table-striped">
-      <tbody>
-        {% for ward in page %}
-          <tr>
-            <td>
-              <div>
-                <h6>
-                  {{ ward|thumbnail:50 }}
-                  <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
-                </h6>
-              {{ ward.date_created }}
-              {% if ward.is_inactive %}
-                <span class="badge bg-secondary">inactive</span>
-              {% elif ward.projects.count > 0 %}
-                <span class="badge bg-primary">in work</span>
-              {% else %}
-                <span class="badge bg-primary">active</span>
-              {% endif %}
-              </div>
-              {% with ward.projects.all|first as project %}
-                {% if project %}
-                  <a href="{% url 'projects:get_details' project.id %}">{{project.name}}</a>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+      <h6 class="mb-0 fw-bold text-muted">
+        <i class="fa-solid fa-leaf me-2 text-success"></i>
+        Registered Wards <span class="badge rounded-pill bg-light text-dark border ms-1">{{ items_count }}</span>
+      </h6>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-uppercase">
+            <tr>
+              <th class="ps-4" style="width: 40%;">Ward Identity</th>
+              <th style="width: 15%;">Status</th>
+              <th style="width: 30%;">Current Project</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ward in page %}
+            <tr>
+              <td class="ps-4">
+                <div class="d-flex align-items-center">
+                  <div class="flex-shrink-0">
+                    {{ ward|thumbnail:45 }}
+                  </div>
+                  <div class="ms-3">
+                    <h6 class="mb-0">
+                      <a href="{% url 'wards:get_details' ward.id %}" class="text-decoration-none fw-bold text-dark">
+                        {{ ward.name }}
+                      </a>
+                    </h6>
+                    <small class="text-muted" style="font-size: 0.75rem;">
+                      <i class="fa-regular fa-calendar me-1"></i>Added {{ ward.date_created|date:"M d, Y" }}
+                    </small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                {% if ward.is_inactive %}
+                <span
+                  class="badge rounded-pill bg-secondary-soft text-secondary border border-secondary px-3">Inactive</span>
+                {% elif ward.projects.count > 0 %}
+                <span class="badge rounded-pill bg-primary-soft text-primary border border-primary px-3">In Work</span>
+                {% else %}
+                <span class="badge rounded-pill bg-success-soft text-success border border-success px-3">Active</span>
                 {% endif %}
-              {% endwith %}
-            </td>           
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% include 'paginator.html' with obj_page=page %}
+              </td>
+              <td>
+                {% with ward.projects.all|first as project %}
+                {% if project %}
+                <div class="d-flex align-items-center">
+                  <i class="fa-solid fa-diagram-project text-muted me-2 small"></i>
+                  <a href="{% url 'projects:get_details' project.id %}" class="text-decoration-none small fw-bold">
+                    {{ project.name }}
+                  </a>
+                </div>
+                {% else %}
+                <span class="text-muted small italic">No active projects</span>
+                {% endif %}
+                {% endwith %}
+              </td>
+              <td class="text-end pe-4">
+                <div class="btn-group shadow-sm">
+                  <a href="{% url 'wards:get_details' ward.id %}" class="btn btn-sm btn-light border"
+                    title="View Profile">
+                    <i class="fa-solid fa-eye text-primary"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-5">
+                <i class="fa-solid fa-leaf fa-3x text-muted opacity-25 mb-3"></i>
+                <p class="text-muted">No wards found.</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-footer bg-white border-0 py-3">
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
   </div>
 </div>
+
+{% include 'partials/js.html' %}
 {% endblock %}

@@ -3,73 +3,133 @@
 {% load customtags %}
 {% load projectfilters %}
 {% load projectstags %}
-{% include "partials/header.html" with title='Projects' %}
-<div>
-  <a href="{% url 'projects:create' %}" class="btn btn-link">Add project</a>
-</div>
-<div class="card mb-4">
-  <div class="card-header">
-    {{ items_count }} <i class="fa-solid fa-diagram-project"></i>
-    Projects
-  </div>
-  <div class="card-body">
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
     <div>
-      <form action="" method="get">
-        <div class="row">
-          {% for field in search_form %}
-          <div class="col">
-            {{field}}
-          </div>
-          {% endfor %}
+      <h2 class="mb-0 text-primary">Project Management</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Dashboard</a></li>
+          <li class="breadcrumb-item active">Projects</li>
+        </ol>
+      </nav>
+    </div>
+    <a href="{% url 'projects:create' %}" class="btn btn-primary shadow-sm px-4">
+      <i class="fa-solid fa-plus me-2"></i>Create New Project
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4 bg-light">
+    <div class="card-body py-3">
+      <form action="" method="get" class="row g-3 align-items-center">
+        {% for field in search_form %}
+        <div {% if field.field.widget.attrs.div_class %} class="{{field.field.widget.attrs.div_class}}" {% else %}
+          class="col-md-3" {% endif %}>
+          {{ field }} </div>
+        {% endfor %}
+        <div class="col-md-auto">
+          <button type="submit" class="btn btn-sm btn-secondary px-3">Filter Wards</button>
         </div>
       </form>
     </div>
-    <table class="table table-striped">
-      <tbody>
-        {% for project in page %}
-          <tr>
-            <td class="col-3"> 
-              <h6>
-              <a href="{% url 'projects:get_details' project.id %}">{{ project.name }}</a>
-              </h6>
-              {{ project.date_created }}
-            </td>
-            <td class="align-middle">
-              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Budget">
-                <i class="fa-solid fa-dollar-sign fa-xs"></i>
-                {{ project.approved_budget|floatformat:'2g' }}
-              </span>
-            </td>
-            <td class="col-2 align-middle">
-              {% render_project_progress project=project %}
-            </td>
-            <td class="col-1 align-middle">
-              {% if project.is_closed %}
-                <span class="badge bg-secondary">closed</span>
-              {% else %}
-                <span class="badge bg-primary">active</span>
-              {% endif %}
-            </td>
-            <td class="align-middle">
-              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Leader">
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+      <h6 class="mb-0 fw-bold text-muted">
+        <i class="fa-solid fa-diagram-project me-2 text-primary"></i>
+        Active & Closed Projects <span class="badge rounded-pill bg-light text-dark border ms-1">{{ items_count }}</span>
+      </h6>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-uppercase">
+            <tr>
+              <th class="ps-4" style="width: 25%;">Project Name & Date</th>
+              <th style="width: 12%;">Budget</th>
+              <th style="width: 20%;">Overall Progress</th>
+              <th style="width: 10%;">Status</th>
+              <th style="width: 18%;">Project Leader</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for project in page %}
+            <tr>
+              <td class="ps-4">
+                <h6 class="mb-0">
+                  <a href="{% url 'projects:get_details' project.id %}" class="text-decoration-none fw-bold text-dark">
+                    {{ project.name }}
+                  </a>
+                </h6>
+                <small class="text-muted" style="font-size: 0.75rem;">
+                  <i class="fa-regular fa-calendar me-1"></i>{{ project.date_created|date:"M d, Y" }}
+                </small>
+              </td>
+              <td>
+                <div class="fw-bold text-dark">
+                  <i class="fa-solid fa-dollar-sign fa-xs text-muted"></i>
+                  {{ project.approved_budget|floatformat:'2g' }}
+                </div>
+              </td>
+              <td>
+                <div class="pe-3">
+                  {% render_project_progress project=project %}
+                </div>
+              </td>
+              <td>
+                {% if project.is_closed %}
+                <span
+                  class="badge rounded-pill bg-secondary-soft text-secondary border border-secondary px-3">Closed</span>
+                {% else %}
+                <span class="badge rounded-pill bg-primary-soft text-primary border border-primary px-3">Active</span>
+                {% endif %}
+              </td>
+              <td>
                 {% include 'partials/user_image_part.html' with user=project.leader %}
-              </span>
-            </td>
-            <td class="align-middle">
-              <a {% if project|validate_pre_requirements:user and project|project_should_not_contain_any_tasks %}
-                href="{% url 'projects:remove_project' project.id %}" 
-                class="post-request"
-              {% else %}
-                href="#" class="link-disabled"
-              {% endif %}>Remove</a>               
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+              </td>
+              <td class="text-end pe-4">
+                <div class="btn-group shadow-sm">
+                  <a href="{% url 'projects:get_details' project.id %}" class="btn btn-sm btn-light border"
+                    title="View Details">
+                    <i class="fa-solid fa-eye text-primary"></i>
+                  </a>
+                  {% if project|validate_pre_requirements:user and project|project_should_not_contain_any_tasks %}
+                  <a href="{% url 'projects:remove_project' project.id %}"
+                    class="btn btn-sm btn-light border text-danger post-request" title="Delete">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </a>
+                  {% else %}
+                  <button class="btn btn-sm btn-light border disabled opacity-50"
+                    title="Cannot remove: has tasks or restricted">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-5">
+                <i class="fa-solid fa-diagram-project fa-3x text-muted opacity-25 mb-3"></i>
+                <p class="text-muted">No projects found in the system.</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-footer bg-white border-0 py-3">
       {% include 'paginator.html' with obj_page=page %}
+    </div>
   </div>
 </div>
+
 {% include 'generic_errormodal.html' %}
 {% include 'partials/js.html' %}
 {% endblock %}

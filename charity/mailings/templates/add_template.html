@@ -1,50 +1,114 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 class="mt-4">{{ title }}</h2>
-<ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item">
-    <a href="{% url 'funds:get_current_details' %}">{{ user.fund.name }}</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href={{ return_url }}>Back</a>
-  </li>
-  <li class="breadcrumb-item active">{{title}}</li>
-</ol>
-<form action="" method="post">
-  {% csrf_token %}
-  {{form.media}}
-  {{form.author}}
-  {{form.fund}}
-  <div class="row mt-2">
-    <div class="col-3">
-      <div class="card">
-        <div class="card-header">
-            General
-        </div>
-        <div class="card-body">
-          <p>{{form.name}}</p>
-          <p>{{form.subject}}</p>
-          <p>{{form.content_type}}</p>
-          <p>{{form.info}}</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-9">
-      <div class="card">
-        <div class="card-header">
-          Message body
-        </div>
-        <div class="card-body">
-            {{form.template.errors}}
-            {{form.template}}
-        </div>
-      </div>
-      <div class="row mt-1">
+{% load customtags %}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
         <div>
-          <input type="submit" class="btn btn-link" value="Publish" />
+            <h2 class="fw-bold text-primary">{{ title }}</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 small">
+                    <li class="breadcrumb-item"><a href="{% url 'funds:get_current_details' %}" class="text-decoration-none">{{ user.fund.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ return_url }}" class="text-decoration-none">Back to List</a></li>
+                    <li class="breadcrumb-item active">{{ title }}</li>
+                </ol>
+            </nav>
         </div>
-      </div>
+        <div>
+            <a href="{{ return_url }}" class="btn btn-outline-secondary btn-sm px-3 me-2">Cancel</a>
+        </div>
     </div>
-  </div>
-</form>
+
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.media }}
+        {{ form.author }}
+        {{ form.fund }}
+
+        <div class="row g-4">
+            <div class="col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white py-3 border-bottom-0">
+                        <h6 class="mb-0 fw-bold text-muted text-uppercase small">
+                            <i class="fa-solid fa-sliders me-2"></i>Template Settings
+                        </h6>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Internal Name</label>
+                            {{ form.name }} </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Email Subject</label>
+                            {{ form.subject }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Target Entity</label>
+                            {{ form.content_type }}
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label small fw-bold text-muted">Internal Notes</label>
+                            {{ form.info }}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light border-0 py-3">
+                        <div class="alert alert-info py-2 mb-0" style="font-size: 0.75rem;">
+                            <i class="fa-solid fa-circle-info me-1"></i> Use placeholders matching your Target Entity fields.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-9">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold text-muted text-uppercase small">
+                            <i class="fa-solid fa-pen-nib me-2"></i>Message Content
+                        </h6>
+                        <span class="badge bg-light text-dark border fw-normal">HTML Supported</span>
+                    </div>
+                    <div class="card-body">
+                        {% if form.template.errors %}
+                            <div class="alert alert-danger py-2 small mb-3">
+                                {{ form.template.errors }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="composer-wrapper">
+                            {{ form.template }}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-top-0 py-3 text-end">
+                        <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Save & Publish Template
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    /* Styling for Django form fields to match modern look if not done in Python */
+    .card-body input, .card-body select, .card-body textarea {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.9rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    }
+    .card-body input:focus, .card-body select:focus {
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+    }
+</style>
+
 {% endblock %}

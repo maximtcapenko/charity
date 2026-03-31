@@ -2,86 +2,126 @@
 {% block content %}
 {% load customtags %}
 {% load customfieldstags %}
-  <h2 class="mt-4">{{ ward.name }}</h2>
-  <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item">
-      <a href="{% url 'funds:get_current_details' %}">{{ ward.fund.name }}</a>
-    </li>
-    <li class="breadcrumb-item">
-      <a href="{% url 'wards:get_list' %}">Wards</a>
-    </li>
-    <li class="breadcrumb-item active">Details</li>
-  </ol>
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="row">
-        <div class="col-2">
-          <div class="bg-light text-dark">
-            <div class="card">
-              {% if ward.cover %}
-                <img src="{{ ward.cover.url }}" alt="Upload cover" />
-              {% else %}
-                <img src="..." alt="Upload cover" />
-              {% endif %}
-              <form method="POST" action="{% url 'wards:add_ward_cover' ward.id %}" enctype="multipart/form-data">
-                {% csrf_token %}
-                <label class="btn btn-link">
-                  <i class="fa-solid fa-cloud-arrow-up"></i>
-                  <input class="form-control" type="file" accept=".png, .jepg, .jpg" name="cover" id="cover" onchange="javascrupt:this.form.submit()" style="display:none;" />
-                </label>
-              </form>
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+    <div>
+      <h2 class="mb-0 text-primary">{{ ward.name }}</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_current_details' %}" class="text-decoration-none">{{ ward.fund.name }}</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'wards:get_list' %}" class="text-decoration-none">Wards</a></li>
+          <li class="breadcrumb-item active">Details</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'wards:edit_details' ward.id %}" class="btn btn-outline-secondary shadow-sm">
+        <i class="fa-solid fa-pen-to-square me-1"></i> Edit Details
+      </a>
+    </div>
+  </div>
+
+  <hr class="mb-4">
+
+  <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="row g-0">
+        <div class="col-md-3 bg-light border-end d-flex flex-column align-items-center justify-content-center p-4">
+          <div class="position-relative group mb-3">
+            {% if ward.cover %}
+            <img src="{{ ward.cover.url }}" alt="{{ ward.name }}" class="img-thumbnail shadow-sm rounded-circle"
+              style="width: 160px; height: 160px; object-fit: cover;">
+            {% else %}
+            <div class="bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center border"
+              style="width: 160px; height: 160px;">
+              <i class="fa-solid fa-leaf text-success opacity-25" style="font-size: 4rem;"></i>
             </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'wards:add_ward_cover' ward.id %}" enctype="multipart/form-data"
+              class="position-absolute bottom-0 end-0">
+              {% csrf_token %}
+              <label class="btn btn-sm btn-primary rounded-circle shadow" style="cursor: pointer;"
+                title="Update Photo">
+                <i class="fa-solid fa-camera"></i>
+                <input type="file" accept=".png, .jpeg, .jpg" name="cover" id="cover" onchange="this.form.submit()"
+                  style="display:none;" />
+              </label>
+            </form>
+          </div>
+          <div class="text-center">
+            {% if not ward.is_inactive %}
+            <span class="badge rounded-pill bg-success-soft text-success border border-success px-3 py-2">ACTIVE
+              WARD</span>
+            {% else %}
+            <span
+              class="badge rounded-pill bg-secondary-soft text-secondary border border-secondary px-3 py-2">INACTIVE</span>
+            {% endif %}
           </div>
         </div>
-        <div class="col">
-          <div class="bg-light text-dark">
-            <div>
-              <strong>Created</strong>: {{ ward.date_created }}
-            </div>
-            <div>
-              <strong>Name</strong>: {{ ward.name }}
-            </div>
-            <div>
-              <strong>Description</strong>: {{ ward.notes }}
-            </div>
-           
-            <div>
-              <strong>State</strong>: 
-              {% if not ward.is_inactive %}
-                <span class="badge bg-primary" >active</span>
-              {% else %}
-              <span>inactive</span>
-              {% endif%}
-            </div>
-              <div>
+
+        <div class="col-md-9 p-4">
+          <div class="row">
+            <div class="col-lg-7">
+              <h5 class="text-muted small text-uppercase fw-bold mb-3">General Information</h5>
+              <div class="mb-4">
+                <label class="d-block text-muted small fw-bold">DESCRIPTION</label>
+                <p class="lead text-dark" style="font-size: 1.1rem;">{{ ward.notes|default:"No description provided." }}
+                </p>
+              </div>
+
+              <div class="bg-light p-3 rounded border-start border-4 border-primary shadow-sm mb-3">
+                <h6 class="small fw-bold text-primary text-uppercase mb-2">Special Details</h6>
                 {% render_custom_fields ward %}
               </div>
-            <div>
-              <i class="fa-solid fa-pen-to-square"></i>
-              <a href="{% url 'wards:edit_details' ward.id %}">Edit</a>
+            </div>
+
+            <div class="col-lg-5 border-start-lg">
+              <h5 class="text-muted small text-uppercase fw-bold mb-3">Metadata</h5>
+              <ul class="list-unstyled small d-grid gap-3">
+                <li class="d-flex justify-content-between">
+                  <span class="text-muted">Ward ID:</span>
+                  <span class="fw-bold">#{{ ward.id }}</span>
+                </li>
+                <li class="d-flex justify-content-between">
+                  <span class="text-muted">Created On:</span>
+                  <span class="fw-bold text-dark">{{ ward.date_created|date:"M d, Y" }}</span>
+                </li>
+                <li class="d-flex justify-content-between">
+                  <span class="text-muted">Associated Fund:</span>
+                  <span class="fw-bold text-primary">{{ ward.fund.name }}</span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <ul class="nav nav-pills mb-3">
-    {% for tab in tabs %}
-    <li class="nav-item" role="presentation">
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white pt-3 border-0">
+      <ul class="nav nav-pills card-header-pills" id="wardTabs">
+        {% for tab in tabs %}
+        <li class="nav-item">
+          <a href="?tab={{ tab }}" class="nav-link {% if selected_tab == tab %}active shadow-sm{% endif %} me-2">
+            {{ tab|capfirst }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="card-body p-0">
+      {% for tab in tabs %}
       {% if selected_tab == tab %}
-        <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
-        </a>
-      {% else %}
-        <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
-      {% endif %}
-    </li>
-    {% endfor %}
-  </ul>
-  <div>
-    {% for tab in tabs %}
-      {% if selected_tab == tab %}
+      <div class="p-4 border-top">
         {% include 'partials/ward_'|add:tab|add:'_list.html' %}
+      </div>
       {% endif %}
-    {% endfor %}
+      {% endfor %}
+    </div>
   </div>
+</div>
+
 {% endblock %}

@@ -1,79 +1,133 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load budgetfilters %}
-<h2 class="mt-4">Expense {{ expense.date_created }}</h2>
-<ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item">
-    <a href="{% url 'funds:get_details' budget.fund_id %}">{{ budget.fund.name }}</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'budgets:get_list'%}">Budgets</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'budgets:get_details' expense.budget_id %}?tab=expenses">{{ expense.budget.name }}</a>
-  </li>
-  <li class="breadcrumb-item active">Expense Details</li>
-</ol>
-<div class="card mb-4">
-  <div class="card-body">
-    <div class="row">
-      <div class="col">
-        <div class="bg-light text-dark">
-          <strong>Description</strong>: {{ expense.notes }}
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+    <div>
+      <h2 class="mb-0 text-primary">Expense: {{ expense.amount|floatformat:'2g' }}</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_details' budget.fund_id %}"
+              class="text-decoration-none">{{ budget.fund.name }}</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'budgets:get_list'%}" class="text-decoration-none">Budgets</a>
+          </li>
+          <li class="breadcrumb-item"><a href="{% url 'budgets:get_details' expense.budget_id %}?tab=expenses"
+              class="text-decoration-none">{{ expense.budget.name }}</a></li>
+          <li class="breadcrumb-item active">Expense Details</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex gap-2">
+      <a {% if expense|budget_item_can_be_edited:user %}
+        href="{% url 'budgets:edit_expense_details' budget.id expense.id %}" class="btn btn-outline-secondary shadow-sm"
+        {% else %} class="btn btn-outline-secondary disabled" {% endif %}>
+        <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+      </a>
+      <a {% if expense|budget_item_can_be_reviewed:user %}
+        href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" class="btn btn-primary shadow-sm" {% else %} class="btn btn-primary disabled" {% endif %}>
+        <i class="fa-solid fa-file-signature me-1"></i> Add Review
+      </a>
+    </div>
+  </div>
+
+  <hr class="mb-4">
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm bg-primary text-white">
+            <div class="card-body py-4">
+              <small class="opacity-75 text-uppercase fw-bold">Total Amount</small>
+              <h2 class="display-5 fw-bold mb-0">${{ expense.amount|floatformat:'2g' }}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
+              <small class="text-muted text-uppercase fw-bold mb-2">Approval Status</small>
+              <div class="h5 mb-0">
+                {% include 'partials/li_approvement_part.html' with approvement=expense.approvement %}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="col">
-        <div class="bg-light text-dark">
-          <div>
-            <strong>Created</strong>: {{ expense.date_created }}
+
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title text-muted mb-3"><i class="fa-solid fa-quote-left me-2"></i>Notes / Description</h5>
+          <div class="p-3 bg-light rounded border-start border-4 border-info">
+            {{ expense.notes|default:"No notes provided for this expense." }}
           </div>
-          <div>
-            <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' expense.author.volunteer_profile.id %}">{{ expense.author.username }}</a>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+          <h5 class="mb-0"><i class="fa-solid fa-history me-2"></i>Approval History</h5>
+        </div>
+        <div class="card-body px-0">
+          {% include "approvements_list.html" %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent border-0 pt-4">
+          <h5 class="mb-0">Metadata</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="text-muted small d-block">Origin Task</label>
+            <a href="{% url 'tasks:get_details' expense.task.id %}" class="fw-bold text-decoration-none">
+              <i class="fa-solid fa-list-check me-1"></i> {{ expense.task.name }}
+            </a>
           </div>
-          <div>
-            {% if  expense.reviewer %}
-            <strong>Reviewer</strong>: <a href="{% url 'funds:get_volunteer_details' expense.reviewer.volunteer_profile.id %}">{{ expense.reviewer.username }}</a>
-            {% else%}
-            <strong>Reviewer</strong>: 
-            {% endif %}
+
+          <div class="mb-3">
+            <label class="text-muted small d-block">Associated Project</label>
+            <a href="{% url 'projects:get_details' expense.project.id %}" class="fw-bold text-decoration-none">
+              <i class="fa-solid fa-folder-open me-1"></i> {{ expense.project.name }}
+            </a>
           </div>
-          <div>
-            <strong>Amount</strong>: {{ expense.amount|floatformat:'2g' }}
+
+          <hr>
+
+          <div class="mb-3">
+            <label class="text-muted small d-block text-uppercase">People</label>
+            <div class="d-flex flex-column gap-2 mt-2">
+              <div class="small">
+                <span class="text-muted">Author:</span>
+                <a href="{% url 'funds:get_volunteer_details' expense.author.volunteer_profile.id %}"
+                  class="text-decoration-none">{{ expense.author.username }}</a>
+              </div>
+              <div class="small">
+                <span class="text-muted">Reviewer:</span>
+                {% if expense.reviewer %}
+                <a href="{% url 'funds:get_volunteer_details' expense.reviewer.volunteer_profile.id %}"
+                  class="text-decoration-none">{{ expense.reviewer.username }}</a>
+                {% else %}
+                <span class="text-muted italic">Not assigned</span>
+                {% endif %}
+              </div>
+            </div>
           </div>
-          <div>
-            {% include 'partials/li_approvement_part.html' with approvement=expense.approvement %}
-          </div>
-          <div>
-            <strong>Project</strong>: <a href="{% url 'projects:get_details' expense.project.id %}">{{ expense.project.name }} </a>
-          </div>
-          <div>
-            <strong>Task</strong>: <a href="{% url 'tasks:get_details' expense.task.id %}">{{ expense.task.name }} </a>
+          <hr>
+          <div class="mb-3">
+            <label class="text-muted small d-block text-uppercase fw-bold">Timeline</label>
+            <div class="mt-1 small">
+              <span class="text-muted">Logged:</span> {{ expense.date_created|date:"M d, Y H:i" }}
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="row mt-2">
-      <div class="row">
-        <div class="col-1">
-          <i class="fa-solid fa-pen-to-square"></i>
-          <a  {% if expense|budget_item_can_be_edited:user %}
-                href="{% url 'budgets:edit_expense_details' budget.id expense.id %}"
-              {% else %}
-                href="" class="link-disabled"
-              {% endif %}>Edit</a>
-        </div>
-      </div>
-     </div>
-   </div>
+  </div>
 </div>
-<div>
-  <a  {% if expense|budget_item_can_be_reviewed:user %}
-        href="{% url 'budgets:approve_budget_expense' budget.id expense.id %}" 
-        class="btn btn-link"
-      {% else %}
-        class="btn btn-link disabled"
-      {% endif %}>Add review</a>
-</div>
-{% include "approvements_list.html" %}
+
 {% include 'generic_errormodal.html' %}
 {% endblock %}

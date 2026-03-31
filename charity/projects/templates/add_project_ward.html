@@ -1,19 +1,77 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-<h2 class="mt-4">Add ward to {{ project.name }}</h2>
-<ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item">
-    <a href="{% url 'funds:get_details' project.fund_id %}">{{ project.fund.name }}</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'projects:get_list' %}">Projects</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'projects:get_details' project.id %}?tab=wards">{{ project.name }}</a>
-  </li>
-  <li class="breadcrumb-item active">Adding ward</li>
-</ol>
-{% render_partial 'wards.views.get_filter_list_partial' model=model_name target_id=project.id %}
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+    <div>
+      <h2 class="mb-0 text-primary">Assign Ward to Project</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_details' project.fund_id %}"
+              class="text-decoration-none text-muted">{{ project.fund.name }}</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'projects:get_list' %}"
+              class="text-decoration-none text-muted">Projects</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'projects:get_details' project.id %}?tab=wards"
+              class="text-decoration-none text-muted">{{ project.name }}</a></li>
+          <li class="breadcrumb-item active text-primary fw-bold">Assignment Utility</li>
+        </ol>
+      </nav>
+    </div>
+    <a href="{% url 'projects:get_details' project.id %}?tab=wards" class="btn btn-outline-secondary btn-sm shadow-sm">
+      <i class="fa-solid fa-arrow-left me-1"></i> Back to Project
+    </a>
+  </div>
+
+  <hr class="mb-4">
+
+  <div class="card border-0 shadow-sm mb-4 bg-light overflow-hidden">
+    <div class="card-body p-0">
+      <div class="d-flex align-items-center p-3 border-start border-4 border-primary">
+        <div class="bg-white rounded-circle p-2 shadow-sm me-3">
+          <i class="fa-solid fa-diagram-project text-primary"></i>
+        </div>
+        <div>
+          <span class="text-muted small text-uppercase fw-bold d-block"
+            style="font-size: 0.65rem; letter-spacing: 1px;">Target Project</span>
+          <h5 class="mb-0 fw-bold">{{ project.name }}</h5>
+        </div>
+        <div class="ms-auto pe-3 text-end d-none d-md-block">
+          <span class="text-muted small d-block">Approved Budget</span>
+          <span class="fw-bold text-dark">${{ project.approved_budget|floatformat:'2g' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="selection-wrapper">
+    <div class="alert alert-info border-0 shadow-sm py-2 mb-4 d-flex align-items-center">
+      <i class="fa-solid fa-circle-info me-3 fs-4 text-primary"></i>
+      <div>
+        <small class="fw-bold d-block text-primary">SELECTION INSTRUCTIONS</small>
+        <p class="mb-0 small text-dark">Use the filters below to find wards. Click "Select" to link them to the
+          <strong>{{ project.name }}</strong> initiative.</p>
+      </div>
+    </div>
+
+    {% render_partial 'wards.views.get_filter_list_partial' model=model_name target_id=project.id %}
+  </div>
+</div>
+
 {% include 'generic_errormodal.html' %}
+
+<style>
+  /* Styling to make the partial blend in perfectly */
+  .selection-wrapper .card {
+    border-radius: 0.5rem !important;
+    border: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+  }
+
+  .selection-wrapper .card-header {
+    background-color: transparent !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+  }
+</style>
+
 {% endblock %}

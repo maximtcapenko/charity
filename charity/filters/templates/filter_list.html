@@ -1,39 +1,103 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-{% include "partials/header.html" with title='Wards filters' %}
-<div>
-  <a href="{% url 'filters:add_filter' content_type.model %}" class="btn btn-link">Add filter</a>
-</div>
-<div class="card mb-4">
-  <div class="card-header">
-    {{items_count}} <i class="fa-solid fa-filter"></i>
-    Custom Filters</div>
-  <div class="card-body">
-    <table class="table table-striped">
-      <tbody>
-        {% for filter in page %}
-        <tr>
-          <td class="col-3 align-middle">
-            <h6><a href="{% url 'filters:get_details' filter.id %}">{{ filter.name }}</a></h6>
-              {{ filter.date_created }}
-          </td>
-          <td class="align-middle">
-             <span class="badge bg-primary">{{ filter.content_type.model }}</span>
-          </td>
-          <td class="align-middle">
-            {{ filter.notes }}
-          </td>
-          <td class="align-middle">
-            <a href="{% url 'filters:remove_filter' filter.id %}" class="post-request">Remove</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% include 'paginator.html' with obj_page=page %}
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <div>
+      <h2 class="mb-0 text-primary">Ward Filters</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'wards:get_list' %}"
+              class="text-decoration-none text-muted">Wards</a></li>
+          <li class="breadcrumb-item active">Custom Filters</li>
+        </ol>
+      </nav>
+    </div>
+    <a href="{% url 'filters:add_filter' content_type.model %}" class="btn btn-primary shadow-sm px-4">
+      <i class="fa-solid fa-plus me-2"></i>Create Filter
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+      <h6 class="mb-0 fw-bold text-muted">
+        <i class="fa-solid fa-filter me-2 text-primary"></i>
+        Saved Search Presets <span class="badge rounded-pill bg-light text-dark border ms-1">{{ items_count }}</span>
+      </h6>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-uppercase">
+            <tr>
+              <th class="ps-4" style="width: 30%;">Filter Name & Date</th>
+              <th style="width: 15%;">Target Entity</th>
+              <th style="width: 40%;">Description / Notes</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for filter in page %}
+            <tr>
+              <td class="ps-4">
+                <div class="d-flex flex-column">
+                  <h6 class="mb-1">
+                    <a href="{% url 'filters:get_details' filter.id %}" class="text-decoration-none fw-bold text-dark">
+                      {{ filter.name }}
+                    </a>
+                  </h6>
+                  <small class="text-muted" style="font-size: 0.7rem;">
+                    <i class="fa-regular fa-calendar-plus me-1"></i>Created: {{ filter.date_created|date:"M d, Y" }}
+                  </small>
+                </div>
+              </td>
+              <td>
+                <span class="badge rounded-pill bg-primary-soft text-primary border border-primary px-3 py-1"
+                  style="font-size: 0.7rem;">
+                  <i class="fa-solid fa-database me-1"></i>{{ filter.content_type.model|upper }}
+                </span>
+              </td>
+              <td>
+                <div class="text-secondary small text-truncate" style="max-width: 350px;" data-bs-toggle="tooltip"
+                  title="{{ filter.notes }}">
+                  {{ filter.notes|default:"No description provided." }}
+                </div>
+              </td>
+              <td class="text-end pe-4">
+                <div class="btn-group shadow-sm">
+                  <a href="{% url 'filters:get_details' filter.id %}" class="btn btn-sm btn-light border"
+                    title="Configure Filter">
+                    <i class="fa-solid fa-sliders text-primary"></i>
+                  </a>
+                  <a href="{% url 'filters:remove_filter' filter.id %}"
+                    class="btn btn-sm btn-light border text-danger post-request" title="Delete Preset">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-5 text-muted">
+                <i class="fa-solid fa-filter-circle-xmark fs-2 mb-2 d-block opacity-25"></i>
+                No custom filters found for this section.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-footer bg-white border-0 py-3">
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
   </div>
 </div>
+
 {% include 'partials/js.html' %}
 {% include 'generic_errormodal.html' %}
 {% endblock %}

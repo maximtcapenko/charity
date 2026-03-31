@@ -1,76 +1,147 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-  <h2 class="mt-4">{{ volunteer.user.username }}</h2>
 
-  <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item">
-      <a href="{% url 'funds:get_details' volunteer.fund_id %}?tab=volunteers">{{ volunteer.fund.name }}</a>
-    </li>
-    <li class="breadcrumb-item active">Volunteer Details</li>
-  </ol>
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="row">
-        <div class="col-2">
-          <div class="bg-light text-dark">
-            <div class="card">
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_details' volunteer.fund_id %}?tab=volunteers"
+              class="text-decoration-none text-muted">{{ volunteer.fund.name }}</a></li>
+          <li class="breadcrumb-item active">Volunteer Profile</li>
+        </ol>
+      </nav>
+      <h2 class="fw-bold text-dark mb-0">{{ volunteer.user.username }}</h2>
+    </div>
+    <a href="{% url 'funds:edit_volunteer_profile' volunteer.id %}" class="btn btn-primary shadow-sm px-4">
+      <i class="fa-solid fa-user-pen me-2"></i>Edit Profile
+    </a>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-3 col-lg-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body text-center p-4">
+          <div class="position-relative d-inline-block mb-3">
+            <div class="profile-avatar-lg shadow-sm border rounded-circle overflow-hidden bg-light"
+              style="width: 150px; height: 150px;">
               {% if volunteer.cover %}
-                <img src="{{ volunteer.cover.url }}" alt="Upload cover" />
+              <img src="{{ volunteer.cover.url }}" class="img-fluid w-100 h-100 object-fit-cover" alt="Profile photo"
+                id="profile_preview" />
               {% else %}
-                <img src="..." alt="Upload cover" />
+              <div class="d-flex align-items-center justify-content-center h-100 opacity-25">
+                <i class="fa-solid fa-user fa-5x"></i>
+              </div>
               {% endif %}
-              <form method="POST" action="{% url 'funds:add_volunteer_cover' volunteer.id %}" enctype="multipart/form-data">
-                {% csrf_token %}
-                <label class="btn btn-link">
-                  <i class="fa-solid fa-cloud-arrow-up"></i>
-                  <input class="form-control" type="file" accept=".png, .jepg, .jpg" name="cover" id="cover" onchange="javascrupt:this.form.submit()" style="display:none;" />
-                </label>
-              </form>
+            </div>
+
+            <form method="POST" action="{% url 'funds:add_volunteer_cover' volunteer.id %}"
+              enctype="multipart/form-data" class="position-absolute bottom-0 end-0">
+              {% csrf_token %}
+              <label class="btn btn-primary btn-sm rounded-circle shadow" style="cursor:pointer;"
+                title="Update Photo">
+                <i class="fa-solid fa-camera"></i>
+                <input type="file" accept=".png, .jpeg, .jpg" name="cover" onchange="this.form.submit()"
+                  style="display:none;" />
+              </label>
+            </form>
+          </div>
+
+          <h5 class="fw-bold mb-1">{{ volunteer.user.first_name }} {{ volunteer.user.last_name }}</h5>
+          <p class="text-muted small mb-3">{{ volunteer.title|default:"Volunteer Member" }}</p>
+
+          {% if volunteer.user.is_active %}
+          <span class="badge rounded-pill bg-success-soft text-success border border-success px-3">ACTIVE</span>
+          {% else %}
+          <span class="badge rounded-pill bg-secondary-soft text-secondary border border-secondary px-3">INACTIVE</span>
+          {% endif %}
+        </div>
+        <div class="card-footer bg-light border-0 py-3">
+          <div class="small text-muted mb-1 text-center">
+            <i class="fa-regular fa-calendar-check me-1"></i>Joined: {{ volunteer.date_created|date:"M d, Y" }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-9 col-lg-8">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+          <h6 class="mb-0 fw-bold text-primary"><i class="fa-solid fa-address-card me-2"></i>Contact Information</h6>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label class="small text-muted text-uppercase fw-bold mb-1 d-block">Username</label>
+              <div class="p-2 border-bottom fw-bold text-dark">{{ volunteer.user.username }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="small text-muted text-uppercase fw-bold mb-1 d-block">Email Address</label>
+              <div class="p-2 border-bottom">
+                {% if volunteer.user.email %}
+                <a href="mailto:{{ volunteer.user.email }}" class="text-decoration-none fw-bold">{{ volunteer.user.email }}</a>
+                {% else %}
+                <span class="text-muted italic">No email provided</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="small text-muted text-uppercase fw-bold mb-1 d-block">First Name</label>
+              <div class="p-2 border-bottom fw-bold text-dark">{{ volunteer.user.first_name }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="small text-muted text-uppercase fw-bold mb-1 d-block">Lasr Name</label>
+              <div class="p-2 border-bottom fw-bold text-dark">{{ volunteer.user.last_name }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="small text-muted text-uppercase fw-bold mb-1 d-block">Mobile Phone</label>
+              <div class="p-2 border-bottom text-dark fw-bold">
+                {{ volunteer.mobile_phone|phone_number|default:"—" }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="small text-muted text-uppercase fw-bold mb-1 d-block">Last Login</label>
+              <div class="p-2 border-bottom text-dark fw-bold">
+                <i class="fa-solid fa-clock-rotate-left me-2 text-muted small"></i>{{ volunteer.user.last_login|date:"M d, Y H:i"|default:"Never" }}
+              </div>
             </div>
           </div>
         </div>
-        <div class="col">
-          <div class="bg-light text-dark">
+      </div>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 bg-primary-soft rounded text-primary">
+          <div class="d-flex align-items-center">
+            <i class="fa-solid fa-circle-info me-3 fs-4"></i>
             <div>
-              <strong>Created</strong>: {{ volunteer.date_created }}
-            </div>
-            <div>
-              <strong>User name</strong>: {{ volunteer.user.username }}
-            </div>
-            <div>
-              <strong>Full name</strong>: {{ volunteer.user.first_name }} {{ volunteer.user.last_name }}
-            </div>
-            <div>
-              <strong>Title</strong>: {{ volunteer.title }}
-            </div>
-            <div>
-              <strong>Mobile phone</strong>: {{ volunteer.mobile_phone|phone_number }}
-            </div>
-            <div>
-              <strong>Email</strong>:
-              {% if volunteer.user.email  %}
-                <a href="mailto:{{ volunteer.user.email }}">{{ volunteer.user.email }}</a>
-              {% endif %}
-            </div>
-            <div>
-              <strong>Last login</strong>: {{ volunteer.user.last_login }}
-            </div>
-            <div>
-              <strong>State</strong>: 
-              {% if volunteer.user.is_active %}
-                <span class="badge bg-primary" >active</span>
-              {% else %}
-              <span>inactive</span>
-              {% endif%}
-            </div>
-            <div>
-              <i class="fa-solid fa-pen-to-square"></i>
-              <a href="{% url 'funds:edit_volunteer_profile' volunteer.id %}">Edit</a>
+              <strong>Privacy Note:</strong> This information is only visible to members of <strong>{{ volunteer.fund.name }}</strong>.
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
+
+<style>
+  .bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.1);
+  }
+
+  .bg-primary-soft {
+    background-color: rgba(13, 110, 253, 0.1);
+  }
+
+  .object-fit-cover {
+    object-fit: cover;
+  }
+
+  /* Hover effect for the profile camera button */
+  .btn-primary.rounded-circle:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease-in-out;
+  }
+</style>
+
 {% endblock %}

@@ -12,6 +12,10 @@ register = template.Library()
 
 
 @register.filter
+def user_full_name(user):
+    return f'{user.first_name} {user.last_name}'
+
+@register.filter
 def phone_number(number):
     if not number or len(number) != 12:
         return number
@@ -134,3 +138,7 @@ def get_context_values(context, *keys):
 @register.simple_tag(takes_context=True)
 def append_to_url_query(context, **kwargs):
     return functional.append_to_url_query(context.request, **kwargs)
+
+@register.filter(name='subtract')
+def subtract(value, arg):
+    return value - arg

@@ -1,71 +1,113 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load processfilters %}
-<h2 class="mt-4">{{ process.name }}</h2>
-<ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item active">
-    <a href="{% url 'funds:get_current_details'%}"> {{ user.fund.name }} </a>
-  </li>
-  <li class="breadcrumb-item active">
-    <a href="{% url 'processes:get_list'%}">Processes</a>
-  </li>
-  <li class="breadcrumb-item active">Process Details</li>
-</ol>
-<div class="card mb-4">
-  <div class="card-body">
-    <div class="row">
-      <div class="col">
-        <div class="bg-light text-dark">
-          <strong>Description</strong>: {{ process.notes }}
+{% load customtags %}
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+    <div>
+      <h2 class="mb-0 text-primary">{{ process.name }}</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_current_details' %}"
+              class="text-decoration-none text-muted">{{ user.fund.name }}</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'processes:get_list' %}"
+              class="text-decoration-none text-muted">Processes</a></li>
+          <li class="breadcrumb-item active">Blueprint Details</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'processes:edit_details' process.id %}" class="btn btn-outline-secondary shadow-sm">
+        <i class="fa-solid fa-pen-to-square me-1"></i> Edit Blueprint
+      </a>
+    </div>
+  </div>
+
+  <hr class="mb-4">
+
+  <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+    <div class="card-body p-4">
+      <div class="row align-items-center">
+        <div class="col-md-7">
+          <h6 class="text-muted text-uppercase fw-bold small mb-2">Process Intent / Notes</h6>
+          <p class="text-dark lead mb-0" style="font-size: 1rem;">
+            {{ process.notes|default:"No description provided for this workflow blueprint." }}
+          </p>
         </div>
-      </div>
-      <div class="col">
-        <div class="bg-light text-dark">
-          <div>
-            <strong>Created</strong>: {{ process.date_created }}
-          </div>
-          <div>
-            <strong>Projects usage</strong>: {{ process.active_project_count }}
-          </div>
-          <div>
-            <strong>Status</strong>:
-            {% if not process.is_inactive %}
-              <span class="badge bg-primary">active</span>
-            {% else %}
-              <span class="badge bg-secondary">inactive</span>
-            {% endif %}
+        <div class="col-md-5 border-start ps-md-4">
+          <div class="d-grid gap-2 small">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Status:</span>
+              {% if not process.is_inactive %}
+              <span class="badge rounded-pill bg-success-soft text-success border border-success px-2">ACTIVE</span>
+              {% else %}
+              <span
+                class="badge rounded-pill bg-secondary-soft text-secondary border border-secondary px-2">INACTIVE</span>
+              {% endif %}
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Projects Usage:</span>
+              <span class="fw-bold text-dark"><i class="fa-solid fa-diagram-project me-1 text-primary"></i> {{ process.active_project_count }} Active Projects</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Creation Date:</span>
+              <span class="text-dark">{{ process.date_created|date:"M d, Y" }}</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="row mt-2">
-      <div class="row">
-        <div>
-          <i class="fa-solid fa-pen-to-square"></i>
-          <a href="{% url 'processes:edit_details' process.id %}">Edit</a>
-        </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0 text-muted">
+      <i class="fa-solid fa-route me-2 text-primary"></i>Workflow Sequence
+    </h5>
+    {% if process|new_step_can_be_added_to_process %}
+    <a href="{% url 'processes:create_state' process.id %}" class="btn btn-sm btn-primary shadow-sm px-3">
+      <i class="fa-solid fa-plus-circle me-1"></i> Add New State
+    </a>
+    {% else %}
+    <button class="btn btn-sm btn-outline-secondary disabled opacity-50" title="Process structure is locked">
+      <i class="fa-solid fa-lock me-1"></i> Add State
+    </button>
+    {% endif %}
+  </div>
+
+  <div class="card border-0 shadow-sm mb-5 bg-light-soft">
+    <div class="card-header bg-white py-3 border-bottom-0">
+      <span class="small fw-bold text-muted text-uppercase">Flow Pipeline</span>
+      <div class="float-end text-muted small">
+        <i class="fa-solid fa-circle-info me-1"></i> States are processed in the order defined below
       </div>
     </div>
-  </div>
-</div>
-<div>
-  {% if process|new_step_can_be_added_to_process %}
-      <a href="{% url 'processes:create_state' process.id %}" class="btn btn-link" >Add state</a>
-  {% else %}
-      <a href="" class="btn btn-link link-disabled">Add state</a>
-  {% endif %}
-</div>
-<div class="card mb-4">
-  <div class="card-header">
-      <i class="fa-solid fa-gears"></i>
-      Flow
-  </div>
-  <div class="card-body">
-      <div class="row row-cols-1 row-cols-md-4 g-4">
+    <div class="card-body p-4">
+      <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4">
         {% for state in states %}
+        <div class="col">
           {% include "partials/state_card.html" %}
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+          <i class="fa-solid fa-ellipsis-h fs-1 mb-2 d-block opacity-25"></i>
+          <p class="text-muted">No states defined yet. Click "Add New State" to begin the workflow.</p>
+        </div>
         {% endfor %}
       </div>
+    </div>
   </div>
 </div>
+
+<style>
+  .bg-light-soft {
+    background-color: #f8f9fb;
+  }
+
+  .bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.1);
+  }
+</style>
+
+{% include 'partials/js.html' %}
 {% endblock %}

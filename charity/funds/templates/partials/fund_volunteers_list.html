@@ -1,44 +1,85 @@
 {% load customtags %}
-<div>
-    <a href="{% url 'funds:add_volunteer' %}" class="btn btn-link" >Add volunteer</a>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="mb-0 text-muted">
+    <i class="fa-solid fa-hands-helping me-2 text-primary"></i>Volunteer Team
+  </h5>
+  <a href="{% url 'funds:add_volunteer' %}" class="btn btn-sm btn-primary shadow-sm">
+    <i class="fa-solid fa-user-plus me-1"></i> Add Volunteer
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <span class="small fw-bold text-muted text-uppercase">Team Members</span>
+    <span class="badge bg-light text-dark border fw-normal">{{ items_count }} Recirds</span>
   </div>
-  <div class="card mb-4">
-    <div class="card-header">
-      {{ items_count }} <i class="fas fa-user-friends"></i>
-      Volunteers
-    </div>
-    <div class="card-body">
-      <table class="table table-striped">
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase">
+          <tr>
+            <th class="ps-4" style="width: 40%;">Member & Position</th>
+            <th style="width: 45%;">Contact Details</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
         <tbody>
           {% for volunteer in page %}
-            <tr>
-              <td class="col-3">
-                <h6>
-                  {{ volunteer|cover }}
-                  <a href="{% url 'funds:get_volunteer_details' volunteer.id %}">{{ volunteer.user.username }}</a>
-                </h6>
-                  {{volunteer.title}}
-              </td>
-              <td class="align-middle">
-                <ul>
-                  {% if volunteer.user.email %}
-                  <li class="list-group-item">
-                    <i class="fa-regular fa-envelope"></i>
-                    <a href="mailto:{{ volunteer.user.email }}">{{ volunteer.user.email }}</a>
-                  </li>
+          <tr>
+            <td class="ps-4">
+              <div class="d-flex flex-column">
+                <div class="mb-1">
+                  {% include 'partials/user_image_part.html' with user=volunteer.user %}
+                </div>
+
+                <div class="mt-1" style="padding-left: 42px;">
+                  <span class="badge rounded-pill bg-primary-soft text-primary border border-primary"
+                    style="font-size: 0.7rem;">
+                    {{ volunteer.title|default:"Volunteer Member" }}
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex flex-column gap-1 small">
+                {% if volunteer.user.email %}
+                <div class="text-truncate">
+                  <i class="fa-regular fa-envelope text-muted me-2" style="width: 14px;"></i>
+                  <a href="mailto:{{ volunteer.user.email }}" class="text-decoration-none">{{ volunteer.user.email}}</a>
+                </div>
                 {% endif %}
+
                 {% if volunteer.mobile_phone %}
-                <li class="list-group-item">
-                  <i class="fa-solid fa-phone"></i>
-                  {{ volunteer.mobile_phone|phone_number }}
-                </li>
+                <div>
+                  <i class="fa-solid fa-phone text-muted me-2" style="width: 14px;"></i>
+                  <span class="text-secondary">{{ volunteer.mobile_phone|phone_number }}</span>
+                </div>
                 {% endif %}
-                </ul>
-              </td>
-            </tr>
+              </div>
+            </td>
+            <td class="text-end pe-4">
+              <a href="{% url 'funds:get_volunteer_details' volunteer.id %}"
+                class="btn btn-sm btn-light border shadow-sm">
+                <i class="fa-solid fa-id-card me-1 text-primary"></i> View Profile
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="text-center py-5 text-muted">
+              <i class="fa-solid fa-user-slash fs-2 mb-2 d-block opacity-25"></i>
+              No volunteers found in this fund.
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
-       {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+
+  <div class="card-footer bg-white border-0 py-3">
+    {% include 'paginator.html' with obj_page=page %}
+  </div>
+</div>

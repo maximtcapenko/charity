@@ -1,10 +1,47 @@
-{% if not approvement.id %}
-  <i class="fa-solid fa-hourglass-end"></i>
-  Status: Pending
-{% elif approvement.is_rejected %}
-  <i class="fa-solid fa-ban"></i>
-  Status: Rejected
-{% else %}
-  <i class="fa-regular fa-circle-check"></i>
-  Status: Approved
-{% endif %}
+<span class="approvement-status-item d-inline-flex align-items-center">
+  {% if not approvement.id %}
+  <span class="text-secondary small fw-bold text-uppercase d-flex align-items-center" style="letter-spacing: 0.5px;">
+    <i class="fa-solid fa-hourglass-half me-2 opacity-75"></i>
+    Pending
+  </span>
+  {% elif approvement.is_rejected %}
+  <span class="badge rounded-pill bg-danger-soft text-danger border border-danger-subtle px-2 py-1"
+    style="font-size: 0.65rem;">
+    <i class="fa-solid fa-circle-xmark me-1"></i>REJECTED
+  </span>
+  {% else %}
+  <span class="badge rounded-pill bg-success-soft text-success border border-success-subtle px-2 py-1"
+    style="font-size: 0.65rem;">
+    <i class="fa-solid fa-circle-check me-1"></i>APPROVED
+  </span>
+  {% endif %}
+</span>
+
+<style>
+  /* Shared Soft UI Utilities - If not already in your global CSS */
+  .bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.08);
+  }
+
+  .bg-danger-soft {
+    background-color: rgba(220, 53, 69, 0.08);
+  }
+
+  .approvement-status-item .fa-hourglass-half {
+    animation: simple-pulse 2s infinite ease-in-out;
+  }
+
+  @keyframes simple-pulse {
+    0% {
+      opacity: 0.4;
+    }
+
+    50% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0.4;
+    }
+  }
+</style>

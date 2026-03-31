@@ -1,3 +1,6 @@
+import os
+import uuid
+
 from django.db import models
 from django.db.models.fields.files import FieldFile
 
@@ -26,7 +29,7 @@ class FundFileField(models.FileField):
     """
     attr_class = FundStorageFieldFile
 
-    def pre_save(self, model_instance: models.Model, add: bool):
-        file = super().pre_save(model_instance, add)
-        model_instance.size = round(file.size / 1000)
-        return file
+    def generate_filename(self, instance, filename):
+        ext = os.path.splitext(filename)[1]
+        filename = f"{uuid.uuid4()}{ext}"
+        return super().generate_filename(instance, filename)

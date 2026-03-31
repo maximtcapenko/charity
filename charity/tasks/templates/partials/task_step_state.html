@@ -1,17 +1,83 @@
-{% if not task_state.approvement and not task_state.request_review %}
-  <span class="badge bg-primary">in progress</span>
-{% elif task_state.is_review_requested %}
-  {% include 'partials/user_image_part.html' with user=task_state.request_review.reviewer %}
-  <span class="badge bg-info text-dark">on review</span>
-{% elif task_state.approvement.is_rejected %}
-  {% include 'partials/user_image_part.html' with user=task_state.approvement.author %}
-  <a href="{% url 'tasks:get_state_details' task.id task_state.id %}" class="badge bg-danger">rejected</a>
-{% else %}
-  <div>
-    {% include 'partials/user_image_part.html' with user=task_state.approvement.author %}
-    <a href="{% url 'tasks:get_state_details' task.id task_state.id %}" class="badge bg-success">approved</a>
+<div class="task-step-status d-inline-flex flex-column align-items-start">
+  {% if task_state.approvement %}
+  <div class="d-flex align-items-center mb-1">
+    <div class="me-2" data-bs-toggle="tooltip" title="Action by {{ task_state.approvement.author.username }}">
+      {% include 'partials/user_image_part.html' with user=task_state.approvement.author %}
+    </div>
+
+    {% if task_state.approvement.is_rejected %}
+    <a href="{% url 'tasks:get_state_details' task.id task_state.id %}?tab=reviews"
+      class="badge rounded-pill bg-danger-soft text-danger border border-danger px-2 py-1 text-decoration-none shadow-sm">
+      <i class="fa-solid fa-circle-xmark me-1"></i>REJECTED
+    </a>
+    {% else %}
+    <a href="{% url 'tasks:get_state_details' task.id task_state.id %}?tab=reviews"
+      class="badge rounded-pill bg-success-soft text-success border border-success px-2 py-1 text-decoration-none shadow-sm">
+      <i class="fa-solid fa-circle-check me-1"></i>APPROVED
+    </a>
+    {% endif %}
   </div>
-  <div>
-    {{ task_state.approvement.date_created }}
-  </div> 
-{% endif %}
+  <small class="text-muted fw-light" style="font-size: 0.65rem; padding-left: 36px;">
+    {{ task_state.approvement.date_created|date:"M d, H:i" }}
+  </small>
+
+  {% elif task_state.is_review_requested %}
+  <div class="d-flex align-items-center">
+    <div class="me-2" data-bs-toggle="tooltip" title="Reviewer: {{ task_state.request_review.reviewer.username }}">
+      {% include 'partials/user_image_part.html' with user=task_state.request_review.reviewer %}
+    </div>
+    <span class="badge rounded-pill bg-info-soft text-info border border-info px-2 py-1 shadow-sm">
+      <i class="fa-solid fa-magnifying-glass fa-spin-pulse me-1"></i>ON REVIEW
+    </span>
+  </div>
+
+  {% else %}
+  <span class="badge rounded-pill bg-primary-soft text-primary border border-primary px-3 py-1 shadow-sm">
+    <i class="fa-solid fa-person-running me-1"></i>IN PROGRESS
+  </span>
+  {% endif %}
+</div>
+
+<style>
+  /* Consistency with our established palette */
+  .bg-danger-soft {
+    background-color: rgba(220, 53, 69, 0.1);
+  }
+
+  .bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.1);
+  }
+
+  .bg-info-soft {
+    background-color: rgba(13, 202, 240, 0.1);
+  }
+
+  .bg-primary-soft {
+    background-color: rgba(13, 110, 253, 0.1);
+  }
+
+  /* Animation for 'On Review' to show it's active */
+  .fa-spin-pulse {
+    animation: fa-spin 2s infinite linear, pulse 2s infinite ease-in-out;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.1);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .task-step-status .user-image-partial-wrapper img {
+    width: 28px !important;
+    height: 28px !important;
+    border: 1px solid #dee2e6;
+  }
+</style>

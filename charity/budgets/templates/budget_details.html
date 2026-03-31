@@ -1,97 +1,157 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load budgetfilters %}
-<h2 class="mt-4">{{ budget.name }}</h2>
-<ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item">
-    <a href="{% url 'funds:get_details' budget.fund_id %}">{{ budget.fund.name }}</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'budgets:get_list'%}">Budgets</a>
-  </li>
-  <li class="breadcrumb-item active">Budget Details</li>
-</ol>
-<div class="card mb-4">
-  <div class="card-body">
-      <div class="row">
-        <div class="col">
-          <div class="bg-light text-dark">
-            <strong>Description</strong>: {{ budget.notes }}
-          </div>
-        </div>
-        <div class="col">
-          <div class="bg-light text-dark">
-            <div>
-              <strong>Created</strong>: {{ budget.date_created }}
-            </div>
-            <div>
-              <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.author.username }}</a>
-            </div>
-            <div>
-              <strong>Manager</strong>: <a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}">{{ budget.manager.username }}</a>
-            </div>
-            <div>
-              <strong>Total income amount</strong>: {{ budget.total_approved_amount|floatformat:'2g' }}
-            </div>
-            <div>
-              <strong>Total expense amount</strong>: {{ budget.total_approved_expenses_amount|floatformat:'2g' }}
-            </div>
-            <div>
-            </div>
-            <div>
-              {% if budget.payout_excess_contribution %}
-                <strong>Paid excess</strong>: <a href="{% url 'funds:get_contribution_details' budget.payout_excess_contribution.id%}">{{budget.payout_excess_contribution.amount|floatformat:'2g'}}</a>
-              {% elif not budget|budget_is_approved %}
-                <strong>Avaliable amount</strong>: {{ budget.avaliable_income_amount|floatformat:'2g' }}
-              {% else %}
-                <strong>Avaliable excess</strong>: {{ budget.avaliable_income_amount|floatformat:'2g' }}
-              {% endif %}
-            </div>
-            <div>
-              {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
-            </div>  
-          </div>
-        </div>
-      </div>
-      <div class="row mt-2">
-        <div class="row">
-          <div class="col-1">
-            <i class="fa-solid fa-pen-to-square"></i>
-            <a {% if budget|budget_can_be_edited:user %}
-                  href="{% url 'budgets:edit_details' budget.id %}"
-                {% else %}
-                  class="link-disabled" href=""
-                {% endif %}>Edit</a>
-          </div>
-          <div class="col">
-            <i class="fa-solid fa-arrow-up"></i>
-            <a {% if budget|budget_back_contribution_canbe_added:user %}
-                 href="{% url 'budgets:add_budget_excess_contribution' budget.id %}"
-               {% else %}
-                  class="link-disabled"
-               {% endif %}>Payout</a>
-          </div>
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+    <div>
+      <h2 class="mb-0 text-primary">{{ budget.name }}</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_details' budget.fund_id %}"
+              class="text-decoration-none">{{ budget.fund.name }}</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'budgets:get_list'%}" class="text-decoration-none">Budgets</a>
+          </li>
+          <li class="breadcrumb-item active">Budget Details</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% if budget|budget_can_be_edited:user %}{% url 'budgets:edit_details' budget.id %}{% else %}#{% endif %}"
+        class="btn btn-outline-secondary shadow-sm {% if not budget|budget_can_be_edited:user %}disabled{% endif %}">
+        <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+      </a>
+      <a href="{% if budget|budget_back_contribution_canbe_added:user %}{% url 'budgets:add_budget_excess_contribution' budget.id %}{% else %}#{% endif %}"
+        class="btn btn-warning shadow-sm {% if not budget|budget_back_contribution_canbe_added:user %}disabled{% endif %}">
+        <i class="fa-solid fa-arrow-up-from-bracket me-1 text-dark"></i> Payout Excess
+      </a>
+    </div>
+  </div>
+
+  <hr class="mb-4">
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm bg-success text-white">
+        <div class="card-body">
+          <small class="opacity-75 text-uppercase fw-bold">Total Approved Income</small>
+          <h2 class="display-6 fw-bold mb-0">${{ budget.total_approved_amount|floatformat:'2g' }}</h2>
+          <i class="fa-solid fa-arrow-trend-up position-absolute top-0 end-0 m-3 opacity-25 fs-1"></i>
         </div>
       </div>
     </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm bg-danger text-white">
+        <div class="card-body">
+          <small class="opacity-75 text-uppercase fw-bold">Total Approved Expenses</small>
+          <h2 class="display-6 fw-bold mb-0">${{ budget.total_approved_expenses_amount|floatformat:'2g' }}</h2>
+          <i class="fa-solid fa-arrow-trend-down position-absolute top-0 end-0 m-3 opacity-25 fs-1"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm bg-primary text-white">
+        <div class="card-body">
+          <small class="opacity-75 text-uppercase fw-bold">
+            {% if budget.payout_excess_contribution %}Balance (Paid Excess)
+            {% elif not budget|budget_is_approved %}Available Amount
+            {% else %}Available Excess{% endif %}
+          </small>
+          <h2 class="display-6 fw-bold mb-0">
+            {% if budget.payout_excess_contribution %}
+            ${{ budget.payout_excess_contribution.amount|floatformat:'2g' }}
+            {% else %}
+            ${{ budget.avaliable_income_amount|floatformat:'2g' }}
+            {% endif %}
+          </h2>
+          <i class="fa-solid fa-scale-balanced position-absolute top-0 end-0 m-3 opacity-25 fs-1"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title text-muted mb-3">Budget Description</h5>
+          <div class="p-3 bg-light rounded border-start border-4 border-primary">
+            {{ budget.notes|default:"No description provided for this budget." }}
+          </div>
+        </div>
+      </div>
+
+      <ul class="nav nav-pills mb-3" id="budgetTab" role="tablist">
+        {% for tab in tabs %}
+        <li class="nav-item">
+          <a href="?tab={{ tab }}" class="nav-link {% if selected_tab == tab %}active shadow-sm{% endif %} me-2">
+            {{ tab|capfirst }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          {% for tab in tabs %}
+          {% if selected_tab == tab %}
+          {% include 'partials/budget_'|add:tab|add:'_list.html' %}
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent border-0 pt-4">
+          <h5 class="mb-0">Budget Management</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-4 p-3 bg-light rounded border text-center">
+            <label class="text-muted small d-block text-uppercase fw-bold mb-2">Overall Approval</label>
+            {% include 'partials/li_approvement_part.html' with approvement=budget.approvement %}
+          </div>
+
+          <div class="mb-3">
+            <label class="text-muted small d-block text-uppercase fw-bold">Stakeholders</label>
+            <div class="mt-2 small d-flex flex-column gap-2">
+              <div>
+                <span class="text-muted">Author:</span>
+                <a href="{% url 'funds:get_volunteer_details' budget.author.volunteer_profile.id %}"
+                  class="text-decoration-none">{{ budget.author.username }}</a>
+              </div>
+              <div>
+                <span class="text-muted">Manager:</span>
+                <a href="{% url 'funds:get_volunteer_details' budget.manager.volunteer_profile.id %}"
+                  class="text-decoration-none">{{ budget.manager.username }}</a>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <label class="text-muted small d-block text-uppercase fw-bold">Timeline</label>
+            <div class="mt-2 small">
+              <i class="fa-regular fa-calendar-plus me-2 text-muted"></i>
+              <span class="text-muted">Created:</span> {{ budget.date_created|date:"M d, Y" }}
+            </div>
+          </div>
+
+          {% if budget.payout_excess_contribution %}
+          <div class="mt-4 pt-3 border-top">
+            <label class="text-muted small d-block text-uppercase fw-bold text-warning">Excess Payout Reference</label>
+            <a href="{% url 'funds:get_contribution_details' budget.payout_excess_contribution.id%}"
+              class="small text-decoration-none fw-bold">
+              <i class="fa-solid fa-receipt me-1"></i> View Contribution
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-<ul class="nav nav-pills mb-3">
-  {% for tab in tabs %}
-  <li class="nav-item" role="presentation">
-    {% if selected_tab == tab %}
-      <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
-      </a>
-    {% else %}
-      <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
-    {% endif %}
-  </li>
-  {% endfor %}
-</ul>
-<div>
-  {% for tab in tabs %}
-  {% if selected_tab == tab %}
-    {% include 'partials/budget_'|add:tab|add:'_list.html' %}
-  {% endif %}
-  {% endfor %}
-</div>
+
 {% endblock %}

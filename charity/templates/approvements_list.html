@@ -1,41 +1,69 @@
 {% load customtags %}
-<div class="card mb-4">
-  <div class="card-header">
-    {{ items_count }} <i class="fa-regular fa-eye"></i>
-    Reviews
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <h6 class="mb-0 fw-bold text-muted">
+      <i class="fa-solid fa-clipboard-check me-2 text-primary"></i>
+      Reviews <span class="badge rounded-pill bg-light text-dark border ms-1">{{ items_count }}</span>
+    </h6>
   </div>
-  <div class="card-body">
+
+  <div class="card-body p-0">
     {% for approvement in page %}
-    {% if forloop.counter|add:-1|divisibleby:2 %}
-    <div class="row mt-2">
-    {% else %} 
-    <div class="row mt-2 bg-light text-dark">
-    {% endif %}
-      <div class="col-2">
-        <div class="row">
-          <div class="col">
-            {{ approvement.author.volunteer_profile|cover }}
-            <a href="{% url 'funds:get_volunteer_details' approvement.author.volunteer_profile.id %}">{{ approvement.author.username }}</a>
+    <div
+      class="py-3 px-4 {% if not forloop.counter|add:-1|divisibleby:2 %}bg-light{% endif %} {% if not forloop.last %}border-bottom{% endif %}">
+      <div class="row g-3">
+
+        <div class="col-md-auto">
+          <div class="d-flex flex-column h-100">
+            <div data-bs-toggle="tooltip" title="Approver: {{ approvement.author.username }}">
+              {% include 'partials/user_image_part.html' with user=approvement.author %}
+            </div>
+
+            <div style="padding-left: 42px;" class="mt-2">
+              <div class="mb-2">
+                {% if approvement.is_rejected %}
+                <span class="badge rounded-pill bg-danger shadow-sm px-3 py-2"
+                  style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                  <i class="fa-solid fa-xmark me-1"></i>REJECTED
+                </span>
+                {% else %}
+                <span class="badge rounded-pill bg-success shadow-sm px-3 py-2"
+                  style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                  <i class="fa-solid fa-check me-1"></i>APPROVED
+                </span>
+                {% endif %}
+              </div>
+
+              <small class="text-muted d-block" style="font-size: 0.7rem;">
+                <i class="fa-regular fa-clock me-1"></i>{{ approvement.date_created|date:"M d, Y H:i" }}
+              </small>
+            </div>
           </div>
-          <div class="col d-flex align-items-center">
-            {% if approvement.is_rejected %}
-            <span class="badge bg-danger">rejected</span>
+        </div>
+
+        <div class="col-md-auto border-start-md ps-md-4">
+          <div class="text-secondary small py-1">
+            {% if approvement.notes %}
+            <div class="p-2 bg-white bg-opacity-50 rounded">
+              {{ approvement.notes|linebreaksbr }}
+            </div>
             {% else %}
-            <span class="badge bg-success">approved</span>
+            <span class="text-muted italic opacity-50">No notes provided.</span>
             {% endif %}
           </div>
         </div>
-        {{ approvement.date_created }}
+
       </div>
-      <div class="col">
-        {{ approvement.notes }}
-      </div>
+    </div>
+    {% empty %}
+    <div class="p-5 text-center text-muted border-top">
+      <i class="fa-solid fa-comment-slash fs-2 mb-2 d-block opacity-25"></i>
+      No reviews submitted yet.
     </div>
     {% endfor %}
-    <div class="row mt-2">
-      <div>
-      {% include 'paginator.html' with obj_page=page %}
-      </div>
-    </div>
+  </div>
+  <div class="card-footer bg-white border-0 py-3">
+    {% include 'paginator.html' with obj_page=page %}
   </div>
 </div>

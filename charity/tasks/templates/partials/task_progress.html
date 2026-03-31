@@ -1,10 +1,47 @@
-<div class="row">
-  <div class="col-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Status">
-    {% include 'partials/task_status.html' with skip_priority=True %}
-  </div>
-  <div class="col">
-    <div class="progress bg-light" style="height: 20px;" data-bs-toggle="tooltip" data-bs-placement="top" title="Complete">
-      <div class="progress-bar" role="progressbar" style="width: {{complete_in_percents}}%;" aria-valuenow="{{complete_in_percents}}" aria-valuemin="0" aria-valuemax="100">{{complete_in_percents}}%</div>
+<div class="task-progress-component">
+    <div class="d-flex align-items-center gap-3">
+        <div class="status-container flex-shrink-0" data-bs-toggle="tooltip" title="Current Workflow Status">
+            {% include 'partials/task_status.html' with skip_priority=True %}
+        </div>
+
+        <div class="flex-grow-1">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <small class="text-muted fw-bold" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Completion</small>
+                <small class="fw-bold text-primary" style="font-size: 0.75rem;">{{ complete_in_percents }}%</small>
+            </div>
+            <div class="progress shadow-none" style="height: 6px; background-color: rgba(0,0,0,0.05);" data-bs-toggle="tooltip" title="{{ complete_in_percents }}% Complete">
+                <div class="progress-bar {% if complete_in_percents == 100 %}bg-success{% else %}bg-primary{% endif %} rounded-pill" 
+                     role="progressbar" 
+                     style="width: {{ complete_in_percents }}%; transition: width 0.6s ease;" 
+                     aria-valuenow="{{ complete_in_percents }}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
+
+<style>
+    /* Ensure the status badge from the partial doesn't have extra margins */
+    .task-progress-component .status-container .btn,
+    .task-progress-component .status-container .badge {
+        margin: 0 !important;
+        font-size: 0.7rem;
+        padding: 0.35rem 0.6rem;
+    }
+
+    /* Animation for the progress bar */
+    .progress-bar {
+        box-shadow: none;
+    }
+    
+    /* Optional: subtle pulse for active tasks not yet finished */
+    {% if complete_in_percents > 0 and complete_in_percents < 100 %}
+    .progress-bar {
+        background-image: linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
+        background-size: 1rem 1rem;
+        animation: progress-bar-stripes 1s linear infinite;
+    }
+    {% endif %}
+</style>

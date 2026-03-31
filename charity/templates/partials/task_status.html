@@ -1,20 +1,89 @@
-{% if task.is_started and not task.state %}
-  <span class="badge bg-success">started</span>
-{% elif task.state and not task.state.is_review_requested and not task.is_done %}
-  <span class="badge bg-primary">in progress</span>
-{% elif task.is_started and task.state and task.state.is_review_requested %}
-  <span class="badge bg-info text-dark">on review</span>
-{% elif task.is_done %}
-  <span class="badge bg-success">done</span>
-{% else %}
-  <span class="badge bg-secondary">not started</span>
-{% endif %}
+<div class="d-inline-flex flex-wrap gap-1 align-items-center">
+  {% if task.is_done %}
+  <span class="badge rounded-pill bg-success-soft text-success border border-success px-2 py-1"
+    style="font-size: 0.65rem;">
+    <i class="fa-solid fa-check-double me-1"></i>DONE
+  </span>
+  {% elif task.is_started and task.state and task.state.is_review_requested %}
+  <span class="badge rounded-pill bg-info-soft text-info border border-info px-2 py-1" style="font-size: 0.65rem;">
+    <i class="fa-solid fa-magnifying-glass me-1"></i>ON REVIEW
+  </span>
+  {% elif task.state and not task.state.is_review_requested and not task.is_done %}
+  <span class="badge rounded-pill bg-primary-soft text-primary border border-primary px-2 py-1"
+    style="font-size: 0.65rem;">
+    <i class="fa-solid fa-person-running me-2"></i>IN PROGRESS
+  </span>
+  {% elif task.is_started and not task.state %}
+  <span class="badge rounded-pill bg-success-soft text-success border border-success px-2 py-1"
+    style="font-size: 0.65rem;">
+    <i class="fa-solid fa-play me-1"></i>STARTED
+  </span>
+  {% else %}
+  <span class="badge rounded-pill bg-secondary-soft text-secondary border border-secondary px-2 py-1"
+    style="font-size: 0.65rem;">
+    <i class="fa-solid fa-hourglass-start me-1"></i>PENDING
+  </span>
+  {% endif %}
 
-{% if not skip_priority %}
+  {% if not skip_priority %}
   {% if task.is_high_priority %}
-    <span class="badge bg-warning text-dark">high priority</span>
+  <span class="badge rounded-pill bg-danger-soft text-danger border border-danger px-2 py-1 pulse-danger"
+    style="font-size: 0.65rem;" title="Critical Attention Required">
+    <i class="fa-solid fa-fire-flame-curved me-1"></i>URGENT
+  </span>
   {% endif %}
+
   {% if task.is_expired %}
-    <span class="badge bg-danger">expired</span>
+  <span class="badge rounded-pill bg-dark text-white px-2 py-1" style="font-size: 0.65rem;">
+    <i class="fa-solid fa-calendar-xmark me-1"></i>EXPIRED
+  </span>
   {% endif %}
-{% endif %}
+  {% endif %}
+</div>
+
+<style>
+  /* Soft UI Color Palette */
+  .bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.1);
+  }
+
+  .bg-info-soft {
+    background-color: rgba(13, 202, 240, 0.1);
+  }
+
+  .bg-primary-soft {
+    background-color: rgba(13, 110, 253, 0.1);
+  }
+
+  .bg-secondary-soft {
+    background-color: rgba(108, 117, 125, 0.1);
+  }
+
+  .bg-danger-soft {
+    background-color: rgba(220, 53, 69, 0.1);
+  }
+
+  /* Subtle pulse animation for urgent tasks */
+  @keyframes pulse-red {
+    0% {
+      box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+    }
+
+    70% {
+      box-shadow: 0 0 0 6px rgba(220, 53, 69, 0);
+    }
+
+    100% {
+      box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+  }
+
+  .pulse-danger {
+    animation: pulse-red 2s infinite;
+  }
+
+  /* Custom icon rotation for 'In Progress' */
+  .fa-spin-step {
+    animation: fa-spin 4s infinite linear;
+  }
+</style>

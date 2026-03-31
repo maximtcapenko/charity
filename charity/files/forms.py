@@ -26,6 +26,7 @@ class CreateAttachmentForm(
             attrs={'class': 'form-control'},
             accept='image/jpeg, image/png'
         )
+        self.order_fields(['file', 'name', 'is_public'])
 
     def clean(self):
         content_type = self.target_content_type

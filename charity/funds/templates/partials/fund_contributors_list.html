@@ -1,60 +1,108 @@
 {% load customtags %}
-<div>
-    <a href="{% url 'funds:add_contributor' %}" class="btn btn-link">Add contributor</a>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="mb-0 text-muted">
+    <i class="fa-solid fa-address-book me-2"></i>Contributor Directory
+  </h5>
+  <a href="{% url 'funds:add_contributor' %}" class="btn btn-sm btn-primary shadow-sm">
+    <i class="fa-solid fa-user-plus me-1"></i> Add Contributor
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <span class="small fw-bold text-muted text-uppercase">Contact List</span>
+    <span class="badge bg-light text-dark border fw-normal">{{ items_count }} Records</span>
   </div>
-  <div class="card mb-4">
-    <div class="card-header">
-      {{ items_count }} <i class="fas fa-table me-1"></i>
-      Contributors
-    </div>
-    <div class="card-body">
-      <table class="table table-striped">
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase">
+          <tr>
+            <th class="ps-4" style="width: 35%;">Contributor</th>
+            <th style="width: 45%;">Contact Information</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
         <tbody>
           {% for contributor in page %}
-            <tr>
-              <td class="col-3">
-                <h6>
-                  {{ contributor|thumbnail:50 }}
-                  <a href="{% url 'funds:get_contributor_details' contributor.id %}">
-                    {{ contributor.name }}</a>
-                </h6>
-                <span class="badge bg-primary">
-                {% if contributor.is_company %}
-                  business
-                {% else %}
-                 person
-                 {% endif %}
-                </span>
-                {% if contributor.is_internal %}
-                <span class="badge bg-primary">internal</span>
+          <tr>
+            <td class="ps-4">
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                  {{ contributor|thumbnail:48 }}
+                </div>
+                <div class="ms-3">
+                  <h6 class="mb-1">
+                    <a href="{% url 'funds:get_contributor_details' contributor.id %}"
+                      class="text-decoration-none fw-bold text-dark">
+                      {{ contributor.name }}
+                    </a>
+                  </h6>
+                  <div class="d-flex gap-1">
+                    {% if contributor.is_company %}
+                    <span class="badge rounded-pill bg-info-soft text-info border border-info"
+                      style="font-size: 0.65rem;">BUSINESS</span>
+                    {% else %}
+                    <span class="badge rounded-pill bg-primary-soft text-primary border border-primary"
+                      style="font-size: 0.65rem;">PERSON</span>
+                    {% endif %}
+
+                    {% if contributor.is_internal %}
+                    <span class="badge rounded-pill bg-warning-soft text-warning border border-warning"
+                      style="font-size: 0.65rem;">INTERNAL</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex flex-column gap-1 small">
+                {% if contributor.email %}
+                <div class="text-truncate">
+                  <i class="fa-regular fa-envelope text-muted me-2" style="width: 14px;"></i>
+                  <a href="mailto:{{ contributor.email }}" class="text-decoration-none">{{ contributor.email }}</a>
+                </div>
                 {% endif %}
-              </td>
-              <td class="align-middle">
-                <ul>
-                  {% if contributor.email %}
-                  <li class="list-group-item">
-                    <i class="fa-regular fa-envelope"></i>
-                    <a href="mailto:{{ contributor.email }}">{{ contributor.email }}</a>
-                  </li>
-                {% endif %}
+
                 {% if contributor.mobile_phone %}
-                <li class="list-group-item">
-                  <i class="fa-solid fa-phone"></i>
-                  {{ contributor.mobile_phone|phone_number }}
-                </li>
+                <div>
+                  <i class="fa-solid fa-phone text-muted me-2" style="width: 14px;"></i>
+                  <span class="text-secondary">{{ contributor.mobile_phone|phone_number }}</span>
+                </div>
                 {% endif %}
+
                 {% if contributor.website %}
-                <li class="list-group-item">
-                  <i class="fa-solid fa-link"></i>
-                   <a href="{{ contributor.website }}">{{ contributor.website }}</a>
-                </li>
+                <div class="text-truncate">
+                  <i class="fa-solid fa-link text-muted me-2" style="width: 14px;"></i>
+                  <a href="{{ contributor.website }}" target="_blank" class="text-decoration-none">{{
+                    contributor.website|truncatechars:30 }}</a>
+                </div>
                 {% endif %}
-                </ul>
-              </td>
-            </tr>
+              </div>
+            </td>
+            <td class="text-end pe-4">
+              <a href="{% url 'funds:get_contributor_details' contributor.id %}"
+                class="btn btn-sm btn-light border shadow-sm">
+                <i class="fa-solid fa-eye me-1 text-primary"></i> Details
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="text-center py-5 text-muted">
+              <i class="fa-solid fa-users-rectangle fs-2 mb-2 d-block opacity-25"></i>
+              No contributors found.
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
-      {% include 'paginator.html' with obj_page=page %}
     </div>
   </div>
+
+  <div class="card-footer bg-white border-0 py-3">
+    {% include 'paginator.html' with obj_page=page %}
+  </div>
+</div>

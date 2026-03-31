@@ -1,52 +1,135 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-{% include "partials/header.html" with title='Custom fields' %}
-<div>
-  <a href="{% url 'customfields:add_custom_field' %}" class="btn btn-link">Add field</a>
-</div>
-<div class="card mb-4">
-  <div class="card-header">
-    {{items_count}} <i class="fa-solid fa-tags"></i>
-    Custom Fields
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <div>
+      <h2 class="mb-0 text-primary">Custom Fields</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Dashboard</a></li>
+          <li class="breadcrumb-item active">Configuration</li>
+        </ol>
+      </nav>
+    </div>
+    <a href="{% url 'customfields:add_custom_field' %}" class="btn btn-primary shadow-sm px-4">
+      <i class="fa-solid fa-plus me-2"></i>Add Field
+    </a>
   </div>
-  <div class="card-body">
-    <table class="table table-striped">
-      <tbody>
-        {% for field in page %}
-          <tr>
-            <td class="col-3 align-middle">
-                <h6>
-                  <a href="{% url 'customfields:edit_field_details' field.id %}">{{ field.attribute.name }}</a>
-                </h6>
-                  {{ field.date_created }}
-                <div>
-                  <span class="badge bg-primary">
-                    {{ field.attribute.datatype }}
-                  </span>
-                </div>
-            </td>
-            <td class="align-middle">
-              {% if field.attribute.required %}
-                <span class="badge bg-danger">required</span>
-              {% endif %}
-              {% if field.is_public %}
-                <span class="badge bg-primary">public</span>
-              {% endif %}
-              {% if field.is_searchable %}
-                <span class="badge bg-primary">searchable</span>
-              {% endif %}
-            </td>
-            <td class="align-middle">
-              <a href="{% url 'customfields:remove_custom_field' field.id %}" class="post-request">Remove</a>
-            </td>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+      <h6 class="mb-0 fw-bold text-muted">
+        <i class="fa-solid fa-tags me-2 text-primary"></i>
+        Attribute Definitions <span class="badge rounded-pill bg-light text-dark border ms-1">{{ items_count }}</span>
+      </h6>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-uppercase">
+            <tr>
+              <th class="ps-4" style="width: 30%;">Field Name & Type</th>
+              <th style="width: 45%;">Properties & Flags</th>
+              <th class="text-end pe-4">Actions</th>
             </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% include 'paginator.html' with obj_page=page %}
+          </thead>
+          <tbody>
+            {% for field in page %}
+            <tr>
+              <td class="ps-4">
+                <div class="d-flex flex-column">
+                  <h6 class="mb-1">
+                    <a href="{% url 'customfields:edit_field_details' field.id %}"
+                      class="text-decoration-none fw-bold text-dark">
+                      {{ field.attribute.name }}
+                    </a>
+                  </h6>
+                  <div class="d-flex align-items-center gap-2">
+                    {% if field.attribute.datatype == 'enum' %}
+                    <span class="badge bg-primary-soft text-primary border border-primary px-2" style="font-size: 0.7rem;">
+                      <i class="fa-solid fa-list-ul me-1"></i>ENUM
+                    </span>
+                    {% elif field.attribute.datatype == 'int' %}
+                    <span class="badge bg-info-soft text-info border border-info px-2" style="font-size: 0.7rem;">
+                      <i class="fa-solid fa-hashtag me-1"></i>INTEGER
+                    </span>
+                    {% elif field.attribute.datatype == 'bool' %}
+                    <span class="badge bg-warning-soft text-warning border border-warning px-2"
+                      style="font-size: 0.7rem;">
+                      <i class="fa-solid fa-toggle-on me-1"></i>BOOLEAN
+                    </span>
+                    {% else %}
+                    <span class="badge bg-secondary-soft text-secondary border border-secondary px-2"
+                      style="font-size: 0.7rem;">
+                      <i class="fa-solid fa-font me-1"></i>TEXT
+                    </span>
+                    {% endif %}
+
+                    <small class="text-muted" style="font-size: 0.7rem;">
+                      {{ field.date_created|date:"M d, Y" }}
+                    </small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex flex-wrap gap-2">
+                  {% if field.attribute.required %}
+                  <span class="badge rounded-pill bg-danger-soft text-danger border border-danger px-3 py-1 shadow-sm"
+                    style="font-size: 0.65rem;">
+                    <i class="fa-solid fa-circle-exclamation me-1"></i>REQUIRED
+                  </span>
+                  {% endif %}
+
+                  {% if field.is_public %}
+                  <span class="badge rounded-pill bg-primary-soft text-primary border border-primary px-3 py-1"
+                    style="font-size: 0.65rem;">
+                    <i class="fa-solid fa-globe me-1"></i>PUBLIC
+                  </span>
+                  {% endif %}
+
+                  {% if field.is_searchable %}
+                  <span class="badge rounded-pill bg-success-soft text-success border border-success px-3 py-1"
+                    style="font-size: 0.65rem;">
+                    <i class="fa-solid fa-magnifying-glass me-1"></i>SEARCHABLE
+                  </span>
+                  {% endif %}
+                </div>
+              </td>
+              <td class="text-end pe-4">
+                <div class="btn-group shadow-sm">
+                  <a href="{% url 'customfields:edit_field_details' field.id %}" class="btn btn-sm btn-light border"
+                    title="Edit Properties">
+                    <i class="fa-solid fa-pen text-primary"></i>
+                  </a>
+                  <a href="{% url 'customfields:remove_custom_field' field.id %}"
+                    class="btn btn-sm btn-light border text-danger post-request" title="Delete Field">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" class="text-center py-5 text-muted">
+                <i class="fa-solid fa-tags fs-2 mb-2 d-block opacity-25"></i>
+                No custom fields defined yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-footer bg-white border-0 py-3">
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
   </div>
 </div>
+
 {% include 'partials/js.html' %}
 {% include 'generic_errormodal.html' %}
 {% endblock %}

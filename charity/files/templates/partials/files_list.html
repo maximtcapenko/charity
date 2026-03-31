@@ -1,73 +1,123 @@
 {% load filefilters %}
 {% load customtags %}
 {% get_context_values 'content_type' 'target' as context %}
-<div>
-  <a {% if context|file_is_ready_to_be_added %}
-       href="{% url 'files:attach_file' content_type.model target.id %}" 
-       class="btn btn-link"
-     {% else %}
-       class="btn btn-link disabled"
-     {% endif %}>Upload file</a>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h6 class="mb-0 fw-bold text-muted text-uppercase small">
+    <i class="fa-solid fa-folder-tree me-2 text-primary"></i>Attachments & Documents
+  </h6>
+  <a {% if context|file_is_ready_to_be_added %} href="{% url 'files:attach_file' content_type.model target.id %}"
+    class="btn btn-sm btn-primary shadow-sm px-3" {% else %}
+    class="btn btn-sm btn-outline-secondary disabled opacity-50 shadow-none" {% endif %}>
+    <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload File
+  </a>
 </div>
-<div class="card mb-4">
-  <div class="card-header">
-    {{ items_count }} <i class="fa-regular fa-file"></i>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+    <span class="small fw-bold text-muted text-uppercase">File Repository</span>
+    <span class="badge bg-light text-dark border fw-normal">{{ items_count }} Items</span>
   </div>
-  <div class="card-body">
-    <table class="table table-striped">
-      <tbody>
-        {% for file in page %}
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase">
           <tr>
-            <td class="col-3 align-middle">
-              <h6>
-                <img src="{{file.thumb.url}}" class="rounded"/>
-                <i class="fa-solid fa-paperclip"></i>
-                <a href="{% url 'files:get_file' file.id %}">
-                  {{ file.name }} </a>
-              </h6>
-              {{ file.date_created }}
-            </td>
-            <td class="align-middle">
-              <div class="form-check form-switch">
-                <label class="form-check-label">Public</label>
-                <input type="checkbox"
-                {% if  file.is_public%}
-                    checked
-                {% endif %} class="form-check-input" />
+            <th class="ps-4" style="width: 30%;">File Name & Date</th>
+            <th style="width: 15%;">Access</th>
+            <th style="width: 10%;">Type</th>
+            <th style="width: 10%;">Size</th>
+            <th style="width: 15%;">Owner</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in page %}
+          <tr>
+            <td class="ps-4">
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 position-relative">
+                  {% if file.thumb %}
+                  <img src="{{ file.thumb.url }}" class="rounded border shadow-sm"
+                    style="width: 42px; height: 42px; object-fit: cover;" />
+                  {% else %}
+                  <div class="bg-light rounded border d-flex align-items-center justify-content-center"
+                    style="width: 42px; height: 42px;">
+                    <i class="fa-solid fa-file-lines text-muted"></i>
+                  </div>
+                  {% endif %}
+                  <i class="fa-solid fa-paperclip position-absolute bottom-0 end-0 bg-white rounded-circle p-1 text-primary shadow-sm"
+                    style="font-size: 0.6rem;"></i>
+                </div>
+                <div class="ms-3">
+                  <h6 class="mb-0 fw-bold">
+                    <a href="{% url 'files:get_file' file.id %}" class="text-decoration-none text-dark">{{ file.name }}</a>
+                  </h6>
+                  <small class="text-muted" style="font-size: 0.7rem;">{{ file.date_created|date:"M d, Y" }}</small>
+                </div>
               </div>
             </td>
-            <td class="align-middle">
-              <span class="badge bg-primary">
-                {{ file.type }}
+            <td>
+              <div class="form-check form-switch p-0 ps-4">
+                <input type="checkbox" class="form-check-input ms-0" {% if file.is_public %}checked{% endif %}
+                  id="publicSwitch{{ file.id }}">
+                <label class="form-check-label small text-muted ms-2" for="publicSwitch{{ file.id }}">Public</label>
+              </div>
+            </td>
+            <td>
+              <span class="badge rounded-pill bg-primary-soft text-primary border border-primary px-2"
+                style="font-size: 0.7rem;">
+                {{ file.type|upper }}
               </span>
             </td>
-            <td class="align-middle">
-              {{ file.size }} KB
+            <td>
+              <small class="text-muted fw-bold">{{ file.size }} KB</small>
             </td>
-            <td class="align-middle">
-              {{ file.notes }}
-            </td>
-            <td class="align-middle">
-              <span data-bs-toggle="tooltip" data-bs-placement="top" title="Author">
+            <td>
+              <div data-bs-toggle="tooltip" title="Uploaded by {{ file.author.username }}">
                 {% include 'partials/user_image_part.html' with user=file.author %}
-              </span>
+              </div>
             </td>
-            <td class="align-middle">
-              <a {% if file|file_is_ready_to_be_removed:context %}
-                   href="{% url 'files:remove_file' file.id content_type.model target.id %}" 
-                   class="post-request"
-                 {% else %}
-                   class="link-disabled"
-                 {% endif %}>
-                 <i class="fa-regular fa-trash-can"></i>
+            <td class="text-end pe-4">
+              <div class="btn-group shadow-sm">
+                <a href="{% url 'files:get_file' file.id %}" class="btn btn-sm btn-light border" title="Download">
+                  <i class="fa-solid fa-download text-primary"></i>
                 </a>
+                {% if file|file_is_ready_to_be_removed:context %}
+                <a href="{% url 'files:remove_file' file.id content_type.model target.id %}"
+                  class="btn btn-sm btn-light border text-danger post-request" title="Delete">
+                  <i class="fa-regular fa-trash-can"></i>
+                </a>
+                {% else %}
+                <button class="btn btn-sm btn-light border disabled opacity-50">
+                  <i class="fa-solid fa-lock"></i>
+                </button>
+                {% endif %}
+              </div>
             </td>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-5 text-muted">
+              <div class="opacity-25 mb-2">
+                <i class="fa-regular fa-file-zipper fs-1"></i>
+              </div>
+              <p class="small mb-0">No documents attached yet.</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if page.has_other_pages %}
+  <div class="card-footer bg-white border-0 py-3">
     {% include 'paginator.html' with obj_page=page %}
   </div>
+  {% endif %}
 </div>
+
 {% include 'partials/js.html' %}
 {% include 'generic_errormodal.html' %}

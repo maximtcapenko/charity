@@ -1,89 +1,141 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 class="mt-4">{{ filter.name }}</h2>
-<ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item">
-    <a href="{% url 'funds:get_details' filter.fund_id %}">{{ filter.fund.name }}</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'filters:get_list' filter.content_type.model %}">Filters</a>
-  </li>
-  <li class="breadcrumb-item active">Filter Details</li>
-</ol>
-<div class="card mb-4">
-  <div class="card-body">
-    <div class="row">
-      <div class="col">
-        <div class="bg-light text-dark">
-          <strong>Description</strong>: {{ filter.notes }}
+{% load customtags %}
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+    <div>
+      <h2 class="mb-0 text-primary">{{ filter.name }}</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_details' filter.fund_id %}"
+              class="text-decoration-none">{{ filter.fund.name }}</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'filters:get_list' filter.content_type.model %}"
+              class="text-decoration-none">Filters</a></li>
+          <li class="breadcrumb-item active">Filter Details</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'filters:edit_details' filter.id %}" class="btn btn-outline-secondary shadow-sm">
+        <i class="fa-solid fa-pen-to-square me-1"></i> Edit Header
+      </a>
+    </div>
+  </div>
+
+  <hr class="mb-4">
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <div class="row align-items-center">
+        <div class="col-md-7">
+          <h6 class="text-muted text-uppercase fw-bold small mb-2">Description / Purpose</h6>
+          <p class="mb-0 text-dark lead" style="font-size: 1rem;">
+            {{ filter.notes|default:"No notes provided for this filter preset." }}
+          </p>
         </div>
-      </div>
-      <div class="col">
-        <div class="bg-light text-dark">
-          <div>
-            <strong>Created</strong>: {{ filter.date_created }}
-          </div>
-          <div>
-            <strong>Author</strong>: <a href="{% url 'funds:get_volunteer_details' filter.author.volunteer_profile.id %}">{{ filter.author.username }}</a>
-        </div>
-          <div>
-            <strong>Content type</strong>:
-            <span class="badge bg-primary">
-              {{ filter.content_type.model }}
-            </span>
+        <div class="col-md-5 border-start ps-md-4">
+          <div class="d-grid gap-2 small">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Target Model:</span>
+              <span class="badge bg-primary-soft text-primary border border-primary px-2">{{ filter.content_type.model|upper }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Created By:</span>
+              <a href="{% url 'funds:get_volunteer_details' filter.author.volunteer_profile.id %}"
+                class="fw-bold text-decoration-none text-dark">{{ filter.author.username }}</a>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Created On:</span>
+              <span class="fw-bold">{{ filter.date_created|date:"M d, Y" }}</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="row mt-2">
-      <div class="row">
-        <div class="col-1">
-          <i class="fa-solid fa-pen-to-square"></i>
-          <a href="{% url 'filters:edit_details' filter.id %}">Edit</a>
-        </div>
-      </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0 text-muted">
+      <i class="fa-solid fa-code-branch me-2 text-primary"></i>Filter Logic
+    </h5>
+    <a href="{% url 'filters:add_expression' filter.id %}" class="btn btn-sm btn-primary shadow-sm px-3">
+      <i class="fa-solid fa-plus me-1"></i> Add Expression
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+      <span class="small fw-bold text-muted text-uppercase">Conditions</span>
     </div>
-  </div>
-</div>
-<div>
-  <a href="{% url 'filters:add_expression' filter.id %}" class="btn btn-link">Add expression</a>
-</div>
-<div class="card mb-4">
-  <div class="card-header">
-    Filter expressions
-  </div>
-  <div class="card-body">
-    <table class="table table-striped">
-      <tbody>
-      {% for expression in filter.expressions.all %}
-        <tr>
-          <td class="col-3 align-middle">
-            <h6>
-              <a href="{% url 'filters:get_expression_details' filter.id expression.id %}">{{ expression.field.attribute.name }}</a>
-            </h6>
-            {{ expression.date_created }}
-          </td>
-          <td class="align-middle">
-            <span class="badge bg-primary">
-            {{ expression.operand }}
-            </span>
-          </td>
-          <td class="align-middle">
-            <ul>
-            {% for value in expression.values.all %}
-              <li class="list-group-item">{{value.value}}</li>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-uppercase">
+            <tr>
+              <th class="ps-4" style="width: 25%;">Field / Attribute</th>
+              <th style="width: 15%;">Operator</th>
+              <th style="width: 45%;">Values</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for expression in filter.expressions.all %}
+            <tr>
+              <td class="ps-4">
+                <h6 class="mb-0 fw-bold">
+                  <a href="{% url 'filters:get_expression_details' filter.id expression.id %}"
+                    class="text-decoration-none text-dark">
+                    {{ expression.field.attribute.name }}
+                  </a>
+                </h6>
+                <small class="text-muted" style="font-size: 0.7rem;">Added {{ expression.date_created|date:"M d, Y" }}</small>
+              </td>
+              <td>
+                <span class="badge bg-info-soft text-info border border-info px-3 py-2 font-monospace"
+                  style="font-size: 0.75rem;">
+                  {{ expression.operand }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex flex-wrap gap-1">
+                  {% for value in expression.values.all %}
+                  <span class="badge bg-light text-dark border px-2 py-1 small fw-normal">
+                    {{ value.value }}
+                    </a>
+                    {% empty %}
+                    <span class="text-muted small italic">No values defined</span>
+                    {% endfor %}
+                </div>
+              </td>
+              <td class="text-end pe-4">
+                <div class="btn-group shadow-sm">
+                  <a href="{% url 'filters:get_expression_details' filter.id expression.id %}"
+                    class="btn btn-sm btn-light border" title="Edit Values">
+                    <i class="fa-solid fa-pen text-primary"></i>
+                  </a>
+                  <a href="{% url 'filters:remove_expression' filter.id expression.id %}"
+                    class="btn btn-sm btn-light border text-danger post-request" title="Remove Condition">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-5 text-muted">
+                <i class="fa-solid fa-filter-circle-xmark fs-1 mb-2 d-block opacity-25"></i>
+                <p>This filter has no conditions yet. Add one to start filtering data.</p>
+              </td>
+            </tr>
             {% endfor %}
-            </ul>
-          </td>
-          <td class="align-middle">
-            <a href="{% url 'filters:remove_expression' filter.id expression.id %}" class="post-request">Remove</a>
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
+
 {% include 'partials/js.html' %}
 {% include 'generic_errormodal.html' %}
 {% endblock %}

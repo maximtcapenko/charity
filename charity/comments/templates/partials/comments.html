@@ -1,47 +1,102 @@
 {% load commentfilters %}
 {% load customtags %}
 {% get_context_values 'content_type' 'target' as context %}
-<div>
-  <a {% if context|comment_is_ready_to_be_added %}
-       href="{% url 'comments:add_generic_comment' content_type.model target.pk %}" 
-       class="btn btn-link"
-     {% else %}
-     class="btn btn-link disabled"
-     {% endif %}>Add new comment</a>
-</div>
-<div class="card mb-4">
-  <div class="card-header">
-    {{items_count}} <i class="fa-regular fa-message"></i>
+
+<div class="comments-section mt-3">
+  <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+    <h6 class="fw-bold text-muted text-uppercase small mb-0">
+      <i class="fa-regular fa-comments me-2 text-primary"></i>Discussion ({{ items_count }})
+    </h6>
+
+    {% if context|comment_is_ready_to_be_added %}
+    <a href="{% url 'comments:add_generic_comment' content_type.model target.pk %}"
+      class="btn btn-sm btn-primary shadow-sm px-3" style="font-size: 0.75rem;">
+      <i class="fa-solid fa-plus me-1"></i> New Topic
+    </a>
+    {% endif %}
   </div>
-  <div class="card-body">
+
+  <div class="comment-feed border-top border-light">
     {% for comment in page %}
-    <div id="{{comment.id}}" class="row mt-2">
-      <div class="col-2">
-        <div>
-          {% include 'partials/user_image_part.html' with user=comment.author %}
-          <span class="badge bg-danger rounded">topic</span>
-          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Reply">
-            <a href="{% url 'comments:add_reply_to_comment' content_type.model target.pk comment.id %}">
-              <i class="fa-solid fa-reply"></i>
-            </a>
-          </span>
+    <div class="comment-thread py-3 border-bottom border-light-subtle" id="comment-{{ comment.id }}">
+      <div class="d-flex align-items-start">
+        <div class="flex-shrink-0 me-3">
+          <div class="avatar-28">
+            {% include 'partials/user_image_part.html' with user=comment.author %}
+          </div>
         </div>
-          {{ comment.date_created }}
-      </div>
-      <div class="col-10">
-        {{ comment.notes }}
+
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge rounded-pill bg-danger-soft text-danger border border-danger-subtle"
+                style="font-size: 0.6rem; padding: 0.15rem 0.4rem;">TOPIC</span>
+            </div>
+            <small class="text-muted" style="font-size: 0.65rem;">
+              <i class="fa-regular fa-clock me-1"></i>{{ comment.date_created|date:"M d, H:i" }}
+            </small>
+          </div>
+
+          <div class="comment-content text-dark mb-2"
+            style="white-space: pre-wrap; line-height: 1.4; font-size: 0.875rem;">
+            {{ comment.notes }}
+          </div>
+
+          <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'comments:add_reply_to_comment' content_type.model target.pk comment.id %}"
+              class="text-decoration-none text-primary fw-bold hover-underline" style="font-size: 0.75rem;">
+              <i class="fa-solid fa-reply me-1"></i>Reply
+            </a>
+            {% if comment.replies_count > 0 %}
+            <span class="text-muted" style="font-size: 0.75rem;">
+              <i class="fa-regular fa-comment-dots me-1"></i>{{ comment.replies_count }}
+            </span>
+            {% endif %}
+          </div>
+
+          {% if comment.replies_count > 0 %}
+          <div class="mt-2 border-start border-2 ps-3 py-1 bg-light-soft rounded-end">
+            {% render_partial 'comments.views.get_replies_for_comment' comment_id=comment.id %}
+          </div>
+          {% endif %}
+        </div>
       </div>
     </div>
-      {% if comment.replies_count > 0 %}
-      <div class="container">
-        {% render_partial 'comments.views.get_replies_for_comment' comment_id=comment.id %}
-      </div>
-      {% endif %}
+    {% empty %}
+    <div class="p-5 text-center py-5 text-muted bg-light rounded-3 border-dashed mt-2">
+      <i class="fa-solid fa-comment-slash fs-2 mb-2 d-block opacity-25"></i>
+      <p class="small mb-0">Start the conversation by adding a new topic.</p>
+    </div>
     {% endfor %}
-    <div class="row mt-3">
-      <div>
-        {% include 'paginator.html' with obj_page=page %}
-      </div>
-    </div>
+  </div>
+
+  <div class="mt-3">
+    {% include 'paginator.html' with obj_page=page %}
   </div>
 </div>
+
+<style>
+  /* Fixed small avatar sizing */
+  .avatar-28 .user-image-partial-wrapper img {
+    width: 32px !important;
+    height: 32px !important;
+    border: 1px solid #eee;
+    border-radius: 50%;
+  }
+
+  .bg-light-soft {
+    background-color: #fcfcfc;
+  }
+
+  .bg-danger-soft {
+    background-color: rgba(220, 53, 69, 0.05);
+  }
+
+  .hover-underline:hover {
+    text-decoration: underline !important;
+  }
+
+  .border-dashed {
+    border: 1px dashed #dee2e6 !important;
+  }
+</style>

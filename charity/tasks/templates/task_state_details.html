@@ -2,112 +2,163 @@
 {% block content %}
 {% load customtags %}
 {% load taskfilters %}
-<h2 class="mt-4">{{ state.state.name }}</h2>
-<ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item">
-    <a href="{% url 'funds:get_current_details' %}">{{ task.project.fund.name }}</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'projects:get_list' %}">Projects</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'projects:get_details' task.project.id %}">{{ task.project.name }}</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'tasks:get_details' task.id %}">{{ task.name }}</a>
-  </li>
-  <li class="breadcrumb-item active">Process state Details</li>
-</ol>
-<div class="card mb-4">
-  <div class="card-body">
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
     <div>
-      <div class="row">
-        <div class="col">
-          <div class="bg-light text-dark">
-            <strong>Description</strong>: {{ state.state.notes }}
-          </div>
-        </div>
-        <div class="col">
-          <div class="bg-light text-dark">
-            <div>
-              <strong>Author</strong>: 
-              <a href="{% url 'funds:get_volunteer_details' state.author.volunteer_profile.id %}">{{ state.author.username }}</a>
-            </div>
-            <div>
-              <strong>Created</strong>: {{ state.date_created }}
-            </div>
-            <div>
-              <strong>Reviewer</strong>:
-              {% if state.reviewer %}
-              <a href="{% url 'funds:get_volunteer_details' state.reviewer.volunteer_profile.id %}">{{ state.reviewer.username }} </a>
-              {% else %}
-              <a href="{% url 'funds:get_volunteer_details' task.reviewer.volunteer_profile.id %}">{{ task.reviewer.username }} </a>
-              {% endif %}
-            </div>
-            <strong>Approvement requirement</strong>: <span class="badge bg-primary">
-              {% if state.state.is_approvement_required %} yes {% else %} no {% endif %}</span>
-            </div>
-            <div>
-            <strong>Status</strong>:
-            {% if not state.approvement and not state.is_approvement_required %}
-            <span class="badge bg-primary">in progress</span>
-            {% endif %}
-            {% if state.is_review_requested %}
-            <span class="badge bg-info text-dark">on review</span>
-            {% endif %}
-            {% if state.approvement.is_rejected %}
-            <span class="badge bg-danger">rejected</span>
-            {% endif %}
-            {% if state.approvement.is_rejected == False %}
-            <span class="badge bg-success">approved</span>
-            {% endif %}
-            {% if state.is_done %}
-            <span class="badge bg-success">done</span>
-            {% endif %}
-            </div>
-            <div>
-              <strong>Completion date</strong>: {{ state.completion_date}}
-            </div>
-            <div>
-            <strong>Process</strong>: <a href="{% url 'processes:get_details' task.process_id%}">{{ task.process.name }}</a>
-          </div>
-          <div>
-            <strong>Author notes</strong>: {{ state.notes }}
+      <h2 class="mb-0">{{ state.state.name }}</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_current_details' %}" class="text-decoration-none">{{task.project.fund.name }}</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'projects:get_list' %}" class="text-decoration-none">Projects</a>
+          </li>
+          <li class="breadcrumb-item"><a href="{% url 'projects:get_details' task.project.id %}"
+              class="text-decoration-none">{{ task.project.name }}</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'tasks:get_details' task.id %}" class="text-decoration-none">{{task.name }}</a></li>
+          <li class="breadcrumb-item active">State Details</li>
+        </ol>
+      </nav>
+    </div>
+    <div>
+      {% get_context_values 'user' 'task' as context %}
+      <a href="{% url 'tasks:request_task_state_review' task.id state.id %}"
+        class="btn btn-primary shadow-sm {% if not state|task_state_is_ready_for_review_request:context %}disabled{% endif %}">
+        <i class="fa-solid fa-paper-plane me-2"></i>Request Review
+      </a>
+    </div>
+  </div>
+
+  <hr class="mb-4">
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title text-muted mb-3"><i class="fa-solid fa-circle-info me-2"></i>Description</h5>
+          <div class="p-3 bg-light rounded border-start border-4 border-primary">
+            {{ state.state.notes|default:"No description provided for this state." }}
           </div>
         </div>
       </div>
+
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title text-muted mb-3"><i class="fa-solid fa-comment-dots me-2"></i>Author Notes</h5>
+          <div class="p-3 bg-white border rounded">
+            {{ state.notes|linebreaks|default:"<span class='text-muted italic'>No notes added yet.</span>" }}
+          </div>
+        </div>
+      </div>
+
+      <ul class="nav nav-pills mb-3" id="stateTab" role="tablist">
+        {% for tab in tabs %}
+        <li class="nav-item">
+          <a href="?tab={{ tab }}" class="nav-link {% if selected_tab == tab %}active{% endif %} shadow-sm me-2">
+            {{ tab|capfirst }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          {% for tab in tabs %}
+          {% if selected_tab == tab %}
+          {% include 'partials/task_state_'|add:tab|add:'_list.html' %}
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
     </div>
-    <div class="row">
-      <div>
-        {% get_context_values 'user' 'task' as context %}
-        <a  {% if state|task_state_is_ready_for_review_request:context %}
-              href="{% url 'tasks:request_task_state_review' task.id state.id %}"
-              class="btn btn-link"
-            {% else %}
-              href=""
-              class="btn btn-link disabled"
-            {% endif %}>Request review</a>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent border-0 pt-4">
+          <h5 class="mb-0">Status & Details</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-4 p-3 rounded bg-light border">
+            <label class="text-muted small d-block text-uppercase fw-bold mb-2">Current Status</label>
+            <div class="h5 mb-0">
+              {% if not state.approvement and not state.is_approvement_required %}
+              <span class="badge bg-primary">In Progress</span>
+              {% endif %}
+              {% if state.is_review_requested %}
+              <span class="badge bg-info text-dark"><i class="fa-solid fa-magnifying-glass me-1"></i>On Review</span>
+              {% endif %}
+              {% if state.approvement.is_rejected %}
+              <span class="badge bg-danger">Rejected</span>
+              {% endif %}
+              {% if state.approvement.is_rejected == False %}
+              <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Approved</span>
+              {% endif %}
+              {% if state.is_done %}
+              <span class="badge bg-success">Done</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="text-muted small d-block">Approval Required</label>
+            <span class="fw-bold">
+              {% if state.state.is_approvement_required %}
+              <i class="fa-solid fa-lock text-warning me-1"></i> Yes
+              {% else %}
+              <i class="fa-solid fa-lock-open text-muted me-1"></i> No
+              {% endif %}
+            </span>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <label class="text-muted small d-block mb-2 text-uppercase fw-bold">People</label>
+            <div class="d-flex flex-column gap-2">
+              <div class="small">
+                <span class="text-muted">Author:</span>
+                <a href="{% url 'funds:get_volunteer_details' state.author.volunteer_profile.id %}"
+                  class="text-decoration-none">
+                  {{ state.author.username }}
+                </a>
+              </div>
+              <div class="small">
+                <span class="text-muted">Reviewer:</span>
+                {% if state.reviewer %}
+                <a href="{% url 'funds:get_volunteer_details' state.reviewer.volunteer_profile.id %}"
+                  class="text-decoration-none">{{ state.reviewer.username }}</a>
+                {% else %}
+                <a href="{% url 'funds:get_volunteer_details' task.reviewer.volunteer_profile.id %}"
+                  class="text-decoration-none text-muted">{{ task.reviewer.username }}</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <label class="text-muted small d-block text-uppercase fw-bold">Timeline</label>
+            <div class="mt-2">
+              <small class="text-muted d-block">Created:</small>
+              <div class="mb-2"><i class="fa-regular fa-calendar-plus me-2 text-muted"></i>{{ state.date_created|date:"Md, Y H:i" }}</div>
+
+              {% if state.completion_date %}
+              <small class="text-muted d-block">Completed:</small>
+              <div><i class="fa-regular fa-calendar-check me-2 text-success"></i>{{ state.completion_date|date:"Md, Y H:i"}}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-top">
+            <label class="text-muted small d-block">Process Reference</label>
+            <a href="{% url 'processes:get_details' task.process_id %}" class="small text-decoration-none">
+              <i class="fa-solid fa-diagram-project me-1"></i>{{ task.process.name }}
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
-<ul class="nav nav-pills mb-3">
-  {% for tab in tabs %}
-  <li class="nav-item" role="presentation">
-    {% if selected_tab == tab %}
-      <a href="?tab={{ tab }}" class="nav-link active">{{ tab|capfirst }}
-      </a>
-    {% else %}
-      <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
-    {% endif %}
-  </li>
-  {% endfor %}
-</ul>
-<div>
-  {% for tab in tabs %}
-    {% if selected_tab == tab %}
-      {% include 'partials/task_state_'|add:tab|add:'_list.html' %}
-    {% endif %}
-  {% endfor %}
-</div>
+
 {% endblock %}

@@ -1,51 +1,95 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h2 class="mt-4">{{ fund.name }}</h2>
-  <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item active">Fund Details</li>
-  </ol>
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="row">
-        <div class="col">
-          <div class="bg-light text-dark">
-            <strong>Description</strong>: {{ fund.notes }}
-          </div>
+{% load customtags %}
+
+<div class="container-fluid px-4">
+  <div class="mt-4 mb-3">
+    <h2 class="fw-bold text-primary">{{ fund.name }}</h2>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item active"><i class="fa-solid fa-house-medical me-1"></i> Fund Details</li>
+      </ol>
+    </nav>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm bg-primary text-white h-100">
+        <div class="card-body py-4">
+          <small class="opacity-75 text-uppercase fw-bold" style="font-size: 0.7rem;">Active Budget</small>
+          <h3 class="mb-0 fw-bold">${{ fund.active_budget_amount|floatformat:'2g' }}</h3>
+          <i class="fa-solid fa-sack-dollar position-absolute top-0 end-0 m-3 opacity-25 fs-4"></i>
         </div>
-        <div class="col">
-          <div class="bg-light text-dark">
-            <div>
-              <strong>Created</strong>: {{ fund.date_created }}
-            </div>
-            <div>
-              <strong>Budget</strong>: {{ fund.active_budget_amount|floatformat:'2g' }}
-            </div>
-            <div>
-              <strong>Volunteers</strong>: {{ fund.total_volunteers_count }}
-            </div>
-          </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm bg-success text-white h-100">
+        <div class="card-body py-4">
+          <small class="opacity-75 text-uppercase fw-bold" style="font-size: 0.7rem;">Total Volunteers</small>
+          <h3 class="mb-0 fw-bold">{{ fund.total_volunteers_count }}</h3>
+          <i class="fa-solid fa-users position-absolute top-0 end-0 m-3 opacity-25 fs-4"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm bg-info text-white h-100">
+        <div class="card-body py-4">
+          <small class="opacity-75 text-uppercase fw-bold" style="font-size: 0.7rem;">Active Wards</small>
+          <h3 class="mb-0 fw-bold">{{ fund.active_wards_count|default:"0" }}</h3>
+          <i class="fa-solid fa-hospital-user position-absolute top-0 end-0 m-3 opacity-25 fs-4"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm bg-secondary text-white h-100">
+        <div class="card-body py-4">
+          <small class="opacity-75 text-uppercase fw-bold" style="font-size: 0.7rem;">Active Projects</small>
+          <h3 class="mb-0 fw-bold">{{ fund.active_projects_count|default:"0" }}</h3>
+          <i class="fa-solid fa-diagram-project position-absolute top-0 end-0 m-3 opacity-25 fs-4"></i>
         </div>
       </div>
     </div>
   </div>
-  <ul class="nav nav-pills mb-3">
-    {% for tab in tabs %}
-      <li class="nav-item" role="presentation">
-        {% if selected_tab == tab %}
-          <a href="?tab={{ tab }}" class="nav-link active">
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h6 class="text-muted text-uppercase fw-bold small mb-2">Fund Description</h6>
+          <p class="mb-0 text-dark lead" style="font-size: 1rem;">
+            {{ fund.notes|default:"No description provided for this fund." }}
+          </p>
+        </div>
+        <div class="col-md-4 text-md-end border-start">
+          <small class="text-muted d-block">Established On</small>
+          <span class="fw-bold">{{ fund.date_created|date:"F d, Y" }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white pt-3 border-0">
+      <ul class="nav nav-pills card-header-pills">
+        {% for tab in tabs %}
+        <li class="nav-item">
+          <a href="?tab={{ tab }}" class="nav-link {% if selected_tab == tab %}active shadow-sm{% endif %} me-2">
             {{ tab|capfirst }}
           </a>
-        {% else %}
-          <a href="?tab={{ tab }}" class="nav-link">{{ tab|capfirst }}</a>
-        {% endif %}
-      </li>
-    {% endfor %}
-  </ul>
-  <div>
-    {% for tab in tabs %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="card-body p-0 pt-2">
+      {% for tab in tabs %}
       {% if selected_tab == tab %}
+      <div class="px-4 pb-4">
         {% include 'partials/fund_'|add:tab|add:'_list.html' %}
+      </div>
       {% endif %}
-    {% endfor %}
+      {% endfor %}
+    </div>
   </div>
+</div>
+
 {% endblock %}

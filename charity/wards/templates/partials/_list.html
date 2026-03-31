@@ -1,50 +1,101 @@
 {% load customtags %}
-<div class="card mb-4">
-  <div class="card-header">
-    {{ items_count }} <i class="fa-solid fa-leaf"></i>
-    Wards
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+    <h6 class="mb-0 fw-bold text-muted">
+      <i class="fa-solid fa-magnifying-glass me-2 text-primary"></i>
+      Available Wards <span class="badge rounded-pill bg-light text-dark border ms-1">{{ items_count }}</span>
+    </h6>
   </div>
+
   <div class="card-body">
-    <div>
-      <form action="" method="get">
-        <div class="row">
+    <div class="card border-0 shadow-sm mb-4 bg-light">
+      <div class="card-body py-3">
+        <form action="" method="get" class="row g-3 align-items-center">
           {% for field in search_form %}
-            <div {% if field.field.widget.attrs.div_class %} 
-                  class="{{field.field.widget.attrs.div_class}}"
-                {% else %}
-                  class="col"
-                {% endif %}>{{ field }}</div>
+          <div {% if field.field.widget.attrs.div_class %} class="{{field.field.widget.attrs.div_class}}" {% else %}
+            class="col-md-3" {% endif %}>
+            {{ field }} </div>
           {% endfor %}
-        </div>
-      </form>
+          <div class="col-md-auto">
+            <button type="submit" class="btn btn-sm btn-secondary px-3">Filter Wards</button>
+          </div>
+        </form>
+      </div>
     </div>
-    <table class="table table-striped">
-      <tbody>
-        {% for ward in page %}
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase">
           <tr>
-            <td>
-              <div>
-                <h6>
-                  {{ ward|thumbnail:50 }}
-                  <a href="{% url 'wards:get_details' ward.id %}">{{ ward.name }}</a>
-                </h6>
-                {{ ward.date_created }}
-                {% if ward.is_inactive %}
-                  <span class="badge bg-secondary">inactive</span>
-                {% else %}
-                  <span class="badge bg-primary">active</span>
-                {% endif %}
+            <th class="ps-4" style="width: 70%;">Ward Details</th>
+            <th class="text-end pe-4">Selection</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ward in page %}
+          <tr>
+            <td class="ps-4">
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                  {{ ward|thumbnail:45 }}
+                </div>
+                <div class="ms-3">
+                  <h6 class="mb-0 fw-bold">
+                    <a href="{% url 'wards:get_details' ward.id %}" target="_blank"
+                      class="text-decoration-none text-dark">
+                      {{ ward.name }}
+                    </a>
+                  </h6>
+                  <div class="d-flex align-items-center gap-2 mt-1">
+                    {% if ward.is_inactive %}
+                    <span class="badge rounded-pill bg-secondary-soft text-secondary border border-secondary px-2"
+                      style="font-size: 0.65rem;">INACTIVE</span>
+                    {% else %}
+                    <span class="badge rounded-pill bg-success-soft text-success border border-success px-2"
+                      style="font-size: 0.65rem;">ACTIVE</span>
+                    {% endif %}
+                    <small class="text-muted" style="font-size: 0.7rem;">
+                      Added: {{ ward.date_created|date:"M d, Y" }}
+                    </small>
+                  </div>
+                </div>
               </div>
             </td>
-            <td class="align-middle">
-              <a href="#" data-input-name="ward" data-input-value="{{ward.id}}"
-              class="post-request">Add ward</a>
+            <td class="text-end pe-4">
+              <button href="#" data-input-name="ward" data-input-value="{{ ward.id }}"
+                class="btn btn-sm btn-primary px-3 shadow-sm post-request">
+                <i class="fa-solid fa-plus me-1"></i> Select
+              </button>
             </td>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% include 'paginator.html' with obj_page=page %}
-    {% include 'partials/js.html' %}
+          {% empty %}
+          <tr>
+            <td colspan="2" class="text-center py-5 text-muted">
+              <i class="fa-solid fa-folder-open fs-2 mb-2 d-block opacity-25"></i>
+              No matching wards found. Try adjusting your filters.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-3">
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
   </div>
 </div>
+
+{% include 'partials/js.html' %}
+
+<style>
+  /* Specific styling for the selector partial to ensure it stays compact */
+  .bg-secondary-soft {
+    background-color: #f8f9fa;
+  }
+
+  .bg-success-soft {
+    background-color: #e8f5e9;
+  }
+</style>

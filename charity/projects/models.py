@@ -39,15 +39,30 @@ class Project(Base):
             .aggregate(budget=models.Sum('expense__amount', default=0))['budget']
 
     @cached_property
+    def spent_budget(self):
+        return self.tasks.filter(is_done=True) \
+            .aggregate(spent_budget=models.Sum('actual_expense_amount', default=0))['spent_budget']
+
+    @cached_property
     def expired_tasks_count(self):
         return self.tasks.filter(is_done=False, is_started=True,
-                                 end_date__isnull=False, end_date__lt=datetime.date.today()) \
-            .aggregate(total=models.Count('id'))['total']
+                                 end_date__isnull=False, end_date__lt=datetime.date.today()).count()
 
     @cached_property
     def active_tasks_count(self):
-        return self.tasks.filter(is_done=False, is_started=True) \
-            .aggregate(total=models.Count('id'))['total']
+        return self.tasks.filter(is_done=False, is_started=True).count()
+    
+    @cached_property
+    def done_tasks_count(self):
+        return self.tasks.filter(is_done=True).count()
+    
+    @cached_property
+    def tasks_on_review_count(self):
+        return self.tasks.filter(is_started=True, state__is_review_requested=True, is_done=False).count()
+    
+    @cached_property
+    def tasks_count(self):
+        return self.tasks.count()
 
 
 @receiver(signals.post_save, sender=Project)
@@ -58,11 +73,6 @@ def add_default_reviewers(sender, instance, created, **kwargs):
 
 def fund_projects_count(self):
     return Project.objects.filter(fund__id=self.id).aggregate(
-        total=models.Count('id'))['total']
-
-
-def fund_active_projects_count(self):
-    return Project.objects.filter(fund__id=self.id, is_closed=False).aggregate(
         total=models.Count('id'))['total']
 
 
@@ -78,9 +88,6 @@ def ward_active_projects(self):
 
 Fund.add_to_class('projects_count', property(
     fget=fund_projects_count))
-
-Fund.add_to_class('active_projects_count', property(
-    fget=fund_active_projects_count))
 
 Fund.add_to_class('active_projects', property(
     fget=fund_active_projects))

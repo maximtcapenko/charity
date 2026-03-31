@@ -2,64 +2,129 @@
 {% block content %}
 {% load customtags %}
 {% load submissionfilters %}
-{% include "partials/header.html" with title='Wards submission' %}
-<div>
-  <a href="{% url 'submissions:add_submission' %}" class="btn btn-link">Add submission</a>
-</div>
-<div class="card mb-4">
-  <div class="card-header">
-    {{ items_count }} <i class="fa-regular fa-paper-plane"></i>
-    Submission lists
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <div>
+      <h2 class="mb-0 text-primary">Ward Submissions</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Dashboard</a></li>
+          <li class="breadcrumb-item active">Mailing Automation</li>
+        </ol>
+      </nav>
+    </div>
+    <a href="{% url 'submissions:add_submission' %}" class="btn btn-primary shadow-sm px-4">
+      <i class="fa-solid fa-paper-plane me-2"></i>New Submission
+    </a>
   </div>
-  <div class="card-body">
-    <table class="table table-striped">
-      <tbody>
-        {% for submission in page %}
-        <tr>
-          <td class="col-3 align-middle">
-            <h6>
-              <a href="{% url 'submissions:get_submission_details' submission.id %}">{{submission.name}}</a>
-            </h6>
-            {{submission.date_created}}
-            <span class="badge bg-primary">
-              {{submission.status}}
-            </span>
-          </td>
-          <td class="col-3 align-middle">
-            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Mail group">
-              <i class="fa-solid fa-at fa-xs"></i>
-              <a href="{% url 'mailings:get_group_details' submission.mailing_group.id %}">
-                {{submission.mailing_group.name}}
-              </a>
-            </span>
-          </td>
-          <td class="align-middle">
-            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Mail template">
-              <i class="fa-solid fa-book-open"></i>
-              <a href="{% url 'mailings:edit_template' submission.mailing_template.id %}">
-                {{submission.mailing_template.name}}
-              </a>
-            </span>
-          </td>
-          <td class="align-middle">
-            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Author">
-              {% include 'partials/user_image_part.html' with user=submission.author %}
-            </span>
-          </td>
-          <td class="align-middle">
-            <a {% if submission|submission_can_be_edited:user %}
-                 href="{% url 'submissions:remove_submission' submission.id %}"
-                 class="post-request"
-               {% else %}
-                 class="link-disabled"
-               {% endif %}>Remove</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+      <h6 class="mb-0 fw-bold text-muted">
+        <i class="fa-regular fa-envelope-open me-2 text-primary"></i>
+        Submission Lists <span class="badge rounded-pill bg-light text-dark border ms-1">{{ items_count }}</span>
+      </h6>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-uppercase">
+            <tr>
+              <th class="ps-4" style="width: 25%;">Submission Name & Date</th>
+              <th style="width: 20%;">Mailing Group</th>
+              <th style="width: 20%;">Template</th>
+              <th style="width: 15%;">Author</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for submission in page %}
+            <tr>
+              <td class="ps-4">
+                <div class="d-flex flex-column">
+                  <h6 class="mb-1">
+                    <a href="{% url 'submissions:get_submission_details' submission.id %}"
+                      class="text-decoration-none fw-bold text-dark">
+                      {{ submission.name }}
+                    </a>
+                  </h6>
+                  <div class="d-flex align-items-center gap-2">
+                    {% if submission.status == 'sent' %}
+                    <span class="badge rounded-pill bg-success-soft text-success border border-success px-2"
+                      style="font-size: 0.65rem;">SENT</span>
+                    {% elif submission.status == 'draft' %}
+                    <span class="badge rounded-pill bg-warning-soft text-warning border border-warning px-2"
+                      style="font-size: 0.65rem;">DRAFT</span>
+                    {% else %}
+                    <span class="badge rounded-pill bg-info-soft text-info border border-info px-2"
+                      style="font-size: 0.65rem;">{{ submission.status|upper }}</span>
+                    {% endif %}
+                    <small class="text-muted" style="font-size: 0.7rem;">{{ submission.date_created|date:"M d, Y" }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <i class="fa-solid fa-users-rectangle text-muted me-2 small"></i>
+                  <a href="{% url 'mailings:get_group_details' submission.mailing_group.id %}"
+                    class="text-decoration-none small fw-bold">
+                    {{ submission.mailing_group.name }}
+                  </a>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <i class="fa-solid fa-file-code text-muted me-2 small"></i>
+                  <a href="{% url 'mailings:edit_template' submission.mailing_template.id %}"
+                    class="text-decoration-none small text-secondary">
+                    {{ submission.mailing_template.name }}
+                  </a>
+                </div>
+              </td>
+              <td>
+                {% include 'partials/user_image_part.html' with user=submission.author %}
+              </td>
+              <td class="text-end pe-4">
+                <div class="btn-group shadow-sm">
+                  <a href="{% url 'submissions:get_submission_details' submission.id %}"
+                    class="btn btn-sm btn-light border" title="View Details">
+                    <i class="fa-solid fa-eye text-primary"></i>
+                  </a>
+                  {% if submission|submission_can_be_edited:user %}
+                  <a href="{% url 'submissions:remove_submission' submission.id %}"
+                    class="btn btn-sm btn-light border text-danger post-request" title="Delete Submission">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </a>
+                  {% else %}
+                  <button class="btn btn-sm btn-light border disabled opacity-50"
+                    title="Sent submissions cannot be deleted">
+                    <i class="fa-solid fa-lock"></i>
+                  </button>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-5 text-muted">
+                <i class="fa-regular fa-paper-plane fs-2 mb-2 d-block opacity-25"></i>
+                No submissions found. Start by creating a mailing list.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-footer bg-white border-0 py-3">
+      {% include 'paginator.html' with obj_page=page %}
+    </div>
   </div>
 </div>
+
 {% include 'partials/js.html' %}
 {% include 'generic_errormodal.html' %}
 {% endblock %}

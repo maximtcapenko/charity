@@ -1,69 +1,111 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 class="mt-4">{{ expression.field.attribute.name }}</h2>
-<ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item">
-    <a href="{% url 'funds:get_details' expression.filter.fund_id %}">{{ expression.filter.fund.name }}</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'filters:get_list' expression.filter.content_type.model %}">Filters</a>
-  </li>
-  <li class="breadcrumb-item">
-    <a href="{% url 'filters:get_details' expression.filter.id %}">{{ expression.filter.name }}</a>
-  </li>
-  <li class="breadcrumb-item active">Expression Details</li>
-</ol>
-<div class="card mb-4">
-  <div class="card-body">
-    <div class="row">
-      <div class="col">
-        <div class="bg-light text-dark">
-          <div>
-            <strong>Created</strong>: {{ expression.date_created }}
+{% load customtags %}
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+    <div>
+      <h2 class="mb-0 text-primary">Rule: {{ expression.field.attribute.name }}</h2>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_details' expression.filter.fund_id %}"
+              class="text-decoration-none text-muted">{{ expression.filter.fund.name }}</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'filters:get_list' expression.filter.content_type.model %}"
+              class="text-decoration-none text-muted">Filters</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'filters:get_details' expression.filter.id %}"
+              class="text-decoration-none text-muted">{{ expression.filter.name }}</a></li>
+          <li class="breadcrumb-item active">Expression Details</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <hr class="mb-4">
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h6 class="text-muted text-uppercase fw-bold small mb-3">Field Configuration</h6>
+          <div class="d-flex align-items-center mb-2">
+            <span class="text-muted me-2 small">Target Field:</span>
+            <a href="{% url 'customfields:edit_field_details' expression.field.id %}"
+              class="fw-bold text-dark text-decoration-none">
+              <i class="fa-solid fa-tag me-1 text-primary"></i>{{ expression.field.attribute.name }}
+            </a>
           </div>
-          <div>
-            <strong>Field</strong>: 
-            <a href="{% url 'customfields:edit_field_details' expression.field.id %}">{{ expression.field.attribute.name }}</a>
+          <div class="d-flex align-items-center">
+            <span class="text-muted me-2 small">Data Type:</span>
+            <span class="badge bg-info-soft text-info border border-info px-2 uppercase">{{ expression.field.attribute.datatype }}</span>
           </div>
-          <div>
-            <strong>Field type</strong>:
-            <span class="badge bg-primary">
-            {{ expression.field.attribute.datatype }}
-            </span>
+        </div>
+        <div class="col-md-6 border-start ps-md-4">
+          <h6 class="text-muted text-uppercase fw-bold small mb-3">Logic Operator</h6>
+          <div class="display-6 font-monospace text-primary">
+            {{ expression.operand }}
           </div>
-          <div>
-            <strong>Operand</strong>:
-            <span class="badge bg-primary">
-                {{ expression.operand }}
-            </span>
-          </div>
+          <small class="text-muted d-block mt-2">Created on {{ expression.date_created|date:"M d, Y" }}</small>
         </div>
       </div>
     </div>
   </div>
-</div>
-<div>
-  <a href="{% url 'filters:add_expression_value' expression.filter_id expression.id %}" class="btn btn-link">Add value</a>
-</div>
-<div class="card mb-4">
-  <div class="card-header">
-    Values
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0 text-muted">
+      <i class="fa-solid fa-list-check me-2 text-primary"></i>Comparison Values
+    </h5>
+    <a href="{% url 'filters:add_expression_value' expression.filter_id expression.id %}"
+      class="btn btn-sm btn-primary shadow-sm px-3">
+      <i class="fa-solid fa-plus me-1"></i> Add Value
+    </a>
   </div>
-  <div class="card-body">
-    <table class="table table-striped">
-      <tbody>
-        {% for value in expression.values.all %}
-        <tr>
-          <td class="col-2 align-middle">
-            {{ value.value }}
-          </td>
-          <td class="align-middle">
-            {{ value.date_created }}
-          </td>
-        </tr>
-        {% endfor %}    
-      </tbody>
-    </table>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 border-bottom">
+      <span class="small fw-bold text-muted text-uppercase">Defined Logic Entries</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-uppercase">
+            <tr>
+              <th class="ps-4" style="width: 60%;">Value</th>
+              <th style="width: 30%;">Added Date</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for value in expression.values.all %}
+            <tr>
+              <td class="ps-4">
+                <span class="badge bg-light text-dark border px-3 py-2 fs-6 fw-normal">
+                  {{ value.value }}
+                </span>
+              </td>
+              <td>
+                <small class="text-muted">
+                  <i class="fa-regular fa-calendar-plus me-1"></i>{{ value.date_created|date:"M d, Y H:i" }}
+                </small>
+              </td>
+              <td class="text-end pe-4">
+                <button class="btn btn-sm btn-outline-danger border-0" title="Remove value">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" class="text-center py-5 text-muted">
+                <i class="fa-solid fa-layer-group fs-2 mb-2 d-block opacity-25"></i>
+                <p>No values defined for this rule yet.</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
+
 {% endblock %}

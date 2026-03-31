@@ -24,7 +24,7 @@ class Budget(Base):
         Approvement, related_name='budget_approvements')
     reviewers = models.ManyToManyField(User, related_name='budget_reviewers')
     payout_excess_contribution = models.ForeignKey(
-        Contribution, null=True, on_delete=models.SET_NULL)
+        Contribution, null=True, on_delete=models.SET_NULL, related_name='payout_excess_budgets')
 
     def __str__(self):
         return self.name
