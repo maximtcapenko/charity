@@ -82,11 +82,9 @@
     </div>
   </div>
 
-  {% if page.has_other_pages %}
   <div class="card-footer bg-white border-0 py-3">
     {% include 'paginator.html' with obj_page=page %}
   </div>
-  {% endif %}
 </div>
 
 {% include "partials/js.html" %}

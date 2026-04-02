@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ document_name }}</title>
+</head>
+
+<body
+  style="margin: 0; padding: 0; background-color: #f4f7f9; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;">
+    <tr>
+      <td align="center" style="padding: 20px 0;">
+        <table border="0" cellpadding="0" cellspacing="0" width="600"
+          style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+
+          <tr>
+            <td style="padding: 30px 40px; background-color: #ffffff; border-bottom: 1px solid #eeeeee;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td width="50%">
+                    {% if fund.cover %}
+                    <img src="{{ fund.cover.url }}" alt="{{ fund.name }} Logo" width="120"
+                      style="display: block; border: 0;">
+                    {% else %}
+                    <span style="font-size: 24px; font-weight: bold; color: #0d6efd;">{{ fund.name }}</span>
+                    {% endif %}
+                  </td>
+                  <td width="50%" align="right"
+                    style="font-size: 12px; color: #999999; text-transform: uppercase; letter-spacing: 1px;">
+                    {{ document_name }}<br>
+                    {{ date_generated|date:"M d, Y" }}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 40px; color: #333333; font-size: 16px; line-height: 1.6;">
+              {% block email_body %}
+              {% endblock %}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 30px 40px; background-color: #f8f9fa; border-top: 1px solid #eeeeee;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td style="color: #666666; font-size: 13px; line-height: 1.5;">
+                    <strong style="color: #333333;">{{ fund.name }}</strong><br>
+                    {% if fund.phone %}Phone: {{ fund.phone }}<br>{% endif %}
+                    {% if fund.email %}Email: <a href="mailto:{{ fund.email }}"
+                      style="color: #0d6efd; text-decoration: none;">{{ fund.email }}</a><br>{% endif %}
+                    {% if fund.website %}Web: <a href="{{ fund.website }}"
+                      style="color: #0d6efd; text-decoration: none;">{{ fund.website }}</a>{% endif %}
+                  </td>
+                  <td align="right" style="vertical-align: bottom;">
+                    <span style="font-size: 11px; color: #999999;">&copy; {{ date_generated|date:"Y" }} {{ fund.name }}</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+
+        <table border="0" cellpadding="0" cellspacing="0" width="600">
+          <tr>
+            <td style="padding: 20px; font-size: 11px; color: #999999; text-align: center;">
+              You are receiving this email because of your association with {{ fund.name }}.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

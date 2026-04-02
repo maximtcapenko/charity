@@ -28,7 +28,7 @@ class TemplateFieldsWidget(Widget):
             model_class = self.content_type.model_class()
             if model_class:
                 fields = model_class._meta.fields
-                custom_fields.extend([f for f in fields if f.name == 'name'])
+                custom_fields.extend([f for f in fields if f.name in model_class.__rendered_fields__])
 
         widget_context['custom_fields'] = custom_fields
         return context

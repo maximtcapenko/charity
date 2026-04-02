@@ -3,7 +3,7 @@ from django import forms
 from commons.mixins import FormControlMixin, InitialMixin
 from mailings.models import MailingGroup, MailingTemplate
 
-from .models import Submission, SubmissionSentStatus
+from .models import Submission
 
 
 class AddSubmissionForm(
@@ -28,8 +28,8 @@ class AddSubmissionForm(
         exclude = ['id', 'date_created', 'wards', 'is_draft', 'status']
 
     def save(self):
-        if self.instance._state.adding:
-            self.instance.is_draft = True
-            self.instance.status = SubmissionSentStatus.DRAFT
-
+        if not self.has_changed():
+            return self.instance
+         
+        self.instance.is_draft = True
         return super().save(True)

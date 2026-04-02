@@ -18,11 +18,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
-from django.contrib.auth import views as auth_views
+from django.views.generic import RedirectView
 
 from commons import views as common_views
 
 urlpatterns = [
+    path('', RedirectView.as_view(url='/funds/', permanent=False)),
     path("accounts/login/", common_views.azure_ad_login, name='login'),
     path('accounts/login/callback/', common_views.azure_ad_callback, name='azure_ad_callback'),
     path('accounts/approve_waiting', common_views.user_is_not_approved, name='user_is_not_approved'),

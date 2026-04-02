@@ -1,37 +1,137 @@
 {% load customtags %}
 {% load submissionfilters %}
 
-<div class="table-responsive">
-  <table class="table table-hover align-middle mb-0">
-    <thead class="table-light small text-uppercase">
-      <tr>
-        <th class="ps-4">Timestamp</th>
-        <th>Event</th>
-        <th>Recipient</th>
-        <th class="text-end pe-4">Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for log in submission.logs.all %} <tr>
-        <td class="ps-4 small">{{ log.date_created|date:"M d, Y H:i:s" }}</td>
-        <td class="small fw-bold">{{ log.event_type }}</td>
-        <td class="small">{{ log.recipient_email }}</td>
-        <td class="text-end pe-4">
-          {% if log.is_error %}
-          <span class="text-danger small"><i class="fa-solid fa-circle-xmark me-1"></i>Failed</span>
-          {% else %}
-          <span class="text-success small"><i class="fa-solid fa-circle-check me-1"></i>Success</span>
-          {% endif %}
+<div class="card-body p-0">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" style="min-width: 800px;">
+      <thead class="table-light small text-uppercase">
+        <tr>
+          <th class="ps-4">Attempt / Timestamp</th>
+          <th>State</th>
+          <th>Recipient email</th>
+          <th class="text-center">Retries</th>
+          <th style="width: 25%;">Details / Errors</th>
+          <th class="text-end pe-4">Delivery Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in page %}
+        <tr>
+          <td class="ps-4">
+            <div class="fw-bold small text-dark">{{ log.date_created|date:"M d, Y" }}</div>
+            <div class="text-muted" style="font-size: 0.7rem;">{{ log.date_created|date:"H:i:s" }}</div>
+          </td>
+
+          <td>
+            <div class="d-flex align-items-center">
+              {% if log.status == 'SENT' %}
+              <span class="status-dot bg-success me-2"></span>
+              {% elif log.status == 'FAILED' %}
+              <span class="status-dot bg-danger me-2"></span>
+              {% elif log.status == 'QUEUED' %}
+              <span class="status-dot bg-secondary me-2"></span>
+              {% else %}
+              <span class="status-dot bg-warning me-2"></span>
+              {% endif %}
+              <span class="small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                {{ log.get_status_display|default:log.status }}
+              </span>
+            </div>
+          </td>
+
+          <td class="small text-truncate" style="max-width: 150px;" title="{{ log.recipient }}">
+            {{ log.recipient_email|default:"—" }}
+          </td>
+
+          <td class="text-center">
+            {% if log.retries_count > 0 %}
+            <span class="badge rounded-pill bg-light text-dark border fw-normal">{{ log.retries_count }}</span>
+            {% else %}
+            <span class="text-muted small">0</span>
+            {% endif %}
+          </td>
+
+          <td class="small">
+            {% if log.error_message %}
+            <div class="text-danger border-start border-danger border-2 ps-2 py-1"
+              style="font-size: 0.75rem; background-color: rgba(220, 53, 69, 0.03);">
+              <i class="fa-solid fa-circle-exclamation me-1"></i>{{ log.error_message }}
+            </div>
+            {% else %}
+            <span class="text-muted italic opacity-50">—</span>
+            {% endif %}
+          </td>
+
+          <td class="text-end pe-4">
+          <div class="d-flex flex-column align-items-end">
+            {% if log.is_delivered %}
+              <span class="badge bg-success-soft text-success border border-success px-2 py-1 mb-1" style="font-size: 0.65rem;">
+                <i class="fa-solid fa-circle-check me-1"></i> DELIVERED
+              </span>
+              {% if log.delivery_date %}
+                <small class="text-muted" style="font-size: 0.65rem;">at {{ log.delivery_date|date:"H:i:s" }}</small>
+              {% endif %}
+
+            {% elif log.is_delivered == False %}
+              <span class="badge rounded-pill bg-danger-soft text-danger border border-danger px-2 py-1 mb-1" style="font-size: 0.65rem;">
+                <i class="fa-solid fa-circle-xmark me-1"></i> FAILED
+              </span>
+              {% if log.error_date %}
+                <small class="text-muted" style="font-size: 0.65rem;">at {{ log.error_date|date:"H:i:s" }}</small>
+              {% endif %}
+            {% endif %}
+          </div>
         </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="4" class="text-center py-5 text-muted">
-          <i class="fa-solid fa-clock-rotate-left fs-2 mb-2 d-block opacity-25"></i>
-          No logs recorded. This usually means the submission hasn't been sent yet.
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center py-5 text-muted border-dashed">
+            <i class="fa-solid fa-clock-rotate-left fs-2 mb-2 d-block opacity-25"></i>
+            No execution logs recorded yet.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer bg-white border-0 py-3">
+    {% include 'paginator.html' with obj_page=page %}
+  </div>
 </div>
+
+<style>
+  /* Dot indicators for the State column */
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.1);
+  }
+
+  .bg-danger-soft {
+    background-color: rgba(220, 53, 69, 0.1);
+  }
+
+  /* For QUEUED state animation */
+  .status-dot.bg-secondary {
+    animation: pulse-gray 2s infinite;
+  }
+
+  @keyframes pulse-gray {
+    0% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.3;
+    }
+
+    100% {
+      opacity: 1;
+    }
+  }
+</style>

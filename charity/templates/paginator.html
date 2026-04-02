@@ -1,22 +1,94 @@
-{% if obj_page %}
+{% if obj_page and obj_page.paginator.num_pages > 1 %}
 {% load customtags %}
-<div class="pagination">
-  <span class="step-links">
+
+<nav aria-label="Page navigation" class="my-4">
+  <ul class="pagination pagination-sm justify-content-center mb-0">
+
     {% if obj_page.has_previous %}
-    {% append_to_url_query page=1 as url %}
-      <a href="url">&laquo; first</a>
+    <li class="page-item">
+      {% append_to_url_query page=1 as url %}
+      <a class="page-link border-0 shadow-none text-muted" href="{{ url }}" title="First Page">
+        <i class="fa-solid fa-angles-left"></i>
+      </a>
+    </li>
+
+    <li class="page-item">
       {% append_to_url_query page=obj_page.previous_page_number as url %}
-      <a href="{{url}}">previous</a>
+      <a class="page-link border-0 shadow-none" href="{{ url }}">
+        <i class="fa-solid fa-angle-left"></i>
+      </a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link border-0 bg-transparent text-muted opacity-25">
+        <i class="fa-solid fa-angle-left"></i>
+      </span>
+    </li>
     {% endif %}
 
-    <span class="current">Page {{ obj_page.number }} of {{ obj_page.paginator.num_pages }}.</span>
+    <li class="page-item active mx-2">
+      <span class="page-link rounded-pill px-3 fw-bold shadow-sm"
+        style="background-color: #0d6efd; border-color: #0d6efd; color: #ffffff !important;">
+        {{ obj_page.number }}
+        <span class="mx-1" style="font-weight: 500; opacity: 0.9; font-size: 0.7rem;">of</span>
+        {{ obj_page.paginator.num_pages }}
+      </span>
+    </li>
 
     {% if obj_page.has_next %}
+    <li class="page-item">
       {% append_to_url_query page=obj_page.next_page_number as url %}
-      <a href="{{url}}">next</a>
+      <a class="page-link border-0 shadow-none" href="{{ url }}">
+        <i class="fa-solid fa-angle-right"></i>
+      </a>
+    </li>
+
+    <li class="page-item">
       {% append_to_url_query page=obj_page.paginator.num_pages as url %}
-      <a href="{{url}}">last &raquo;</a>
+      <a class="page-link border-0 shadow-none text-muted" href="{{ url }}" title="Last Page">
+        <i class="fa-solid fa-angles-right"></i>
+      </a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link border-0 bg-transparent text-muted opacity-25">
+        <i class="fa-solid fa-angle-right"></i>
+      </span>
+    </li>
     {% endif %}
-  </span>
-</div>
+
+  </ul>
+</nav>
+
+<style>
+  /* Refined Pagination Styling */
+  .pagination .page-link {
+    color: #495057;
+    background-color: transparent;
+    transition: all 0.2s ease;
+    margin: 0 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+  }
+
+  .pagination .page-link:hover:not(.active) {
+    background-color: rgba(13, 110, 253, 0.05);
+    color: #0d6efd;
+    border-radius: 8px;
+  }
+
+  /* Make the active "pill" stand out as a status indicator */
+  .pagination .page-item.active .page-link {
+    font-size: 0.75rem;
+    z-index: 3;
+  }
+
+  /* FontAwesome icon alignment */
+  .pagination i {
+    font-size: 0.8rem;
+  }
+</style>
 {% endif %}

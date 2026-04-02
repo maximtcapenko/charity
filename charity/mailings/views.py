@@ -189,9 +189,9 @@ def remove_template(request, id):
 def get_content_type_details(request):
     from django.contrib.contenttypes.models import ContentType
     content_type_id = request.GET.get('content_type_id')
-    contet_type = get_object_or_404(ContentType, pk=content_type_id)
+    content_type = get_object_or_404(ContentType, pk=content_type_id)
     widget = TemplateFieldsWidget()
-    widget.content_type = contet_type
+    widget.content_type = content_type
     widget.template_name = 'partials/fields.html'
 
     return HttpResponse(json.dumps({

@@ -13,9 +13,11 @@ class StorageProvider(models.TextChoices):
 
 FILES = 'files'
 THUMBS = 'thumbs'
+EMAILS = 'emails'
 
 SUFFIX_MAP = {
     FILES: 'private',
+    EMAILS: 'private',
     THUMBS: 'public'
 }
 

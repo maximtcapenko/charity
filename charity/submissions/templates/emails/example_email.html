@@ -1,0 +1,7 @@
+{% extends "emails/email_base.html" %}
+{% block email_body %}
+  {% for block in blocks %}
+  {{block}}
+  <hr/>
+  {% endfor %}
+{% endblock %}

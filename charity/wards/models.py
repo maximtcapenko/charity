@@ -18,6 +18,8 @@ class ActiveWardManager(models.Manager):
 
 
 class Ward(Base):
+    __rendered_fields__ = ('name', 'notes')
+
     name = models.CharField(max_length=256, blank=False,
                             unique=True, null=False)
     notes = models.TextField(blank=True, null=True)

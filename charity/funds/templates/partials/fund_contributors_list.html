@@ -43,10 +43,12 @@
                   <div class="d-flex gap-1">
                     {% if contributor.is_company %}
                     <span class="badge rounded-pill bg-info-soft text-info border border-info"
-                      style="font-size: 0.65rem;">BUSINESS</span>
+                      style="font-size: 0.65rem;">
+                      <i class="fa-solid fa-building me-1"></i>BUSINESS</span>
                     {% else %}
                     <span class="badge rounded-pill bg-primary-soft text-primary border border-primary"
-                      style="font-size: 0.65rem;">PERSON</span>
+                      style="font-size: 0.65rem;">
+                      <i class="fa-solid fa-user me-1"></i>PERSON</span>
                     {% endif %}
 
                     {% if contributor.is_internal %}
