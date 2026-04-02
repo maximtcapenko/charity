@@ -1,91 +1,143 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load customtags %}
-<h2 class="mt-4">{{ contributor.name }}</h2>
-  <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item">
-      <a href="{% url 'funds:get_current_details' %}?tab=contributors">{{ contributor.fund.name}}</a>
-    </li>
-    <li class="breadcrumb-item active">Contributor Details</li>
-  </ol>
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="row">
-        <div class="col-2">
-          <div class="bg-light text-dark">
-            <div class="card">
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="{% url 'funds:get_current_details' %}?tab=contributors"
+              class="text-decoration-none text-muted">{{ contributor.fund.name }}</a></li>
+          <li class="breadcrumb-item active">Contributor Details</li>
+        </ol>
+      </nav>
+      <div class="d-flex align-items-center gap-3">
+        <h2 class="fw-bold text-dark mb-0">{{ contributor.name }}</h2>
+        {% if contributor.is_company %}
+        <span class="badge rounded-pill bg-primary-soft text-primary border border-primary px-3"
+          style="font-size: 0.7rem;">
+          <i class="fa-solid fa-building me-1"></i> COMPANY
+        </span>
+        {% else %}
+        <span class="badge rounded-pill bg-info-soft text-info border border-info px-3" style="font-size: 0.7rem;">
+          <i class="fa-solid fa-user me-1"></i> PERSON
+        </span>
+        {% endif %}
+      </div>
+    </div>
+    <a href="{% url 'funds:edit_contributor_details' contributor.id %}" class="btn btn-outline-primary shadow-sm px-4">
+      <i class="fa-solid fa-pen-to-square me-2"></i>Edit Details
+    </a>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-4 col-lg-5">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+          <div class="text-center mb-4">
+            <div class="profile-avatar-lg shadow-sm border rounded-3 overflow-hidden bg-light mx-auto mb-3"
+              style="width: 120px; height: 120px;">
               {% if contributor.cover %}
-                <img src="{{ contributor.cover.url }}" alt="Upload cover" />
+              <img src="{{ contributor.cover.url }}" class="img-fluid w-100 h-100 object-fit-cover"
+                alt="Contributor Logo" />
               {% else %}
-                <img src="..." alt="Upload cover" />
+              <div class="d-flex align-items-center justify-content-center h-100 opacity-25">
+                <i class="fa-solid fa-hand-holding-dollar fa-4x"></i>
+              </div>
               {% endif %}
             </div>
+            <p class="text-muted small mb-0">Partner since {{ contributor.date_created|date:"M Y" }}</p>
           </div>
-        </div>
-        <div class="col">
-          <div class="bg-light text-dark">
-            <div>
-              <strong>Created</strong>: {{ contributor.date_created }}
+
+          <div class="list-group list-group-flush border-top pt-3">
+            <div class="list-group-item px-0 border-0 d-flex justify-content-between align-items-center">
+              <span class="small text-muted fw-bold text-uppercase">Website</span>
+              <a href="{{ contributor.website }}" target="_blank" class="small text-decoration-none text-truncate ms-3"
+                style="max-width: 180px;">
+                {{ contributor.website|default:"-"|truncatechars:25 }}
+              </a>
             </div>
-            <div>
-              <strong>Web site</strong>: 
-              <a href="{{ contributor.website }}">{{ contributor.website }}</a>
+            <div class="list-group-item px-0 border-0 d-flex justify-content-between align-items-center">
+              <span class="small text-muted fw-bold text-uppercase">Phone</span>
+              <span class="small text-dark fw-bold">{{ contributor.mobile_phone|phone_number|default:"—" }}</span>
             </div>
-            <div>
-              <strong>Mobile phone</strong>: {{ contributor.mobile_phone|phone_number }}
-            </div>
-            <div>
-              <strong>Email</strong>:
-              {% if contributor.email  %}
-                <a href="mailto:{{ contributor.email }}">{{ contributor.email }}</a>
-              {% endif %}
-            </div>
-           
-            <div>
-              <strong>Type</strong>: 
-              {% if contributor.is_company %}
-                <span class="badge bg-primary">company</span>
-              {% else %}
-                <span class="badge bg-primary">person</span>
-              {% endif %}
-            </div>
-            <div>
-              <i class="fa-solid fa-pen-to-square"></i>
-              <a href="{% url 'funds:edit_contributor_details' contributor.id %}">Edit</a>
+            <div class="list-group-item px-0 border-0 d-flex justify-content-between align-items-center">
+              <span class="small text-muted fw-bold text-uppercase">Email</span>
+              <a href="mailto:{{ contributor.email }}" class="small text-decoration-none fw-bold">{{ contributor.email|default:"—" }}</a>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>  
-  <div class="card mb-4">
-    <div class="card-header">
-      <i class="fas fa-sack-dollar"></i>
-      Budgets
-    </div>
-    <div class="card-body">
-      <table class="table table-striped">
-        <tbody>
-          {% for budget in page %}
-            <tr>
-              <td class="col-3">
-                <h6>
-                  <a href="{% url 'budgets:get_details' budget.budget.id %}">{{ budget.budget.name }}</a>
-                </h6>
-                {{ budget.budget.date_created }}
-              </td>
-              <td class="col-2 align-middle">
-                <i class="fa-solid fa-dollar-sign fa-xs"></i>
-                {{ budget.budget_amount|floatformat:'2g' }}
-              </td>
-              <td class="align-middle">
-                {% include 'partials/td_approvement_part.html' with approvement=budget.budget.approvement %}
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% include 'paginator.html' with obj_page=page %}
+
+    <div class="col-xl-8 col-lg-7">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold text-dark">
+            <i class="fas fa-sack-dollar me-2 text-success"></i>Contribution History
+          </h6>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light small text-uppercase">
+              <tr>
+                <th class="ps-4">Budget / Project</th>
+                <th class="text-center">Allocation</th>
+                <th class="text-end pe-4">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for budget in page %}
+              <tr>
+                <td class="ps-4">
+                  <div class="fw-bold text-dark mb-0">
+                    <a href="{% url 'budgets:get_details' budget.budget.id %}" class="text-decoration-none">{{ budget.budget.name }}</a>
+                  </div>
+                  <small class="text-muted" style="font-size: 0.7rem;">{{ budget.budget.date_created|date:"M d, Y" }}</small>
+                </td>
+                <td class="text-center">
+                  <span class="fw-bold text-dark">${{ budget.budget_amount|floatformat:'2g' }}</span>
+                </td>
+                <td class="text-end pe-4">
+                  {% include 'partials/td_approvement_part.html' with approvement=budget.budget.approvement %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="3" class="text-center py-5 text-muted">
+                  <i class="fa-solid fa-receipt fs-2 mb-2 d-block opacity-25"></i>
+                  No linked budgets found.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+         <div class="card-footer bg-white border-0 py-3">
+          {% include 'paginator.html' with obj_page=page %}
+        </div>
+       </div>
     </div>
   </div>
+</div>
+
+<style>
+  .bg-primary-soft {
+    background-color: rgba(13, 110, 253, 0.1);
+  }
+
+  .bg-info-soft {
+    background-color: rgba(13, 202, 240, 0.1);
+  }
+
+  .object-fit-cover {
+    object-fit: cover;
+  }
+
+  /* Make table rows slightly taller for better clickability */
+  .table> :not(caption)>*>* {
+    padding: 1rem 0.5rem;
+  }
+</style>
 {% endblock %}

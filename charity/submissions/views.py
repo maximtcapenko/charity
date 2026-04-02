@@ -1,17 +1,21 @@
+import uuid
+
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import user_passes_test
+from django.db import transaction
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_GET, require_POST
 
 from commons import DEFAULT_PAGE_SIZE
 from commons.exceptions import ApplicationError
-from commons.functional import user_should_be_volunteer, render_generic_form
+from commons.functional import get_filtered_query, get_page, user_should_be_volunteer, render_generic_form
 
 from wards.forms import AttachWardToTargetForm
 
 from .forms import AddSubmissionForm
-from .models import Submission
+from .models import Submission, SubmissionLog, SubmissionSentStatus
 from .requirements import submission_can_be_edited
 from .tasks import send_submssions
 
@@ -46,15 +50,46 @@ def add_submission(request):
 @user_passes_test(user_should_be_volunteer)
 @require_GET
 def get_submission_details(request, id):
+    default_tab = 'wards'
+    page_number = request.GET.get('page')
+
+    tabs = {
+        'wards': lambda submission: get_page(submission.wards.all(), page_number),
+        'logs': lambda submission: get_page(get_filtered_query(
+            request=request, 
+            query_set=SubmissionLog.objects.filter(submission=submission).all(), 
+            filter_keys=['session_id']),page_number)
+    }
+    
     submission = get_object_or_404(
         Submission.objects.filter(fund=request.user.fund), pk=id)
-    paginator = Paginator(submission.wards.all(), DEFAULT_PAGE_SIZE)
+    
+    tab = request.GET.get('tab', default_tab)
+
+    if not tab in tabs:
+        tab = default_tab
+
+    page, count = tabs.get(tab)(submission)
+
     return render(request, 'submission_details.html', {
         'submission': submission,
-        'items_count': paginator.count,
-        'page': paginator.get_page(request.GET.get('page')),
+        'items_count': count,
+        'tabs': tabs.keys(),
+        'page': page,
+        'session_id': request.GET.get('session_id')
     })
 
+@user_passes_test(user_should_be_volunteer)
+@require_GET
+def get_submission_logs_ajax(request, id, session_id):
+    logs = SubmissionLog.objects.filter(submission__id=id, session_id=session_id).all()
+    from django.template import loader
+    template = loader.get_template('partials/submission_logs_list.html')
+    return JsonResponse({
+        'html': template.render({
+            'page': logs
+        })
+    })
 
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
@@ -98,17 +133,42 @@ def remove_submission(request, id):
 def send_submission(request, id):
     submission = get_object_or_404(
         Submission.objects.filter(fund=request.user.fund), pk=id)
-
-    submission.save()
     
-    from django.conf import settings
-    send_submssions.apply_async(args=[submission.id], queue=settings.DEFAULT_QUEUE_NAME)
+    session_id = uuid.uuid1()
+
+    for recipient in submission.mailing_group.recipients.all():
+        if(not recipient.email):
+            continue
+
+        submission_log = SubmissionLog.objects.create(
+            submission=submission,
+            session_id=session_id,
+            fund=submission.fund,
+            recipient_email=recipient.email,
+            recipient_name=recipient.name,
+            subject=submission.mailing_template.subject,
+            status=SubmissionSentStatus.QUEUED)
+    
+        from django.conf import settings
+        send_submssions.apply_async(args=[submission_log.id], queue=settings.DEFAULT_QUEUE_NAME)
+
+    view_url = reverse('submissions:get_submission_details', args=[id])
+    return redirect(f'{view_url}?tab=logs&session_id={session_id}&watch=true')
+
+@user_passes_test(user_should_be_volunteer)
+@require_POST
+def publish_submission(request, id):
+    submission = get_object_or_404(
+        Submission.objects.filter(fund=request.user.fund), pk=id)
+    
+    submission.is_draft = False
+    submission.save()
 
     return redirect(reverse('submissions:get_submission_details', args=[id]))
 
-
 @user_passes_test(user_should_be_volunteer)
 @require_http_methods(['GET', 'POST'])
+@transaction.atomic
 def add_submission_ward(request, id):
     submission = get_object_or_404(
         Submission.objects.filter(fund=request.user.fund), pk=id)
@@ -122,6 +182,8 @@ def add_submission_ward(request, id):
         form = AttachWardToTargetForm(request.POST, initial={
             'target': submission})
         if form.is_valid():
+            submission.is_draft = True
+            submission.save()
             form.save()
 
     request.method = 'GET'

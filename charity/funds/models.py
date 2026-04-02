@@ -10,6 +10,9 @@ class Fund(Base):
                             unique=True, null=False)
     notes = models.TextField(blank=True, null=True)
     cover = models.ImageField(upload_to='covers', null=True)
+    mobile_phone = models.CharField(max_length=12, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    website = models.URLField(null=True, blank=True)
 
     def __str__(self):
         return self.name

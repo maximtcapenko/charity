@@ -1,14 +1,17 @@
-from celery import shared_task
+import datetime
+import logging
 
-from django.conf import settings
+from celery import shared_task
+from celery.exceptions import MaxRetriesExceededError
+
 from django.core.files.base import ContentFile
 from django.template import Template, Context, loader
 from django.utils.safestring import mark_safe
 from django.utils.crypto import get_random_string
 
-from commons.storages import storage_provider_resolver
-from .models import Submission, SubmissionSentStatus
+from submissions.models import SubmissionLog, SubmissionSentStatus
 
+logger = logging.getLogger(__name__)
 
 class WrappedContext:
     def __init__(self, ward):
@@ -31,29 +34,68 @@ class WrappedContext:
         return None
 
 
-@shared_task
-def send_submssions(submission_id):
-    submission = Submission.objects.get(pk=submission_id)
-    submission.is_draft = False
-    submission.status = SubmissionSentStatus.IN_PROGRESS
-    submission.save()
+from celery import shared_task
+import datetime
 
-    partitions = list()
-    template = Template(submission.mailing_template.template)
+@shared_task(bind=True, max_retries=5, default_retry_delay=5)
+def send_submssions(self, submission_log_id):
+    submissionLog = None
 
-    layout = loader.get_template('partials/submission_item_layout.html')
+    try:
+        submissionLog = SubmissionLog.objects.get(pk=submission_log_id)
+    except SubmissionLog.DoesNotExist:
+        logger.error(f'SubmissionLog {submission_log_id} not found')
+        return
+    except Exception as exc:
+        logger.exception(exc)
+        raise self.retry(exc=exc)
 
-    for ward in submission.wards.all():
-        context = Context(WrappedContext(ward))
-        partitions.append(mark_safe(f'<div>{template.render(context)}</div>'))
+    try:
+        submissionLog.status = SubmissionSentStatus.IN_PROGRESS
+        submissionLog.save()
 
-    result = layout.render({
-        'blocks': partitions
-    })
+        submission = submissionLog.submission
+        fund = submissionLog.fund
+        partitions = list()
+    
+        usesrTemplate = Template(submission.mailing_template.template)
+        layoutTemplte = loader.get_template('emails/example_email.html')
+        
+        for ward in submission.wards.all():
+            context = Context(WrappedContext(ward))
+            partitions.append(mark_safe(usesrTemplate.render(context)))
 
-    name = f'emails/{get_random_string(10)}.html'
-    storage_provider = storage_provider_resolver(settings.DEFAULT_STORAGE_PROVIDER)
-    storage = storage_provider(submission.fund)
-    storage.save(name, ContentFile(result.encode(), name))
-    submission.status = SubmissionSentStatus.SENT
-    submission.save()
+        result = layoutTemplte.render({
+            'blocks': partitions,
+            'document_name': 'New Wards info',
+            'fund': fund,
+            'date_generated': datetime.datetime.now(datetime.timezone.utc)
+        })
+
+        name = f'{get_random_string(10)}.html'
+        submissionLog.file.save(name, ContentFile(result.encode(), name))
+
+        submissionLog.status = SubmissionSentStatus.SENT
+        submissionLog.is_delivered = True
+        submissionLog.delivery_date = datetime.datetime.now(datetime.timezone.utc)
+        submissionLog.save()
+
+    except Exception as exc:
+        logger.exception(exc)
+
+        try:
+            submissionLog.retries_count = self.request.retries
+            submissionLog.save(update_fields=['retries_count'])
+        except Exception:
+            logger.exception('Failed to update retries_count')
+
+        if self.request.retries >= self.max_retries:
+            submissionLog.status = SubmissionSentStatus.FAILED
+            submissionLog.error_date = datetime.datetime.now(datetime.timezone.utc)
+            submissionLog.retries_count = self.request.retries
+            submissionLog.error_message = f'{type(exc).__name__}: {exc}'
+            submissionLog.is_delivered = False
+            submissionLog.save()
+            return
+
+        raise self.retry(exc=exc)

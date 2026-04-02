@@ -22,6 +22,8 @@
       <form enctype="multipart/form-data" action="" method="post" class="card border-0 shadow-sm overflow-hidden">
         {% csrf_token %}
 
+        {{ form.media }}
+
         {% for hidden in form.hidden_fields %}
         {{ hidden }}
         {% endfor %}

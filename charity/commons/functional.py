@@ -199,9 +199,7 @@ def append_to_url_query(request, **kwargs):
 
     return ''
 
-
 imports = {}
-
 
 def get_requirements_module(content_type):
     try:
@@ -211,3 +209,16 @@ def get_requirements_module(content_type):
         return imports[key]
     except:
         return None
+
+def get_filtered_query(request, query_set, filter_keys):
+    if filter_keys and len(filter_keys) > 0:
+        filter_params = {}
+        for key in filter_keys:
+            param = request.GET.get(key)
+            if param:
+                filter_params[key] = param
+
+        if len(filter_params) > 0:
+            return query_set.filter(**filter_params)
+    
+    return query_set

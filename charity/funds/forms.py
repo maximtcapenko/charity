@@ -87,6 +87,7 @@ class CreateContributorForm(
             attrs={'class': 'form-control'},
             accept='image/jpeg, image/png'
         )
+        self.order_fields(['cover','name', 'mobile_phone', 'email', 'notes', 'website'])
 
     def clean(self):
         validate_modelform_field('fund', self.initial, self.cleaned_data)

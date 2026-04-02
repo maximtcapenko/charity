@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+from commons import storages
+from commons.fields import FundFileField
 from commons.models import Base
 from funds.models import Fund
 from mailings.models import MailingGroup, MailingTemplate
@@ -12,6 +14,7 @@ class SubmissionSentStatus(models.TextChoices):
     SENT = 'SENT', 'Sent'
     IN_PROGRESS = 'IN_PROGRESS', 'In progress'
     PARTIALLY_SENT = 'PARTIALLY_SENT', 'Partially sent'
+    FAILED = 'FAILED', 'Failed'
 
 
 class Submission(Base):
@@ -29,8 +32,19 @@ class Submission(Base):
     last_update_date = models.DateTimeField(auto_now=True, null=True)
 
 class SubmissionLog(Base):
-    submission = models.ForeignKey(Submission, on_delete=models.CASCADE, related_name='logs')
-    author = models.ForeignKey(User, on_delete=models.PROTECT)
-    recipients_count = models.IntegerField()
+    submission = models.ForeignKey(
+        Submission, on_delete=models.CASCADE, related_name='logs')
+    session_id = models.UUIDField(null=False)
+    fund = models.ForeignKey(Fund, on_delete=models.CASCADE) 
+    recipient_email = models.CharField(max_length=256, blank=False, null=False)
+    recipient_name = models.CharField(max_length=1000, blank=True, null=True)
+    subject = models.CharField(max_length=1000, blank=False, null=True, )
+    file = FundFileField(null=True, upload_to=storages.EMAILS)
     status = models.CharField(
         choices=SubmissionSentStatus.choices, max_length=16)
+    retries_count = models.IntegerField(default=0)
+    is_delivered = models.BooleanField(null=True)
+    delivery_date = models.DateTimeField(null=True)
+    error_message = models.CharField(max_length=1000, null=True, blank=True)
+    error_date = models.DateTimeField(null=True)
+
