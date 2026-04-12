@@ -26,8 +26,11 @@
           class="col-md-3" {% endif %}>
           {{ field }} </div>
         {% endfor %}
-        <div class="col-md-auto">
-          <button type="submit" class="btn btn-sm btn-secondary px-3">Filter Wards</button>
+         <div class="col-md-auto ms-auto">
+          <button type="submit" class="btn btn-primary px-4 shadow-sm">
+            <i class="fa-solid fa-filter me-2"></i>Apply Filters
+          </button>
+          <a href="{% url 'wards:get_list' %}" class="btn btn-outline-secondary px-3">Reset</a>
         </div>
       </form>
     </div>

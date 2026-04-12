@@ -70,3 +70,34 @@ class ImagePreviewWidget(forms.ClearableFileInput):
         """
         
         return mark_safe(f'<div class="image-preview-container">{img_html}{output}</div>{script}')
+
+
+
+class DateRangeWidget(forms.TextInput):
+    template_name = 'widgets/daterange_input.html'
+
+    def __init__(self, date_format=None, attrs=None):
+        default_attrs = {
+            'class': 'form-control daterange-picker',
+            'placeholder': 'Select date range...',
+            'autocomplete': 'off',
+        }
+        self.date_format = date_format
+
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(default_attrs)
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context['widget'].update({
+            'date_format': self.date_format
+        })
+
+        return context
+
+    class Media:
+        js = ('https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js',)
+        css = {
+            'all': ('https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css',)
+        }

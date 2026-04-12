@@ -22,8 +22,13 @@ class Notification(Base):
     message = models.TextField()
     is_viewed = models.BooleanField(default=False)
     target_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
-    target_id = models.UUIDField(null=True)
+    target_id = models.UUIDField()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['target_content_type', 'target_id']),
+        ]
+    
     def __str__(self):
         return f'{self.title} ({self.message})'
 

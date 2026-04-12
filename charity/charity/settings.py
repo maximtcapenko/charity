@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'tasks.apps.TasksConfig',
     'submissions.apps.SubmissionsConfig',
     'wards.apps.WardsConfig',
+    'histories.apps.HistoriesConfig',
     'eav',
     'django_prose_editor',
     'telemetry.apps.TelemetryConfig'

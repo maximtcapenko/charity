@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
@@ -152,9 +154,8 @@ def complete_project(request, id):
     if not project_is_ready_to_be_completed(project):
         raise ApplicationError(Warnings.PROJET_CANNOT_BE_COMPLETED, return_url)
 
-    import datetime
     project.is_closed = True
-    project.closed_date = datetime.datetime.utcnow()
+    project.closed_date = datetime.datetime.now(datetime.timezone.utc)
     project.save()
 
     return redirect(return_url)

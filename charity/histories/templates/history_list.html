@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load customtags %}
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Dashboard</a></li>
+          <li class="breadcrumb-item active">Audit Logs</li>
+        </ol>
+      </nav>
+      <h2 class="mb-0 text-primary fw-bold">System History</h2>
+    </div>
+    <div class="text-muted small">
+      <i class="fa-solid fa-clock-rotate-left me-1"></i> Tracking all changes
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4 bg-white">
+    <div class="card-body py-3">
+      <form action="" method="get" class="row g-2 align-items-center">
+        {% for field in search_form %}
+        <div {% if field.field.widget.attrs.div_class %} class="{{field.field.widget.attrs.div_class}}" {% else %} class="col-md-3" {% endif %}>
+          {{ field }}
+        </div>
+        {% endfor %}
+        <div class="col-md-auto ms-auto">
+          <button type="submit" class="btn btn-primary px-4 shadow-sm">
+            <i class="fa-solid fa-filter me-2"></i>Apply Filters
+          </button>
+          <a href="{% url 'histories:get_list' %}" class="btn btn-outline-secondary px-3">Reset</a>
+        </div>
+      </form>
+      {{ search_form.media }}
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase">
+          <tr>
+            <th class="ps-4">Timestamp</th>
+            <th>Author</th>
+            <th>Action / Event</th>
+            <th>Target Object</th>
+            <th class="text-end pe-4">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in page %}
+          <tr>
+            <td class="ps-4">
+              <div class="small fw-bold text-dark">{{ log.date_created|date:"M d, Y" }}</div>
+              <div class="text-muted" style="font-size: 0.7rem;">{{ log.date_created|date:"H:i:s" }}</div>
+            </td>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="avatar-sm me-2">
+                   {% include 'partials/user_image_part.html' with user=log.author %}
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge bg-light text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.7rem;">
+                {{ log.name }}
+              </span>
+            </td>
+            <td class="small text-muted">
+              {% if log.target %}
+                <span class="text-dark fw-medium">{{ log.target_content_type.model|title }}</span>:
+                {% if log.url %}
+                  <a href="{{ log.url }}">{{ log.target_id }}</a>
+                {% else %}
+                  <span class="opacity-75">{{ log.target_id }}</span>
+                {% endif%} 
+              {% else %}
+                <span class="text-muted italic opacity-50">Deleted Object</span>
+              {% endif %}
+            </td>
+            <td class="text-end pe-4">
+              <button class="btn btn-sm btn-outline-secondary border-0" 
+                      type="button" 
+                      data-bs-toggle="collapse" 
+                      data-bs-target="#details-{{ log.id }}">
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+            </td>
+          </tr>
+          <tr class="collapse bg-light" id="details-{{ log.id }}">
+            <td colspan="5" class="p-0">
+              <div class="px-4 py-3 border-start border-primary border-4 ms-4 my-2">
+                <h6 class="small fw-bold text-uppercase text-muted mb-2">Technical Metadata</h6>
+                <pre class="bg-dark text-light p-3 rounded small mb-0"><code>{{ log.details|pretty_json }}</code></pre>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-5 text-muted">
+              <i class="fa-solid fa-folder-open fs-1 mb-3 d-block opacity-25"></i>
+              No history records found matching your filters.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="card-footer bg-white border-0 py-3">
+        {% include 'paginator.html' with obj_page=page %}
+    </div>
+  </div>
+</div>
+
+<style>
+  .avatar-sm .user-image-partial-wrapper img {
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50%;
+  }
+  pre {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+</style>
+
+{% include 'partials/js.html' %}
+{% include 'generic_errormodal.html' %}
+{% endblock %}

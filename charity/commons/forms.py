@@ -58,3 +58,26 @@ def user_model_choice_field(fund=None, required=None, queryset=None, **kwargs):
         queryset=User.objects.select_related(
             'volunteer_profile').filter(volunteer_profile__fund=fund) if queryset is None else queryset,
         required=True if required is None else required, **kwargs)
+
+
+class DateRangeField(forms.CharField):
+    def __init__(self, date_format, *args, **kwagrs):
+        self.date_format = date_format
+        super().__init__(*args, **kwagrs)
+
+    def clean(self, value):
+        from datetime import datetime
+
+        value = super().clean(value)
+        if not value:
+            return None
+        try:
+            start_str, end_str = value.split(' - ')
+            start_date = datetime.strptime(start_str.strip(), self.date_format).date()
+            end_date = datetime.strptime(end_str.strip(), self.date_format).date()
+            
+            return start_date, end_date
+        except (ValueError, IndexError):
+            raise forms.ValidationError(
+                f'Invalid date range format. Please use {self.date_format} - {self.date_format}.'
+            )

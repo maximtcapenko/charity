@@ -1,0 +1,39 @@
+<div class="input-group">
+  <span class="input-group-text bg-white border-end-0 text-muted">
+    <i class="fa-regular fa-calendar-days"></i>
+  </span>
+  <input type="{{ widget.type }}" name="{{ widget.name }}" id="id_{{ widget.name }}" {% if widget.value != None %}
+    value="{{ widget.value|stringformat:'s' }}" {% endif %} {% for name, value in widget.attrs.items %} {{ name }}="{{ value }}" {% endfor %} style="border-left: none;">
+</div>
+
+<script>
+
+  const startLitepicker = () => {
+    const pickerInput = document.getElementById('id_{{ widget.name }}');
+
+    if ( pickerInput) {
+      new Litepicker({
+        element: pickerInput,
+        singleMode: false,
+        numberOfMonths: 2,
+        numberOfColumns: 2,
+        format: '{{ widget.date_format }}',
+        delimiter: ' - ',
+        dropdowns: { "minYear": 2020, "maxYear": null, "months": true, "years": true },
+        buttonText: {
+          apply: 'Apply',
+          cancel: 'Cancel',
+        }
+      });
+    } else if (typeof Litepicker === 'undefined') {
+      setTimeout(initPicker, 100);
+    }
+  };
+
+  if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startLitepicker);
+    } else {
+        startLitepicker();
+    }
+
+</script>

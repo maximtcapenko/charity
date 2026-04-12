@@ -1,13 +1,13 @@
 from django.urls import path
 
-from . import views
+from . import views, ViewNames
 
 app_name = "budgets"
 
 urlpatterns = [
     path('add', views.add_budget, name='create'),
     path('', views.get_budgets_list, name='get_list'),
-    path('<uuid:id>/details/', views.get_budget_details, name='get_details'),
+    path('<uuid:id>/details/', views.get_budget_details, name=ViewNames.BUDGET_GET_DETAILS),
     path('<uuid:id>/edit/', views.edit_details, name='edit_details'),
     path('<uuid:id>/remove/', views.remove_budget, name='remove'),
     path('<uuid:id>/excess_contributions/add/',
@@ -17,14 +17,14 @@ urlpatterns = [
     path('<uuid:id>/expenses/add/', views.add_budget_expense, name='add_expenses'),
     path('<uuid:id>/incomes/add/', views.add_budget_income, name='add_income'),
     path("<uuid:id>/incomes/<uuid:income_id>/details/",
-         views.get_income_details, name="get_income_details"),
+         views.get_income_details, name=ViewNames.GET_INCOME_DETAILS),
     path('<uuid:id>/expenses/<uuid:expense_id>/details/',
-         views.get_expense_details, name='get_expense_details'),
+         views.get_expense_details, name=ViewNames.GET_EXPENSE_DETAILS),
     path('<uuid:id>/incomes/<uuid:income_id>/approvements/add/',
-         views.approve_budget_income, name='approve_budget_income'),
+         views.approve_budget_income, name=ViewNames.APPROVE_BUDGET_INCOME),
     path('<uuid:id>/expenses/<uuid:expense_id>/approvements/add/',
-         views.approve_budget_expense, name='approve_budget_expense'),
-    path('<uuid:id>/approve/', views.approve_budget, name='approve_budget'),
+         views.approve_budget_expense, name=ViewNames.APPROVE_BUDGET_EXPENSE),
+    path('<uuid:id>/approve/', views.approve_budget, name=ViewNames.APPROVE_BUDGET),
     path('<uuid:id>/reviewers/add/', views.add_budget_reviewer,
          name='add_budget_reviewer'),
     path('<uuid:id>/reviewers/<int:reviewer_id>/remove/',

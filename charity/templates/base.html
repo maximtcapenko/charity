@@ -121,7 +121,7 @@
           <li><a class="dropdown-item" href="{% url 'funds:get_volunteer_details' user.volunteer_profile.id %}"><i
                 class="fa-solid fa-id-card me-2 text-muted"></i> My Profile</a></li>
           <li><a class="dropdown-item" href="#!"><i class="fa-solid fa-gear me-2 text-muted"></i> Settings</a></li>
-          <li><a class="dropdown-item" href="#!"><i class="fa-solid fa-clock-rotate-left me-2 text-muted"></i> Activity
+          <li><a class="dropdown-item" href="{% url 'histories:get_list' %}?author={{ user.id }}"><i class="fa-solid fa-clock-rotate-left me-2 text-muted"></i> Activity
               Log</a></li>
           <li>
             <hr class="dropdown-divider" />
@@ -132,57 +132,61 @@
       </li>
     </ul>
   </nav>
-
+  {% get_current_view_name as view_name %}
   <div id="layoutSidenav">
     <div id="layoutSidenav_nav">
       <nav class="sb-sidenav accordion sb-sidenav-dark shadow-sm" id="sidenavAccordion">
         <div class="sb-sidenav-menu">
           <div class="nav">
             <div class="sb-sidenav-menu-heading">Main Dashboard</div>
-            <a class="nav-link" href="{% url 'funds:get_current_details' %}">
+            <a class="nav-link {% if view_name == 'funds:get_current_details' %} active {% endif %}" href="{% url 'funds:get_current_details' %}">
               <div class="sb-nav-link-icon"><i class="fa-solid fa-house"></i></div>Home
             </a>
 
             <div class="sb-sidenav-menu-heading">Case Management</div>
-            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseWards"
-              aria-expanded="false">
+            {% is_current_view_one_of 'wards:get_list' 'filters:get_list' 'submissions:get_list' as is_case_mgt %}
+            <a class="nav-link {% if not is_case_mgt %} collapsed {% endif %}" href="#" data-bs-toggle="collapse" data-bs-target="#collapseWards"
+              aria-expanded="{% if is_case_mgt %}true{% else %}false{% endif %}">
               <div class="sb-nav-link-icon"><i class="fa-solid fa-leaf text-success"></i></div> Wards
               <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
             </a>
-            <div class="collapse" id="collapseWards" data-bs-parent="#sidenavAccordion">
+            <div class="collapse {% if is_case_mgt %} show {% endif %}" id="collapseWards" data-bs-parent="#sidenavAccordion">
               <nav class="sb-sidenav-menu-nested nav border-start border-secondary ms-3">
-                <a class="nav-link small" href="{% url 'wards:get_list' %}">Ward Directory</a>
-                <a class="nav-link small" href="{% url 'filters:get_list' 'ward' %}">Dynamic Filters</a>
-                <a class="nav-link small" href="{% url 'submissions:get_list' %}">Submission Logic</a>
+                <a class="nav-link small {% if view_name == 'wards:get_list' %} active {% endif %}" href="{% url 'wards:get_list' %}">Ward Directory</a>
+                <a class="nav-link small {% if view_name == 'filters:get_list' %} active {% endif %}" href="{% url 'filters:get_list' 'ward' %}">Dynamic Filters</a>
+                <a class="nav-link small {% if view_name == 'submissions:get_list' %} active {% endif %}" href="{% url 'submissions:get_list' %}">Submission Logic</a>
               </nav>
             </div>
-
-            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMailing"
-              aria-expanded="false">
+             {% is_current_view_one_of 'mailings:get_gorups_list' 'mailings:get_templates_list' as is_mailing %}
+            <a class="nav-link {% if not is_mailing %} collapsed {% endif %}" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMailing"
+              aria-expanded="{% if is_mailing %}true{% else %}false{% endif %}">
               <div class="sb-nav-link-icon"><i class="fa-solid fa-envelope text-info"></i></div> Mailing
               <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
             </a>
-            <div class="collapse" id="collapseMailing" data-bs-parent="#sidenavAccordion">
+            <div class="collapse{% if is_mailing %} show{% endif %}" id="collapseMailing" data-bs-parent="#sidenavAccordion">
               <nav class="sb-sidenav-menu-nested nav border-start border-secondary ms-3">
-                <a class="nav-link small" href="{% url 'mailings:get_gorups_list' %}">Mailing Groups</a>
-                <a class="nav-link small" href="{% url 'mailings:get_templates_list' %}">Templates</a>
+                <a class="nav-link small {% if view_name == 'mailings:get_gorups_list' %} active {% endif %}" href="{% url 'mailings:get_gorups_list' %}">Mailing Groups</a>
+                <a class="nav-link small {% if view_name == 'mailings:get_templates_list' %} active {% endif %}" href="{% url 'mailings:get_templates_list' %}">Templates</a>
               </nav>
             </div>
 
             <div class="sb-sidenav-menu-heading">Financials & Ops</div>
-            <a class="nav-link" href="{% url 'budgets:get_list' %}">
+            <a class="nav-link {% if view_name == 'budgets:get_list' %} active {% endif %}" href="{% url 'budgets:get_list' %}">
               <div class="sb-nav-link-icon"><i class="fas fa-sack-dollar text-warning"></i></div>Budgets
             </a>
-            <a class="nav-link" href="{% url 'projects:get_list' %}">
+            <a class="nav-link {% if view_name == 'projects:get_list' %} active {% endif %}" href="{% url 'projects:get_list' %}">
               <div class="sb-nav-link-icon"><i class="fa-solid fa-diagram-project text-primary"></i></div>Projects
             </a>
 
             <div class="sb-sidenav-menu-heading">System Config</div>
-            <a class="nav-link" href="{% url 'processes:get_list' %}">
+            <a class="nav-link {% if view_name == 'processes:get_list' %} active {% endif %}" href="{% url 'processes:get_list' %}">
               <div class="sb-nav-link-icon"><i class="fa-solid fa-gears text-secondary"></i></div>Processes
             </a>
-            <a class="nav-link" href="{% url 'customfields:get_list' %}">
+            <a class="nav-link {% if view_name == 'customfields:get_list' %} active {% endif %}" href="{% url 'customfields:get_list' %}">
               <div class="sb-nav-link-icon"><i class="fa-solid fa-tags"></i></div>Custom Fields
+            </a>
+            <a class="nav-link {% if view_name == 'histories:get_list' %} active {% endif %}" href="{% url 'histories:get_list' %}">
+              <div class="sb-nav-link-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>History
             </a>
           </div>
         </div>

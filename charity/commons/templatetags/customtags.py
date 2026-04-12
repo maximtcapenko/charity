@@ -142,3 +142,21 @@ def append_to_url_query(context, **kwargs):
 @register.filter(name='subtract')
 def subtract(value, arg):
     return value - arg
+
+
+@register.simple_tag(takes_context=True)
+def get_current_view_name(context):
+    return context.request.resolver_match.view_name
+
+@register.simple_tag(takes_context=True)
+def is_current_view_one_of(context, *view_names):
+    return context.request.resolver_match.view_name in view_names
+
+
+@register.filter(name='pretty_json')
+def pretty_json(value):
+    import json
+    try:
+        return json.dumps(value, indent=2, ensure_ascii=False)
+    except (ValueError, TypeError):
+        return value

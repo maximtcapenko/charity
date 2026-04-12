@@ -1,6 +1,6 @@
 from django.db import models
 from django.shortcuts import redirect, render, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import  user_passes_test
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_http_methods, require_GET, require_POST

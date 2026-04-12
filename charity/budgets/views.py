@@ -23,6 +23,7 @@ from .forms import CreateBudgetForm, CreateIncomeForm, \
     AddBudgetReviewerForm, CreateExpenseForm, EditBudgetItemForm, \
     CreatePayoutExcessContributionForm, SearchBudgetForm
 
+from . import ViewNames
 from .querysets import get_budget_with_avaliable_amounts_queryset
 from .functional import get_budget_or_404, get_budget_available_income, validate_pre_requirements
 from .messages import Warnings
@@ -126,7 +127,8 @@ def edit_details(request, id):
 @require_http_methods(['GET', 'POST'])
 def approve_budget(request, id):
     budget = get_budget_or_404(request, id)
-    return_url = f'{reverse("budgets:get_details", args=[id])}?tab=approvements'
+    view_name = f'budgets:{ViewNames.BUDGET_GET_DETAILS}'
+    return_url = f'{reverse(view_name, args=[id])}?tab=approvements'
 
     validate_pre_requirements(request, budget, return_url)
 
@@ -138,7 +140,8 @@ def approve_budget(request, id):
             'initial': {
                 'author': request.user,
                 'fund': request.user.fund,
-                'target': budget
+                'target': budget,
+                'url': return_url
             },
         })
 
@@ -225,7 +228,7 @@ def edit_budget_income_details(request, id, income_id):
 def approve_budget_income(request, id, income_id):
     budget = get_budget_or_404(request, id)
     income = get_object_or_404(budget.incomes, pk=income_id)
-    return_url = reverse('budgets:get_income_details',
+    return_url = reverse(f'budgets:{ViewNames.GET_INCOME_DETAILS}',
                          args=[budget.id, income_id])
 
     validate_pre_requirements(request, income, return_url, action='approve')
@@ -238,7 +241,8 @@ def approve_budget_income(request, id, income_id):
             'initial': {
                 'author': request.user,
                 'fund': request.user.fund,
-                'target': income
+                'target': income,
+                'url': return_url
             },
         })
 
@@ -325,7 +329,7 @@ def edit_budget_expense_details(request, id, expense_id):
 def approve_budget_expense(request, id, expense_id):
     budget = get_budget_or_404(request, id)
     expense = get_object_or_404(budget.expenses, pk=expense_id)
-    return_url = reverse('budgets:get_expense_details',
+    return_url = reverse(f'budgets:{ViewNames.GET_EXPENSE_DETAILS}',
                          args=[budget.id, expense_id])
 
     validate_pre_requirements(request, expense, return_url, action='approve')
@@ -338,7 +342,8 @@ def approve_budget_expense(request, id, expense_id):
             'initial': {
                 'author': request.user,
                 'fund': request.user.fund,
-                'target': expense
+                'target': expense,
+                'url': return_url
             },
         })
 

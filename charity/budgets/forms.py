@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from commons.mixins import InitialMixin, FormControlMixin, SearchByNameMixin
-from commons.functional import validate_modelform_field, should_be_approved
+from commons.functional import get_reviewer_label, validate_modelform_field, should_be_approved
 from commons.forms import ApprovedOnlySearchForm, CustomLabeledModelChoiceField, user_model_choice_field
 
 from funds.models import Approvement, Contributor
@@ -17,7 +17,7 @@ from .messages import Warnings
 from .models import Budget, Income, Contribution
 from .querysets import get_avaliable_for_select_contributions_queryset
 from .signals import exprense_created, budget_item_reviewer_assigned
-
+from histories.signals import audit_event_created
 
 class CreateBudgetForm(
         forms.ModelForm, InitialMixin, FormControlMixin):
@@ -75,16 +75,23 @@ class SearchBudgetForm(ApprovedOnlySearchForm, SearchByNameMixin):
         super().__init__(*args, **kwargs)
         SearchByNameMixin.__init__(self)
 
-        self.fields['manager'].queryset = User.objects.filter(
+        self.fields['manager'] = CustomLabeledModelChoiceField(
+            label='Manager',
+            queryset=User.objects.select_related(
+            'volunteer_profile').filter(
             models.Q(volunteer_profile__fund=fund)
-            & models.Exists(Budget.objects.filter(fund=fund, manager=models.OuterRef('pk'))))
+            & models.Exists(Budget.objects.filter(fund=fund, manager=models.OuterRef('pk')))),
+            label_func=get_reviewer_label,
+            required=False
+        )
+        
+        FormControlMixin.__init__(self)
+
         self.fields['manager'].widget.attrs.update({
             'onchange': 'javascript:this.form.submit()'
         })
         self.order_fields(['approved_only', 'name'])
         self.__resolvers__['manager'] = lambda field: models.Q(manager=field)
-
-    manager = forms.ModelChoiceField(queryset=User.objects, label='Manager')
 
 
 class CreatePayoutExcessContributionForm(CreateContributionForm):
@@ -214,7 +221,7 @@ class CreateExpenseForm(
 
 class BaseApproveForm(
         forms.Form, InitialMixin, FormControlMixin):
-    __initial__ = ['author', 'fund', 'target']
+    __initial__ = ['author', 'fund', 'target', 'url']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -234,7 +241,8 @@ class BaseApproveForm(
                 Warnings.BUDGET_ITEM_HAS_BEEN_ALREADY_APPROVED)
 
         return self.cleaned_data
-
+    
+    
     def save(self):
         approvement = Approvement.objects.create(
             author=self.author, fund=self.fund,
@@ -244,7 +252,17 @@ class BaseApproveForm(
         self.target.approvement = approvement
         self.target.save()
         self.target.approvements.add(approvement)
-
+        audit_event_created.send(
+            sender=Budget,
+            instance=self.target, 
+            author=self.author,
+            url=self.url, 
+            name=f'Approve {self.target.__class__.__name__}', 
+            details= {
+                'is_rejected': approvement.is_rejected,
+                'notes': approvement.notes
+            }
+        )
         return self.target
 
 

@@ -38,13 +38,13 @@ class SearchWardForm(
     in_work_only = forms.BooleanField(
             label='In work', required=False,
             widget=forms.CheckboxInput(attrs={
-                'div_class': 'col-2',
+                'div_class': 'col',
                 'onchange': 'javascript:this.form.submit()'}))
     
     not_in_work = forms.BooleanField(
             label='Available', required=False,
             widget=forms.CheckboxInput(attrs={
-                'div_class': 'col-2',
+                'div_class': 'col',
                 'onchange': 'javascript:this.form.submit()'}))
 
     def __init__(self, fund, *args, **kwargs):

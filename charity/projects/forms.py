@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from commons.mixins import FormFieldsWrapperMixin, InitialMixin, FormControlMixin, \
     SearchByNameMixin, SearchFormMixin
 from commons.forms import user_model_choice_field, CustomLabeledModelChoiceField
-from commons.functional import validate_modelform_field
+from commons.functional import get_reviewer_label, validate_modelform_field
 
 from processes.models import Process
 
@@ -61,8 +61,14 @@ class SearchProjetForm(
         SearchByNameMixin.__init__(self)
         FormFieldsWrapperMixin.__init__(self)
 
-        self.form.leader = forms.ModelChoiceField(label='Leader', required=False, queryset=User.objects.filter(
-            Q(volunteer_profile__fund=fund) & Exists(Project.objects.filter(fund=fund, leader=OuterRef('pk')))))
+        self.form.leader = CustomLabeledModelChoiceField(
+            label='Leader', required=False, queryset=User.objects.select_related(
+            'volunteer_profile').filter(
+            Q(volunteer_profile__fund=fund) & Exists(Project.objects.filter(fund=fund, leader=OuterRef('pk')))),
+            label_func=get_reviewer_label)
+        
+
+
         self.form.leader.widget.attrs.update({
             'onchange': 'javascript:this.form.submit()'
         })
