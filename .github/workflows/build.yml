@@ -34,9 +34,9 @@ jobs:
         AZURE_STORAGE_NAME: testaccountname
         DEFAULT_STORAGE_PROVIDER: LOCAL
         CSRF_TRUSTED_ORIGINS: "*"
-        AZURE_AD_CLIENT_ID:  ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_CLIENT_ID:  ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_AD_AUTHORITY:  ${{ secrets.AZURE_AD_AUTHORITY }}
-        AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         AZURE_AD_REDIRECT_URI: ${{ secrets.AZURE_AD_REDIRECT_URI }}
       run: |
        python charity/manage.py test charity
