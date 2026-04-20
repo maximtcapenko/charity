@@ -38,5 +38,6 @@ jobs:
         AZURE_AD_AUTHORITY:  ${{ secrets.AZURE_AD_AUTHORITY }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         AZURE_AD_REDIRECT_URI: ${{ secrets.AZURE_AD_REDIRECT_URI }}
+        SECRET_KEY: "django_test"
       run: |
        python charity/manage.py test charity
