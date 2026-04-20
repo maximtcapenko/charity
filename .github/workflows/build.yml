@@ -39,5 +39,6 @@ jobs:
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         AZURE_AD_REDIRECT_URI: ${{ secrets.AZURE_AD_REDIRECT_URI }}
         SECRET_KEY: "django_test"
+        DB_URL: "sqlite://charity/db.sqlite3"
       run: |
        python charity/manage.py test charity
