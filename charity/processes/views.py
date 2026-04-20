@@ -81,6 +81,7 @@ def get_list(request):
         models.Q(fund_id=request.user.fund.id)) \
         .annotate(states_count=models.Count('states', distinct=True)) \
         .values('id', 'name', 'date_created', 'is_inactive', 'states_count') \
+        .order_by('-date_created') \
         .all()
 
     paginator = Paginator(queryset, DEFAULT_PAGE_SIZE)
