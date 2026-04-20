@@ -1,0 +1,81 @@
+<style>
+  #wrapper- {
+      {
+      widget.name
+    }
+  }
+
+  .ts-control {
+    min-height: 31px !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.25rem 0.5rem !important;
+    cursor: pointer !important;
+    background-color: #fff !important;
+    border-radius: 0.25rem !important;
+  }
+
+  #wrapper- {
+      {
+      widget.name
+    }
+  }
+
+  .ts-control input {
+    display: none !important;
+  }
+
+  #wrapper- {
+      {
+      widget.name
+    }
+  }
+
+  .ts-wrapper.single .ts-control .item {
+    display: flex;
+    align-items: center;
+    margin: 0;
+  }
+</style>
+
+<div id="wrapper-{{ widget.name }}">
+  <select name="{{ widget.name }}" id="ts-{{ widget.name }}" {% for name, value in widget.attrs.items %} {{ name }}="{{ value }}" {% endfor %}>
+    {% for group_name, group_choices, group_index in widget.optgroups %}
+    {% for option in group_choices %}
+    <option value="{{ option.value }}" {% if option.selected %}selected{% endif %}
+      data-src="{{ option.attrs.data_src.url }}">
+      {{ option.label }}
+    </option>
+    {% endfor %}
+    {% endfor %}
+  </select>
+</div>
+
+<script>
+  (function () {
+    const initSelect = () => {
+      const el = document.getElementById('ts-{{ widget.name }}');
+      if (typeof TomSelect !== 'undefined' && el) {
+        new TomSelect(el, {
+          copyClassesToDropdown: true,
+          controlInput: null,
+          searchField: [],
+          render: {
+            option: (data, escape) => renderRow(data, escape, 24),
+            item: (data, escape) => renderRow(data, escape, 20)
+          }
+        });
+      } else if (typeof TomSelect === 'undefined') {
+        setTimeout(initSelect, 50);
+      }
+    };
+
+    const renderRow = (data, escape, size) => {
+      const img = data.src ? `<img src="${data.src}" class="rounded-circle me-2" style="width:${size}px; height:${size}px; object-fit:cover;">`
+        : `<div class="bg-light rounded-circle me-2 d-inline-block text-center" style="width:${size}px; height:${size}px; line-height:${size}px;"><i class="fa-solid fa-user text-muted" style="font-size: 10px;"></i></div>`;
+      return `<div class="d-flex align-items-center">${img}<span class="text-dark">${escape(data.text)}</span></div>`;
+    };
+
+    initSelect();
+  })();
+</script>

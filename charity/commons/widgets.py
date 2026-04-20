@@ -72,7 +72,6 @@ class ImagePreviewWidget(forms.ClearableFileInput):
         return mark_safe(f'<div class="image-preview-container">{img_html}{output}</div>{script}')
 
 
-
 class DateRangeWidget(forms.TextInput):
     template_name = 'widgets/daterange_input.html'
 
@@ -101,3 +100,21 @@ class DateRangeWidget(forms.TextInput):
         css = {
             'all': ('https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css',)
         }
+
+class CoverSelectWidget(forms.Select):
+    template_name = 'widgets/cover_select.html'
+
+    def __init__(self, image_func=None, *args, **kwargs):
+        self.image_func = image_func
+        super().__init__(*args, **kwargs)
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex, attrs)
+        if value and self.image_func:
+            obj = option['value'].instance
+            option['attrs']['data_src'] = self.image_func(obj)
+        return option
+
+    class Media:
+        css = {'all': ('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css',)}
+        js = ('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js',)

@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.db.models import Q
 
+from commons.widgets import CoverSelectWidget
 from .functional import get_reviewer_label
 from .mixins import FormControlMixin, SearchFormMixin
 from .utils import DictObjectWrapper
@@ -57,7 +58,8 @@ def user_model_choice_field(fund=None, required=None, queryset=None, **kwargs):
         label_func=get_reviewer_label,
         queryset=User.objects.select_related(
             'volunteer_profile').filter(volunteer_profile__fund=fund) if queryset is None else queryset,
-        required=True if required is None else required, **kwargs)
+        required=True if required is None else required,
+        widget=CoverSelectWidget(image_func=lambda x: x.volunteer_profile.cover), **kwargs)
 
 
 class DateRangeField(forms.CharField):

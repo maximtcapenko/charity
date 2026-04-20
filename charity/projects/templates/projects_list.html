@@ -23,6 +23,7 @@
   <div class="card border-0 shadow-sm mb-4 bg-light">
     <div class="card-body py-3">
       <form action="" method="get" class="row g-3 align-items-center">
+        {{ search_form.media }}
         {% for field in search_form %}
         <div {% if field.field.widget.attrs.div_class %} class="{{field.field.widget.attrs.div_class}}" {% else %}
           class="col-md-3" {% endif %}>
