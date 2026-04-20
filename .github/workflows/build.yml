@@ -33,7 +33,7 @@ jobs:
         DEFAULT_QUEUE_NAME: "django-default"
         AZURE_STORAGE_NAME: testaccountname
         DEFAULT_STORAGE_PROVIDER: LOCAL
-        CSRF_TRUSTED_ORIGINS: "*"
+        CSRF_TRUSTED_ORIGINS: "http://*"
         AZURE_CLIENT_ID:  ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_AD_AUTHORITY:  ${{ secrets.AZURE_AD_AUTHORITY }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
