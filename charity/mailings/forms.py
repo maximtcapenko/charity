@@ -6,7 +6,7 @@ from django_prose_editor.widgets import ProseEditorWidget
 from django.urls import reverse
 
 from commons.mixins import FormControlMixin, InitialMixin
-from commons.forms import CustomLabeledModelChoiceField
+from commons.forms import CustomLabeledModelChoiceField, CoverSelectWidget
 from funds.models import Contributor
 
 from .models import MailingGroup, MailingTemplate
@@ -53,7 +53,8 @@ class AddMailingRecipientForm(forms.Form, FormControlMixin, InitialMixin):
             label_func=lambda x: f'{x.name} ({x.email})',
             queryset=Contributor.objects.filter(
                 Q(fund=self.fund, is_internal=False)
-                & ~Exists(self.group.recipients.filter(id=OuterRef('pk')))))
+                & ~Exists(self.group.recipients.filter(id=OuterRef('pk')))),
+            widget=CoverSelectWidget(image_func=lambda x: x.cover))
 
         FormControlMixin.__init__(self)
 

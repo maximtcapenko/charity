@@ -2,6 +2,8 @@ from django import forms
 from django.utils.safestring import mark_safe
 
 class ImagePreviewWidget(forms.ClearableFileInput):
+    template_name = 'django/forms/widgets/input.html'
+
     def __init__(self, *args, **kwargs):
         self.accept = kwargs.pop('accept', 'image/*')
         super().__init__(*args, **kwargs)
@@ -14,8 +16,8 @@ class ImagePreviewWidget(forms.ClearableFileInput):
         attrs['accept'] = self.accept
             
         preview_id = f'preview_{attrs["id"]}'
-        output = super().render(name, value, attrs, renderer)
         
+        output = forms.FileInput.render(self, name, value, attrs, renderer)
         existing_url = value.url if value and hasattr(value, 'url') else '#'
         display_style = 'block' if existing_url != '#' else 'none'
         
@@ -100,6 +102,7 @@ class DateRangeWidget(forms.TextInput):
         css = {
             'all': ('https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css',)
         }
+
 
 class CoverSelectWidget(forms.Select):
     template_name = 'widgets/cover_select.html'
